@@ -1,3 +1,5 @@
+<link rel="stylesheet" href="mermaid-style.css">
+
 ```mermaid
 stateDiagram-v2
     [*] --> OrderCreated : 주문 생성

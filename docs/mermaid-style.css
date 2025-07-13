@@ -1,0 +1,95 @@
+/* Mermaid 현대적인 밝은 테마 스타일 */
+.mermaid {
+  background-color: #ffffff !important;
+  color: #374151 !important;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e5e7eb;
+}
+
+/* 노드 스타일 */
+.mermaid .node rect {
+  fill: #f8fafc !important;
+  stroke: #3b82f6 !important;
+  stroke-width: 2px;
+  rx: 8px;
+  ry: 8px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.05));
+}
+
+.mermaid .node text {
+  fill: #000000 !important;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* 엣지 스타일 */
+.mermaid .edgeLabel {
+  color: #000000 !important;
+  background-color: #ffffff !important;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-weight: 600;
+  border: 2px solid #3b82f6;
+}
+
+.mermaid .edgePath path {
+  stroke: #3b82f6 !important;
+  stroke-width: 2px;
+  stroke-linecap: round;
+}
+
+/* 상태 다이어그램 특별 스타일 */
+.mermaid .stateLabel {
+  color: #000000 !important;
+  font-weight: 700;
+}
+
+.mermaid .stateNode {
+  fill: #f8fafc !important;
+  stroke: #3b82f6 !important;
+  stroke-width: 2px;
+  rx: 8px;
+  ry: 8px;
+}
+
+/* ER 다이어그램 특별 스타일 */
+.mermaid .er entityBox {
+  fill: #f8fafc !important;
+  stroke: #3b82f6 !important;
+  stroke-width: 2px;
+  rx: 6px;
+  ry: 6px;
+}
+
+.mermaid .er entityLabel {
+  color: #000000 !important;
+  font-weight: 700;
+}
+
+/* 플로우차트 특별 스타일 */
+.mermaid .flowchart .node {
+  fill: #f8fafc !important;
+  stroke: #3b82f6 !important;
+  stroke-width: 2px;
+  rx: 6px;
+  ry: 6px;
+}
+
+.mermaid .flowchart .label {
+  color: #000000 !important;
+  font-weight: 700;
+}
+
+/* 노트 스타일 */
+.mermaid .note {
+  fill: #fef3c7 !important;
+  stroke: #f59e0b !important;
+  stroke-width: 1px;
+}
+
+.mermaid .noteText {
+  color: #92400e !important;
+  font-weight: 500;
+} 
