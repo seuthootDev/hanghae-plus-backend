@@ -3,20 +3,21 @@
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 20px;
-  font-size: 14px;
+  font-size: 12px;
 }
 
 /* 테이블 헤더 */
 .table th {
-  padding: 12px;
+  padding: 8px;
   border: 1px solid #e5e7eb;
   text-align: left;
   font-weight: bold;
+  font-size: 11px;
 }
 
 /* 테이블 셀 */
 .table td {
-  padding: 12px;
+  padding: 8px;
   border: 1px solid #e5e7eb;
 }
 
@@ -53,7 +54,7 @@
 /* 코드 스타일 */
 .code-text {
   font-family: monospace;
-  font-size: 12px;
+  font-size: 10px;
 }
 
 /* 중앙 정렬 */
@@ -68,6 +69,6 @@
 
 /* ID 열 고정 폰트 크기 */
 .table td:first-child {
-  font-size: 12px;
+  font-size: 10px;
   font-family: monospace;
 } 

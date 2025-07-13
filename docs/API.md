@@ -144,14 +144,14 @@
       <td class="code-text">/users/{userId}/coupons</td>
       <td class="code-text">
 <pre><code>{
-  "couponType": "DISCOUNT_10PERCENT"
+  "couponType": "DISCOUNT_10%"
 }</code></pre>
       </td>
       <td class="code-text">
 <pre><code>{
   "couponId": 10,
   "userId": 1,
-  "couponType": "DISCOUNT_10PERCENT",
+  "couponType": "DISCOUNT_10%",
   "discountRate": 10,
   "expiryDate": "2024-12-31",
   "isUsed": false
