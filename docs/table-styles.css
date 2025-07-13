@@ -1,0 +1,67 @@
+/* 테이블 기본 스타일 */
+.api-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+/* 테이블 헤더 */
+.api-table th {
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  text-align: left;
+  font-weight: bold;
+}
+
+/* 테이블 셀 */
+.api-table td {
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+/* 우선순위 배지 */
+.priority-high {
+  background-color: #ef4444;
+  color: white;
+  border-radius: 4px;
+  padding: 2px 8px;
+}
+
+.priority-medium {
+  background-color: #f59e0b;
+  color: white;
+  border-radius: 4px;
+  padding: 2px 8px;
+}
+
+/* Method 배지 */
+.method-post {
+  background-color: #10b981;
+  color: white;
+  border-radius: 4px;
+  padding: 2px 8px;
+}
+
+.method-get {
+  background-color: #3b82f6;
+  color: white;
+  border-radius: 4px;
+  padding: 2px 8px;
+}
+
+/* 코드 스타일 */
+.code-text {
+  font-family: monospace;
+  font-size: 12px;
+}
+
+/* 중앙 정렬 */
+.text-center {
+  text-align: center;
+}
+
+/* 굵은 텍스트 */
+.text-bold {
+  font-weight: bold;
+} 
