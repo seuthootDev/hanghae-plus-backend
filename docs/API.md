@@ -2,7 +2,7 @@
 
 # API 명세서
 
-<table class="api-table">
+<table class="table">
   <thead>
     <tr>
       <th style="width: 15%;">기능</th>
@@ -13,8 +13,6 @@
       <th style="width: 15%;">예외 상황</th>
     </tr>
   </thead>
-
-
   <tbody>
     <tr>
       <td class="text-bold">잔액 충전</td>
@@ -23,19 +21,15 @@
       </td>
       <td class="code-text">/users/{userId}/points</td>
       <td class="code-text">
-```json
-{
+<pre><code>{
   "amount": 10000
-}
-```
+}</code></pre>
       </td>
       <td class="code-text">
-```json
-{
+<pre><code>{
   "userId": 1,
   "balance": 15000
-}
-```
+}</code></pre>
       </td>
       <td class="text-center">최소,최대 금액</td>
     </tr>
@@ -47,12 +41,10 @@
       <td class="code-text">/users/{userId}/points</td>
       <td class="code-text">없음</td>
       <td class="code-text">
-```json
-{
+<pre><code>{
   "userId": 1,
   "balance": 15000
-}
-```
+}</code></pre>
       </td>
       <td class="text-center">-</td>
     </tr>
@@ -64,8 +56,7 @@
       <td class="code-text">/products</td>
       <td class="code-text">없음</td>
       <td class="code-text">
-```json
-[
+<pre><code>[
   {
     "id": 1,
     "name": "커피",
@@ -73,8 +64,7 @@
     "stock": 100,
     "category": "음료"
   }
-]
-```
+]</code></pre>
       </td>
       <td class="text-center">-</td>
     </tr>
@@ -85,8 +75,7 @@
       </td>
       <td class="code-text">/orders</td>
       <td class="code-text">
-```json
-{
+<pre><code>{
   "userId": 1,
   "items": [
     {
@@ -95,12 +84,10 @@
     }
   ],
   "couponId": 10
-}
-```
+}</code></pre>
       </td>
       <td class="code-text">
-```json
-{
+<pre><code>{
   "orderId": 100,
   "userId": 1,
   "items": [
@@ -115,8 +102,7 @@
   "finalAmount": 5400,
   "couponUsed": true,
   "status": "PENDING"
-}
-```
+}</code></pre>
       </td>
       <td class="text-center">
         <span class="error-warning">재고 부족</span>
@@ -129,16 +115,13 @@
       </td>
       <td class="code-text">/orders/{orderId}/payment</td>
       <td class="code-text">
-```json
-{
+<pre><code>{
   "userId": 1,
   "couponId": 10
-}
-```
+}</code></pre>
       </td>
       <td class="code-text">
-```json
-{
+<pre><code>{
   "orderId": 100,
   "userId": 1,
   "totalAmount": 6000,
@@ -147,8 +130,7 @@
   "couponUsed": true,
   "status": "COMPLETED",
   "paymentDate": "2024-01-15T10:30:00Z"
-}
-```
+}</code></pre>
       </td>
       <td class="text-center">
         <span class="error-critical">잔액 부족</span>
@@ -161,23 +143,19 @@
       </td>
       <td class="code-text">/users/{userId}/coupons</td>
       <td class="code-text">
-```json
-{
+<pre><code>{
   "couponType": "DISCOUNT_10PERCENT"
-}
-```
+}</code></pre>
       </td>
       <td class="code-text">
-```json
-{
+<pre><code>{
   "couponId": 10,
   "userId": 1,
   "couponType": "DISCOUNT_10PERCENT",
   "discountRate": 10,
   "expiryDate": "2024-12-31",
   "isUsed": false
-}
-```
+}</code></pre>
       </td>
       <td class="text-center">
         <span class="error-critical">쿠폰 소진</span>
@@ -191,8 +169,7 @@
       <td class="code-text">/users/{userId}/coupons</td>
       <td class="code-text">없음</td>
       <td class="code-text">
-```json
-[
+<pre><code>[
   {
     "couponId": 10,
     "userId": 1,
@@ -201,8 +178,7 @@
     "expiryDate": "2024-12-31",
     "isUsed": false
   }
-]
-```
+]</code></pre>
       </td>
       <td class="text-center">-</td>
     </tr>
@@ -214,8 +190,7 @@
       <td class="code-text">/products/top-sellers</td>
       <td class="code-text">없음</td>
       <td class="code-text">
-```json
-[
+<pre><code>[
   {
     "id": 1,
     "name": "커피",
@@ -223,8 +198,7 @@
     "salesCount": 150,
     "totalRevenue": 450000
   }
-]
-```
+]</code></pre>
       </td>
       <td class="text-center">-</td>
     </tr>

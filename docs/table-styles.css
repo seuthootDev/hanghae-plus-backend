@@ -1,5 +1,5 @@
 /* 테이블 기본 스타일 */
-.api-table {
+.table {
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 20px;
@@ -7,7 +7,7 @@
 }
 
 /* 테이블 헤더 */
-.api-table th {
+.table th {
   padding: 12px;
   border: 1px solid #e5e7eb;
   text-align: left;
@@ -15,7 +15,7 @@
 }
 
 /* 테이블 셀 */
-.api-table td {
+.table td {
   padding: 12px;
   border: 1px solid #e5e7eb;
 }
@@ -64,4 +64,10 @@
 /* 굵은 텍스트 */
 .text-bold {
   font-weight: bold;
+}
+
+/* ID 열 고정 폰트 크기 */
+.table td:first-child {
+  font-size: 12px;
+  font-family: monospace;
 } 
