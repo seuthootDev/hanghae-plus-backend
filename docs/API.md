@@ -129,7 +129,7 @@
   "finalAmount": 5400,
   "couponUsed": true,
   "status": "COMPLETED",
-  "paymentDate": "2024-01-15T10:30:00Z"
+  "paymentDate": "2024-01-15.."
 }</code></pre>
       </td>
       <td class="text-center">
@@ -173,7 +173,7 @@
   {
     "couponId": 10,
     "userId": 1,
-    "couponType": "DISCOUNT_10PERCENT",
+    "couponType": "DISCOUNT_10%",
     "discountRate": 10,
     "expiryDate": "2024-12-31",
     "isUsed": false
