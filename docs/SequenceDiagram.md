@@ -1,124 +1,101 @@
 ```mermaid
 sequenceDiagram
     participant User
-    participant UserService
     participant Point
-    participant ProductService
     participant Product
-    participant OrderService
     participant Order
-    participant CouponService
     participant Coupon
-    participant PaymentService
     participant Payment
 
     %% 포인트 충전
-    User->>UserService: 포인트 충전 요청(userId, amount)
-    UserService->>Point: charge(amount)
-    Point-->>UserService: 업데이트된 포인트
-    UserService-->>User: 충전 완료
+    User->>Point: 포인트 충전 요청(amount)
+    Point->>Point: charge(amount)
+    Point-->>User: 업데이트된 포인트
 
     %% 포인트 조회
-    User->>UserService: 포인트 조회 요청(userId)
-    UserService->>Point: getAmount()
-    Point-->>UserService: 현재 포인트
-    UserService-->>User: 포인트 정보
+    User->>Point: 포인트 조회
+    Point->>Point: getAmount()
+    Point-->>User: 현재 포인트
 
     %% 상품 목록 조회
-    User->>ProductService: 상품 목록 요청
-    ProductService->>Product: getProducts()
-    Product-->>ProductService: 상품 목록
-    ProductService-->>User: 상품 목록
+    User->>Product: 상품 목록 요청
+    Product-->>User: 상품 목록
 
     %% 주문 생성
-    User->>OrderService: 주문 생성(userId, items, couponId)
-    OrderService->>ProductService: 재고 확인
-    ProductService->>Product: getStock()
-    Product-->>ProductService: 재고 정보
-    ProductService-->>OrderService: 재고 확인 결과
+    User->>Order: 주문 생성(상품, 수량, 쿠폰)
+    Order->>Product: 재고 확인
+    Product->>Product: getStock()
+    Product-->>Order: 재고 정보
     
     alt 쿠폰 사용시
-        OrderService->>CouponService: 쿠폰 유효성 확인(couponId)
-        CouponService->>Coupon: validateCoupon(couponId)
-        Coupon-->>CouponService: 할인 정보
-        CouponService-->>OrderService: 쿠폰 유효성
+        Order->>Coupon: 쿠폰 유효성 확인
+        Coupon->>Coupon: validateCoupon(couponId)
+        Coupon-->>Order: 할인 정보
     end
     
-    OrderService->>Order: 주문 생성 및 금액 계산
-    Order-->>OrderService: 생성된 주문 정보
-    OrderService-->>User: 주문 생성 완료
+    Order->>Order: 주문 생성 및 금액 계산
+    Order-->>User: 생성된 주문 정보
 
     %% 결제 처리
-    User->>PaymentService: 결제 요청(orderId, userId)
-    PaymentService->>OrderService: 주문 정보 조회(orderId)
-    OrderService->>Order: getOrder(orderId)
-    Order-->>OrderService: 주문 상세 정보
-    OrderService-->>PaymentService: 주문 정보
+    User->>Payment: 결제 요청(주문ID)
+    Payment->>Order: 주문 정보 조회
+    Order-->>Payment: 주문 상세 정보
     
-    PaymentService->>UserService: 포인트 차감 요청(userId, amount)
-    UserService->>Point: deduct(amount)
-    Point-->>UserService: 차감 결과
-    UserService-->>PaymentService: 포인트 차감 완료
+    Payment->>Point: 포인트 차감
+    Point->>Point: deduct(amount)
+    Point-->>Payment: 차감 결과
     
     alt 결제 성공시
-        PaymentService->>ProductService: 재고 차감
-        ProductService->>Product: deductStock(quantity)
-        Product-->>ProductService: 재고 업데이트
-        ProductService-->>PaymentService: 재고 차감 완료
+        Payment->>Product: 재고 차감
+        Product->>Product: deductStock(quantity)
+        Product-->>Payment: 재고 업데이트
         
         alt 쿠폰 사용시
-            PaymentService->>CouponService: 쿠폰 사용 처리(couponId)
-            CouponService->>Coupon: use()
-            Coupon-->>CouponService: 쿠폰 상태 업데이트
-            CouponService-->>PaymentService: 쿠폰 사용 완료
+            Payment->>Coupon: 쿠폰 사용 처리
+            Coupon->>Coupon: use()
+            Coupon-->>Payment: 쿠폰 상태 업데이트
         end
         
-        PaymentService->>Payment: 결제 정보 저장
-        Payment-->>PaymentService: 결제 완료
-        PaymentService-->>User: 결제 완료
+        Payment->>Order: 주문 상태 업데이트
+        Order-->>Payment: 업데이트 완료
+        Payment-->>User: 결제 완료
     else 포인트 부족시
-        PaymentService-->>User: 결제 실패(포인트 부족)
+        Payment-->>User: 결제 실패(포인트 부족)
     end
 
     %% 쿠폰 발급
-    User->>CouponService: 쿠폰 발급 요청(userId, couponType)
-    CouponService->>Coupon: assignTo(user)
-    Coupon-->>CouponService: 쿠폰 생성 완료
-    CouponService-->>User: 발급된 쿠폰 정보
+    User->>Coupon: 쿠폰 발급 요청
+    Coupon->>Coupon: assignTo(user)
+    Coupon-->>User: 발급된 쿠폰 정보
 
     %% 보유 쿠폰 조회
-    User->>CouponService: 보유 쿠폰 조회(userId)
-    CouponService->>Coupon: getUserCoupons(userId)
-    Coupon-->>CouponService: 쿠폰 목록
-    CouponService-->>User: 쿠폰 목록
+    User->>Coupon: 보유 쿠폰 조회
+    Coupon->>Coupon: getUserCoupons(userId)
+    Coupon-->>User: 쿠폰 목록
 
     %% 인기 상품 조회
-    User->>ProductService: 인기 상품 조회
-    ProductService->>Product: getTopSellers()
-    Product-->>ProductService: 인기 상품 목록
-    ProductService-->>User: 인기 상품 목록
+    User->>Product: 인기 상품 조회
+    Product->>Product: getTopSellers()
+    Product-->>User: 인기 상품 목록
 
     %% 에러 처리 시나리오
-    Note over User,ProductService: 재고 부족 시
-    User->>OrderService: 주문 생성
-    OrderService->>ProductService: 재고 확인
-    ProductService->>Product: getStock()
-    Product-->>ProductService: 재고 부족
-    ProductService-->>OrderService: 재고 부족
-    OrderService-->>User: 주문 실패(재고 부족)
+    Note over User,Product: 재고 부족 시
+    User->>Order: 주문 생성
+    Order->>Product: 재고 확인
+    Product->>Product: getStock()
+    Product-->>Order: 재고 부족
+    Order-->>User: 주문 실패(재고 부족)
 
-    Note over User,UserService: 포인트 부족 시
-    User->>PaymentService: 결제 요청
-    PaymentService->>UserService: 포인트 확인
-    UserService->>Point: getAmount()
-    Point-->>UserService: 포인트 부족
-    UserService-->>PaymentService: 포인트 부족
-    PaymentService-->>User: 결제 실패(포인트 부족)
+    Note over User,Point: 포인트 부족 시
+    User->>Payment: 결제 요청
+    Payment->>Point: 포인트 확인
+    Point->>Point: getAmount()
+    Point-->>Payment: 포인트 부족
+    Payment-->>User: 결제 실패(포인트 부족)
 
-    Note over User,CouponService: 쿠폰 유효하지 않을 시
-    User->>OrderService: 주문 생성(잘못된 쿠폰)
-    OrderService->>CouponService: 쿠폰 유효성 확인
-    CouponService->>Coupon: validateCoupon(couponId)
-    Coupon-->>CouponService: 쿠폰 무효
-    CouponService-->>OrderService: 쿠폰 무효
-    OrderService-->>User: 주문 실패(쿠폰 무효)
+    Note over User,Coupon: 쿠폰 유효하지 않을 시
+    User->>Order: 주문 생성(잘못된 쿠폰)
+    Order->>Coupon: 쿠폰 유효성 확인
+    Coupon->>Coupon: validateCoupon(couponId)
+    Coupon-->>Order: 쿠폰 무효
+    Order-->>User: 주문 실패(쿠폰 무효)
