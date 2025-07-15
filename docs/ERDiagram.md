@@ -1,52 +1,61 @@
 ```mermaid
 erDiagram
-    USER ||--o{ BALANCE : owns
+    USER ||--o{ POINT : owns
     USER ||--o{ COUPON : "has"
     USER ||--o{ ORDER : "places"
     ORDER ||--|{ ORDER_ITEM : "contains"
     PRODUCT ||--o{ ORDER_ITEM : "ordered in"
-    PRODUCT ||--o{ COUPON : "discount for"
     ORDER }|..|{ PAYMENT : "paid by"
     ORDER }|..|{ COUPON : "uses"
 
     USER {
-      string userId PK "유저 아이디"
+      int userId PK "유저 아이디"
       string name
     }
-    BALANCE {
-      string userId FK "유저 아이디"
-      int amount "잔액"
+    POINT {
+      int userId FK "유저 아이디"
+      int amount "포인트"
     }
     PRODUCT {
-      string productId PK
+      int productId PK
       string name
       int price
       int stock "재고"
+      string category
     }
     COUPON {
-      string couponId PK
-      string userId FK
-      string productId FK
-      float discountRate "할인율"
-      boolean used
+      int couponId PK
+      int userId FK
+      string couponType
+      int discountRate "할인율"
+      date expiryDate
+      boolean isUsed
     }
     ORDER {
-      string orderId PK
-      string userId FK
+      int orderId PK
+      int userId FK
+      int couponId FK "사용한 쿠폰 (nullable)"
       date orderDate
       string status
+      int totalAmount
+      int discountAmount
+      int finalAmount
     }
     ORDER_ITEM {
-      string orderItemId PK
-      string orderId FK
-      string productId FK
+      int orderItemId PK
+      int orderId FK
+      int productId FK
       int quantity
-      int unitPrice
+      int price
+      int subtotal
     }
     PAYMENT {
-      string paymentId PK
-      string orderId FK
-      int amount
-      date paidAt
+      int paymentId PK
+      int orderId FK
+      int totalAmount
+      int discountAmount
+      int finalAmount
+      boolean couponUsed
       string status
+      date paidAt
     }
