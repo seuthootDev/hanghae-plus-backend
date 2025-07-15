@@ -38,6 +38,7 @@ classDiagram
         +int quantity
         +int price
         +int subtotal
+        +calculateSubtotal()
     }
     class Coupon {
         +int id
