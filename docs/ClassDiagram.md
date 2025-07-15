@@ -105,5 +105,4 @@ classDiagram
 
     %% 서비스 간 의존성
     OrderService --> CouponService
-    PaymentService --> CouponService
     UserService --> CouponService
