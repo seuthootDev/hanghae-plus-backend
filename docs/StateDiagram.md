@@ -1,24 +1,25 @@
-<link rel="stylesheet" href="mermaid-style.css">
-
 ```mermaid
 stateDiagram-v2
-    [*] --> OrderCreated : 주문 생성
-    OrderCreated --> CheckingRequirements : 결제 시도
-    CheckingRequirements --> PaymentFailed : 잔액/재고/쿠폰 미충족
-    CheckingRequirements --> PaymentSucceeded : 잔액/재고/쿠폰 충족
-    PaymentSucceeded --> SendingOrderInfo : 주문정보 데이터 전송
-    SendingOrderInfo --> Done : 완료
-    PaymentFailed --> [*]
-    Done --> [*]
+    [*] --> Browsing : 상품 둘러보기
+    Browsing --> Ordering : 주문하기
+    Ordering --> PaymentProcessing : 결제 중
+    PaymentProcessing --> OrderCompleted : 주문 완료
+    PaymentProcessing --> OrderFailed : 주문 실패
+    OrderCompleted --> Browsing : 계속 쇼핑
+    OrderFailed --> Browsing : 다시 시도
 
-    note right of OrderCreated
-      사용자가 상품 및 수량 선택, 쿠폰(선택)
+    note right of Browsing
+      상품 목록 조회, 포인트 충전
     end note
-    note right of CheckingRequirements
-      1. 유저 잔액 충분?
-      2. 상품 재고 충분?
-      3. 쿠폰 유효?
+    note right of Ordering
+      상품 선택, 수량 지정, 쿠폰 적용
     end note
-    note right of PaymentSucceeded
-      주문정보를 데이터 플랫폼에 전송
+    note right of PaymentProcessing
+      포인트 차감, 재고 확인, 쿠폰 사용
+    end note
+    note right of OrderCompleted
+      주문 성공, 주문 정보 전송
+    end note
+    note right of OrderFailed
+      포인트 부족, 재고 부족, 쿠폰 무효
     end note
