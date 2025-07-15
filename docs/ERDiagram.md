@@ -13,7 +13,7 @@ erDiagram
       string name
     }
     POINT {
-      int userId FK "유저 아이디"
+      int userId "유저 아이디 (애플리케이션 레벨 검증)"
       int amount "포인트"
     }
     PRODUCT {
@@ -25,7 +25,7 @@ erDiagram
     }
     COUPON {
       int couponId PK
-      int userId FK
+      int userId "유저 아이디 (애플리케이션 레벨 검증)"
       string couponType
       int discountRate "할인율"
       date expiryDate
@@ -33,8 +33,8 @@ erDiagram
     }
     ORDER {
       int orderId PK
-      int userId FK
-      int couponId FK "사용한 쿠폰 (nullable)"
+      int userId "유저 아이디 (애플리케이션 레벨 검증)"
+      int couponId "사용한 쿠폰 (nullable, 애플리케이션 레벨 검증)"
       date orderDate
       string status
       int totalAmount
@@ -43,15 +43,15 @@ erDiagram
     }
     ORDER_ITEM {
       int orderItemId PK
-      int orderId FK
-      int productId FK
+      int orderId "주문 아이디 (애플리케이션 레벨 검증)"
+      int productId "상품 아이디 (애플리케이션 레벨 검증)"
       int quantity
       int price
       int subtotal
     }
     PAYMENT {
       int paymentId PK
-      int orderId FK
+      int orderId "주문 아이디 (애플리케이션 레벨 검증)"
       int totalAmount
       int discountAmount
       int finalAmount
