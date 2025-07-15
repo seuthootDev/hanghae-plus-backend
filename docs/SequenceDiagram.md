@@ -27,7 +27,7 @@ sequenceDiagram
     Product->>Product: getStock()
     Product-->>Order: 재고 정보
     
-    alt 쿠폰 사용시
+    opt 쿠폰 사용시
         Order->>Coupon: 쿠폰 유효성 확인
         Coupon->>Coupon: validateCoupon(couponId)
         Coupon-->>Order: 할인 정보
@@ -35,6 +35,7 @@ sequenceDiagram
     
     Order->>Order: 주문 생성 및 금액 계산
     Order-->>User: 생성된 주문 정보
+
 
     %% 결제 처리
     User->>Payment: 결제 요청(주문ID)
@@ -50,7 +51,7 @@ sequenceDiagram
         Product->>Product: deductStock(quantity)
         Product-->>Payment: 재고 업데이트
         
-        alt 쿠폰 사용시
+        opt 쿠폰 사용시
             Payment->>Coupon: 쿠폰 사용 처리
             Coupon->>Coupon: use()
             Coupon-->>Payment: 쿠폰 상태 업데이트
@@ -62,6 +63,9 @@ sequenceDiagram
     else 포인트 부족시
         Payment-->>User: 결제 실패(포인트 부족)
     end
+
+    %% 스크롤 내렸을때 헤더보기
+    Note over User,Payment:  유저 -- 포인트 -- 프로덕트 -- 오더 -- 쿠폰 ---- 페이먼트 
 
     %% 쿠폰 발급
     User->>Coupon: 쿠폰 발급 요청
