@@ -3,6 +3,7 @@
 <table>
   <thead>
     <tr>
+      <th></th>
       <th>기능</th>
       <th>Method</th>
       <th>Endpoint</th>
@@ -13,7 +14,8 @@
   </thead>
   <tbody>
     <tr>
-      <td>잔액 충전</td>
+      <td>1</td>
+      <td>포인트트 충전</td>
       <td>POST</td>
       <td>/users/{userId}/points</td>
       <td>
@@ -30,7 +32,8 @@
       <td>최소,최대 금액</td>
     </tr>
     <tr>
-      <td>잔액 조회</td>
+      <td>2</td>
+      <td>포인트 조회</td>
       <td>GET</td>
       <td>/users/{userId}/points</td>
       <td>없음</td>
@@ -43,6 +46,7 @@
       <td>-</td>
     </tr>
     <tr>
+      <td>3</td>
       <td>상품 목록 조회</td>
       <td>GET</td>
       <td>/products</td>
@@ -61,6 +65,7 @@
       <td>-</td>
     </tr>
     <tr>
+      <td>4</td>
       <td>주문 생성</td>
       <td>POST</td>
       <td>/orders</td>
@@ -97,35 +102,37 @@
       <td>재고 부족</td>
     </tr>
     <tr>
+      <td>5</td>
       <td>결제 처리</td>
       <td>POST</td>
-      <td>/orders/{orderId}/payment</td>
+      <td>/payments/process</td>
       <td>
 <pre><code>{
-  "userId": 1,
-  "couponId": 10
+  "orderId": 100
 }</code></pre>
       </td>
       <td>
 <pre><code>{
+  "paymentId": 1,
   "orderId": 100,
-  "userId": 1,
   "totalAmount": 6000,
   "discountAmount": 600,
   "finalAmount": 5400,
   "couponUsed": true,
-  "status": "COMPLETED",
-  "paymentDate": "2024-01-15T10:30:00Z"
+  "status": "SUCCESS",
+  "paidAt": "2024-01-15T10:30:00Z"
 }</code></pre>
       </td>
       <td>잔액 부족</td>
     </tr>
     <tr>
+      <td>6</td>
       <td>쿠폰 발급</td>
       <td>POST</td>
-      <td>/users/{userId}/coupons</td>
+      <td>/coupons/issue</td>
       <td>
 <pre><code>{
+  "userId": 1,
   "couponType": "DISCOUNT_10PERCENT"
 }</code></pre>
       </td>
@@ -142,9 +149,10 @@
       <td>쿠폰 소진</td>
     </tr>
     <tr>
+      <td>7</td>
       <td>보유 쿠폰 조회</td>
       <td>GET</td>
-      <td>/users/{userId}/coupons</td>
+      <td>/coupons/user/{userId}</td>
       <td>없음</td>
       <td>
 <pre><code>[
@@ -161,6 +169,7 @@
       <td>-</td>
     </tr>
     <tr>
+      <td>8</td>
       <td>인기 판매 상품 조회</td>
       <td>GET</td>
       <td>/products/top-sellers</td>

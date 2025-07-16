@@ -1,121 +1,65 @@
 # API 기능별 시퀀스 다이어그램
 
-## 1. 사용자 관리 API
 
-### 1.1 사용자 생성
+
+## 1. 포인트 관리 API
+
+### 1.1 포인트 충전
 ```mermaid
 sequenceDiagram
     participant Client
     participant UserController
     participant UserService
-    participant UserRepository
     participant PointRepository
 
-    Client->>UserController: POST /users
-    Note over Client,UserController: { "name": "홍길동" }
+    Client->>UserController: POST /users/{userId}/points
+    Note over Client,UserController: { "amount": 1000 }
     
-    UserController->>UserService: createUser(createUserDto)
-    UserService->>UserRepository: save(user)
-    UserRepository-->>UserService: savedUser
+    UserController->>UserService: chargePoints(userId: number, amount: number)
+    UserService->>PointRepository: findOne({ userId })
+    PointRepository-->>UserService: point
     
-    UserService->>PointRepository: save({ userId: number, amount: 0 })
-    PointRepository-->>UserService: pointRecord
+    alt 포인트 레코드가 존재하는 경우
+        UserService->>PointRepository: save(updatedPoint)
+    else 포인트 레코드가 없는 경우
+        UserService->>PointRepository: save({ userId: number, amount: number })
+    end
     
-    UserService-->>UserController: user
-    UserController-->>Client: 201 Created
-    Note over Client,UserController: { "userId": 1, "name": "홍길동" }
+    PointRepository-->>UserService: updatedPoint
+    UserService-->>UserController: point
+    UserController-->>Client: 200 OK
+    Note over Client,UserController: { "userId": 1, "amount": 1000 }
 ```
 
-### 1.2 사용자 조회
+### 1.2 포인트 조회
 ```mermaid
 sequenceDiagram
     participant Client
     participant UserController
     participant UserService
-    participant UserRepository
-
-    Client->>UserController: GET /users/{userId}
-    
-    UserController->>UserService: getUserById(userId: number)
-    UserService->>UserRepository: findOne({ userId })
-    UserRepository-->>UserService: user
-    
-    alt 사용자가 존재하는 경우
-        UserService-->>UserController: user
-        UserController-->>Client: 200 OK
-        Note over Client,UserController: { "userId": 1, "name": "홍길동" }
-    else 사용자가 존재하지 않는 경우
-        UserService-->>UserController: NotFoundException
-        UserController-->>Client: 404 Not Found
-    end
-```
-
-## 2. 포인트 관리 API
-
-### 2.1 포인트 충전
-```mermaid
-sequenceDiagram
-    participant Client
-    participant PointController
-    participant PointService
     participant PointRepository
-    participant UserService
 
-    Client->>PointController: POST /points/charge
-    Note over Client,PointController: { "userId": 1, "amount": 1000 }
+    Client->>UserController: GET /users/{userId}/points
     
-    PointController->>PointService: chargePoints(userId: number, amount: number)
-    PointService->>UserService: getUserById(userId)
-    UserService-->>PointService: user
-    
-    PointService->>PointRepository: findOne({ userId })
-    PointRepository-->>PointService: point
+    UserController->>UserService: getUserPoints(userId: number)
+    UserService->>PointRepository: findOne({ userId })
+    PointRepository-->>UserService: point
     
     alt 포인트 레코드가 존재하는 경우
-        PointService->>PointRepository: save(updatedPoint)
+        UserService-->>UserController: point
     else 포인트 레코드가 없는 경우
-        PointService->>PointRepository: save({ userId: number, amount: number })
+        UserService->>PointRepository: save({ userId: number, amount: 0 })
+        PointRepository-->>UserService: newPoint
+        UserService-->>UserController: newPoint
     end
     
-    PointRepository-->>PointService: updatedPoint
-    PointService-->>PointController: point
-    PointController-->>Client: 200 OK
-    Note over Client,PointController: { "userId": 1, "amount": 1000 }
+    UserController-->>Client: 200 OK
+    Note over Client,UserController: { "userId": 1, "amount": 1000 }
 ```
 
-### 2.2 포인트 조회
-```mermaid
-sequenceDiagram
-    participant Client
-    participant PointController
-    participant PointService
-    participant PointRepository
-    participant UserService
+## 2. 상품 관리 API
 
-    Client->>PointController: GET /points/{userId}
-    
-    PointController->>PointService: getUserPoints(userId: number)
-    PointService->>UserService: getUserById(userId)
-    UserService-->>PointService: user
-    
-    PointService->>PointRepository: findOne({ userId })
-    PointRepository-->>PointService: point
-    
-    alt 포인트 레코드가 존재하는 경우
-        PointService-->>PointController: point
-    else 포인트 레코드가 없는 경우
-        PointService->>PointRepository: save({ userId: number, amount: 0 })
-        PointRepository-->>PointService: newPoint
-        PointService-->>PointController: newPoint
-    end
-    
-    PointController-->>Client: 200 OK
-    Note over Client,PointController: { "userId": 1, "amount": 1000 }
-```
-
-## 3. 상품 관리 API
-
-### 3.1 상품 목록 조회
+### 2.1 상품 목록 조회
 ```mermaid
 sequenceDiagram
     participant Client
@@ -135,33 +79,31 @@ sequenceDiagram
     Note over Client,ProductController: { "products": [...], "total": 50, "page": 1 }
 ```
 
-### 3.2 상품 상세 조회
+### 2.2 인기 판매 상품 조회
 ```mermaid
 sequenceDiagram
     participant Client
     participant ProductController
     participant ProductService
-    participant ProductRepository
+    participant OrderRepository
 
-    Client->>ProductController: GET /products/{productId}
+    Client->>ProductController: GET /products/top-sellers
     
-    ProductController->>ProductService: getProductById(productId: number)
-    ProductService->>ProductRepository: findOne({ productId })
-    ProductRepository-->>ProductService: product
+    ProductController->>ProductService: getTopSellers()
+    ProductService->>OrderRepository: getTopSellingProducts(days: 3, limit: 5)
+    OrderRepository-->>ProductService: topSellingProducts
     
-    alt 상품이 존재하는 경우
-        ProductService-->>ProductController: product
-        ProductController-->>Client: 200 OK
-        Note over Client,ProductController: { "productId": 1, "name": "노트북", "price": 1000000, "stock": 10, "category": "electronics" }
-    else 상품이 존재하지 않는 경우
-        ProductService-->>ProductController: NotFoundException
-        ProductController-->>Client: 404 Not Found
-    end
+    ProductService->>ProductService: calculateSalesStatistics(topSellingProducts)
+    ProductService-->>ProductController: topSellers
+    ProductController-->>Client: 200 OK
+    Note over Client,ProductController: { "topSellers": [...], "period": "3일" }
 ```
 
-## 4. 쿠폰 관리 API
 
-### 4.1 쿠폰 발급
+
+## 3. 쿠폰 관리 API
+
+### 3.1 쿠폰 발급
 ```mermaid
 sequenceDiagram
     participant Client
@@ -185,7 +127,7 @@ sequenceDiagram
     Note over Client,CouponController: { "couponId": 1, "userId": 1, "couponType": "DISCOUNT", "discountRate": 10, "expiryDate": "2024-12-31", "isUsed": false }
 ```
 
-### 4.2 쿠폰 유효성 검증
+### 3.2 보유 쿠폰 조회
 ```mermaid
 sequenceDiagram
     participant Client
@@ -193,29 +135,23 @@ sequenceDiagram
     participant CouponService
     participant CouponRepository
 
-    Client->>CouponController: POST /coupons/validate
-    Note over Client,CouponController: { "couponId": 1, "userId": 1 }
+    Client->>CouponController: GET /coupons/user/{userId}
     
-    CouponController->>CouponService: validateCoupon(couponId: number, userId: number)
-    CouponService->>CouponRepository: findOne({ couponId, userId })
-    CouponRepository-->>CouponService: coupon
+    CouponController->>CouponService: getUserCoupons(userId: number)
+    CouponService->>CouponRepository: find({ userId })
+    CouponRepository-->>CouponService: coupons
     
-    alt 쿠폰이 존재하고 유효한 경우
-        CouponService->>CouponService: validateExpiryDate(coupon.expiryDate)
-        CouponService->>CouponService: validateUsageStatus(coupon.isUsed)
-        CouponService-->>CouponController: validationResult
-        CouponController-->>Client: 200 OK
-        Note over Client,CouponController: { "valid": true, "discountRate": 10, "couponType": "DISCOUNT" }
-    else 쿠폰이 유효하지 않은 경우
-        CouponService-->>CouponController: validationResult
-        CouponController-->>Client: 400 Bad Request
-        Note over Client,CouponController: { "valid": false, "message": "쿠폰이 유효하지 않습니다" }
-    end
+    CouponService->>CouponService: filterValidCoupons(coupons)
+    CouponService-->>CouponController: validCoupons
+    CouponController-->>Client: 200 OK
+    Note over Client,CouponController: { "coupons": [...], "count": 2 }
 ```
 
-## 5. 주문 관리 API
 
-### 5.1 주문 생성
+
+## 4. 주문 관리 API
+
+### 4.1 주문 생성
 ```mermaid
 sequenceDiagram
     participant Client
@@ -261,38 +197,11 @@ sequenceDiagram
     end
 ```
 
-### 5.2 주문 조회
-```mermaid
-sequenceDiagram
-    participant Client
-    participant OrderController
-    participant OrderService
-    participant OrderRepository
-    participant OrderItemRepository
 
-    Client->>OrderController: GET /orders/{orderId}
-    
-    OrderController->>OrderService: getOrderById(orderId: number)
-    OrderService->>OrderRepository: findOne({ orderId })
-    OrderRepository-->>OrderService: order
-    
-    alt 주문이 존재하는 경우
-        OrderService->>OrderItemRepository: find({ orderId })
-        OrderItemRepository-->>OrderService: orderItems
-        
-        OrderService->>OrderService: combineOrderWithItems(order, orderItems)
-        OrderService-->>OrderController: orderWithItems
-        OrderController-->>Client: 200 OK
-        Note over Client,OrderController: { "orderId": 1, "userId": 1, "couponId": 1, "items": [...], "totalAmount": 100000, "discountAmount": 10000, "finalAmount": 90000, "status": "PENDING" }
-    else 주문이 존재하지 않는 경우
-        OrderService-->>OrderController: NotFoundException
-        OrderController-->>Client: 404 Not Found
-    end
-```
 
-## 6. 결제 처리 API
+## 5. 결제 처리 API
 
-### 6.1 결제 처리
+### 5.1 결제 처리
 ```mermaid
 sequenceDiagram
     participant Client
@@ -311,12 +220,12 @@ sequenceDiagram
     PaymentService->>OrderService: getOrderById(orderId)
     OrderService-->>PaymentService: order
     
-    PaymentService->>PointService: getUserPoints(order.userId: number)
-    PointService-->>PaymentService: userPoints
+    PaymentService->>UserService: getUserPoints(order.userId: number)
+    UserService-->>PaymentService: userPoints
     
     alt 포인트가 충분한 경우
-        PaymentService->>PointService: usePoints(order.userId, order.finalAmount)
-        PointService-->>PaymentService: updatedPoints
+        PaymentService->>UserService: usePoints(order.userId, order.finalAmount)
+        UserService-->>PaymentService: updatedPoints
         
         PaymentService->>ProductService: updateStock(order.items)
         ProductService-->>PaymentService: updatedProducts
@@ -342,9 +251,9 @@ sequenceDiagram
     end
 ```
 
-## 7. 에러 처리 시나리오
+## 6. 에러 처리 시나리오
 
-### 7.1 재고 부족 시 주문 실패
+### 6.1 재고 부족 시 주문 실패
 ```mermaid
 sequenceDiagram
     participant Client
@@ -368,7 +277,7 @@ sequenceDiagram
     Note over Client,OrderController: { "message": "재고가 부족합니다" }
 ```
 
-### 7.2 쿠폰 유효하지 않을 시 주문 실패
+### 6.2 쿠폰 유효하지 않을 시 주문 실패
 ```mermaid
 sequenceDiagram
     participant Client
@@ -391,20 +300,20 @@ sequenceDiagram
     Note over Client,OrderController: { "message": "유효하지 않은 쿠폰입니다" }
 ```
 
-### 7.3 포인트 부족 시 결제 실패
+### 6.3 포인트 부족 시 결제 실패
 ```mermaid
 sequenceDiagram
     participant Client
     participant PaymentController
     participant PaymentService
-    participant PointService
+    participant UserService
 
     Client->>PaymentController: POST /payments/process
     Note over Client,PaymentController: { "orderId": 1 }
     
     PaymentController->>PaymentService: processPayment(orderId: number)
-    PaymentService->>PointService: getUserPoints(userId: number)
-    PointService-->>PaymentService: { "amount": 1000 }
+    PaymentService->>UserService: getUserPoints(userId: number)
+    UserService-->>PaymentService: { "amount": 1000 }
     
     PaymentService->>PaymentService: checkSufficientPoints(requiredAmount, availablePoints)
     PaymentService-->>PaymentController: BadRequestException
