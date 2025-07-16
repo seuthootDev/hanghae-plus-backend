@@ -4,7 +4,6 @@ import { UsersController } from "./users/users.controller";
 import { ProductsController } from "./products/products.controller";
 import { OrdersController } from "./orders/orders.controller";
 import { CouponsController } from "./coupons/coupons.controller";
-import { PointsController } from "./points/points.controller";
 import { PaymentsController } from "./payments/payments.controller";
 
 @Module({
@@ -14,7 +13,6 @@ import { PaymentsController } from "./payments/payments.controller";
     ProductsController,
     OrdersController,
     CouponsController,
-    PointsController,
     PaymentsController
   ],
   providers: [],
