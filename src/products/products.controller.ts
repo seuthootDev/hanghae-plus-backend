@@ -2,10 +2,13 @@ import { Controller, Get } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ProductResponseDto } from './dto/product-response.dto';
 import { TopSellerResponseDto } from './dto/top-seller-response.dto';
+import { ProductsService } from './products.service';
 
 @ApiTags('Products')
 @Controller('products')
 export class ProductsController {
+
+  constructor(private readonly productsService: ProductsService) {}
 
   @Get()
   @ApiOperation({ summary: '상품 목록 조회' })
@@ -15,16 +18,7 @@ export class ProductsController {
     type: [ProductResponseDto]
   })
   async getProducts(): Promise<ProductResponseDto[]> {
-    // TODO: 실제 비즈니스 로직 구현
-    return [
-      {
-        id: 1,
-        name: '커피',
-        price: 3000,
-        stock: 100,
-        category: '음료'
-      }
-    ];
+    return this.productsService.getProducts();
   }
 
   @Get('top-sellers')
@@ -35,15 +29,6 @@ export class ProductsController {
     type: [TopSellerResponseDto]
   })
   async getTopSellers(): Promise<TopSellerResponseDto[]> {
-    // TODO: 실제 비즈니스 로직 구현
-    return [
-      {
-        id: 1,
-        name: '커피',
-        price: 3000,
-        salesCount: 150,
-        totalRevenue: 450000
-      }
-    ];
+    return this.productsService.getTopSellers();
   }
 } 
