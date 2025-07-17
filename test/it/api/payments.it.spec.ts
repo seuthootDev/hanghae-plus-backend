@@ -84,43 +84,24 @@ describe('Payments API (e2e)', () => {
         });
     });
 
-    it('존재하지 않는 주문에 대해 400을 반환해야 한다', () => {
-      const paymentData = {
-        orderId: 999
-      };
-
-      return request(app.getHttpServer())
-        .post('/payments/process')
-        .send(paymentData)
-        .expect(400);
-    });
-
-    it('포인트가 부족한 경우 400을 반환해야 한다', () => {
-      // Mock 서비스에서 포인트 부족 시나리오를 시뮬레이션
-      const paymentData = {
-        orderId: 102 // 존재하지 않는 주문 ID로 포인트 부족 시뮬레이션
-      };
-
-      return request(app.getHttpServer())
-        .post('/payments/process')
-        .send(paymentData)
-        .expect(400);
-    });
-
-    it('주문 ID가 누락된 경우 400을 반환해야 한다', () => {
-      const paymentData = {};
-
-      return request(app.getHttpServer())
-        .post('/payments/process')
-        .send(paymentData)
-        .expect(400);
-    });
-
-    it('잘못된 주문 ID 타입에 대해 400을 반환해야 한다', () => {
-      const paymentData = {
-        orderId: 'invalid'
-      };
-
+    it.each([
+      {
+        paymentData: { orderId: 999 },
+        description: '존재하지 않는 주문'
+      },
+      {
+        paymentData: { orderId: 102 },
+        description: '포인트 부족'
+      },
+      {
+        paymentData: {},
+        description: '주문 ID 누락'
+      },
+      {
+        paymentData: { orderId: 'invalid' },
+        description: '잘못된 주문 ID 타입'
+      }
+    ])('$description에 대해 400을 반환해야 한다', ({ paymentData }) => {
       return request(app.getHttpServer())
         .post('/payments/process')
         .send(paymentData)

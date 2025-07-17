@@ -52,33 +52,27 @@ describe('Coupons API (e2e)', () => {
         });
     });
 
-    it('다양한 쿠폰 타입을 발급할 수 있어야 한다', () => {
-      const couponTypes = [
-        'FIXED_1000',
-        'FIXED_2000'
-      ];
+    it.each([
+      { couponType: 'FIXED_1000', userId: 2 },
+      { couponType: 'FIXED_2000', userId: 3 }
+    ])('$couponType 쿠폰을 발급할 수 있어야 한다', ({ couponType, userId }) => {
+      const couponData = {
+        userId,
+        couponType
+      };
 
-      return Promise.all(
-        couponTypes.map((couponType, index) => {
-          const couponData = {
-            userId: 2 + index,
-            couponType
-          };
-
-          return request(app.getHttpServer())
-            .post('/coupons/issue')
-            .send(couponData)
-            .expect(201)
-            .expect((res) => {
-              expect(res.body).toHaveProperty('couponType', couponType);
-              expect(res.body).toHaveProperty('discountRate');
-              expect(res.body).toHaveProperty('isUsed', false);
-              
-              // 할인율 검증
-              expect(res.body.discountRate).toBe(0);
-            });
-        })
-      );
+      return request(app.getHttpServer())
+        .post('/coupons/issue')
+        .send(couponData)
+        .expect(201)
+        .expect((res) => {
+          expect(res.body).toHaveProperty('couponType', couponType);
+          expect(res.body).toHaveProperty('discountRate');
+          expect(res.body).toHaveProperty('isUsed', false);
+          
+          // 할인율 검증
+          expect(res.body.discountRate).toBe(0);
+        });
     });
 
     it('잘못된 쿠폰 타입에 대해 400을 반환해야 한다', () => {

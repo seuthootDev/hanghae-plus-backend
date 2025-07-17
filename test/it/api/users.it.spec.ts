@@ -33,24 +33,15 @@ describe('Users API (e2e)', () => {
         });
     });
 
-    it('잘못된 금액(너무 낮음)에 대해 400을 반환해야 한다', () => {
+    it.each([
+      { amount: 500, description: '너무 낮은 금액' },
+      { amount: 2000000, description: '너무 높은 금액' },
+      { amount: null, description: 'null 값' },
+      { amount: -1000, description: '음수 값' }
+    ])('잘못된 금액($description)에 대해 400을 반환해야 한다', ({ amount }) => {
       return request(app.getHttpServer())
         .post('/users/1/points')
-        .send({ amount: 500 })
-        .expect(400);
-    });
-
-    it('잘못된 금액(너무 높음)에 대해 400을 반환해야 한다', () => {
-      return request(app.getHttpServer())
-        .post('/users/1/points')
-        .send({ amount: 2000000 })
-        .expect(400);
-    });
-
-    it('금액이 누락된 경우 400을 반환해야 한다', () => {
-      return request(app.getHttpServer())
-        .post('/users/1/points')
-        .send({})
+        .send({ amount })
         .expect(400);
     });
   });

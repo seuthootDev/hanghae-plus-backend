@@ -129,46 +129,26 @@ describe('Orders API (e2e)', () => {
         });
     });
 
-    it('존재하지 않는 상품에 대해 400을 반환해야 한다', () => {
-      const orderData = {
-        userId: 1,
-        items: [
-          {
-            productId: 999,
-            quantity: 1
-          }
-        ]
-      };
-
-      return request(app.getHttpServer())
-        .post('/orders')
-        .send(orderData)
-        .expect(400);
-    });
-
-    it('필수 필드가 누락된 경우 400을 반환해야 한다', () => {
-      const orderData = {
-        userId: 1
-        // items missing
-      };
-
-      return request(app.getHttpServer())
-        .post('/orders')
-        .send(orderData)
-        .expect(400);
-    });
-
-    it('잘못된 상품 구조에 대해 400을 반환해야 한다', () => {
-      const orderData = {
-        userId: 1,
-        items: [
-          {
-            productId: 1
-            // quantity missing
-          }
-        ]
-      };
-
+    it.each([
+      {
+        orderData: {
+          userId: 1,
+          items: [{ productId: 999, quantity: 1 }]
+        },
+        description: '존재하지 않는 상품'
+      },
+      {
+        orderData: { userId: 1 },
+        description: '필수 필드 누락'
+      },
+      {
+        orderData: {
+          userId: 1,
+          items: [{ productId: 1 }]
+        },
+        description: '잘못된 상품 구조'
+      }
+    ])('$description에 대해 400을 반환해야 한다', ({ orderData }) => {
       return request(app.getHttpServer())
         .post('/orders')
         .send(orderData)
