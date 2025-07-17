@@ -48,7 +48,7 @@
 ### Problem (개선할 점)
 - 시퀀스 다이어그램의 목적을 처음에는 전체 프로세스의 흐름을 한눈에 보여주는 것이라고 생각했지만 너무 복잡해져서 가독성이 매우 떨어졌음
 - 기능별로 쪼개 명확하게 기능별 흐름을 보여주는게 더 효과적이라고 판단하여 구조를 변경
-
+- step03 브런치에 step04 관련 작업 [01d1105](https://github.com/seuthootDev/hanghae-plus-backend/commit/01d11056073418aba366bc68914dbeeb7555c637) 이 커밋됨....  `git switch` + `git cherry-pick`을 사용하는 것에 익숙해져야함 (Step04)
 ### Try (새롭게 시도할 점)
 - prisma-markdown, nestia 등 자동 문서화 도구 사용해보기
 - 테스트 컨테이너를 활용한 실제 데이터베이스를 사용하는 테스트 해보기 (Step4)
