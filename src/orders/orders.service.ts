@@ -9,6 +9,11 @@ export class OrdersService {
     // Mock 비즈니스 로직: 주문 생성
     const { userId, items, couponId } = createOrderDto;
     
+    // items가 없거나 빈 배열인 경우 예외 처리
+    if (!items || items.length === 0) {
+      throw new BadRequestException('주문 상품이 필요합니다.');
+    }
+    
     // Mock 상품 데이터
     const mockProducts = {
       1: { id: 1, name: '아메리카노', price: 3000 },
@@ -18,6 +23,11 @@ export class OrdersService {
     
     // 주문 아이템 계산
     const orderItems = items.map(item => {
+      // 필수 필드 검증
+      if (!item.productId || !item.quantity) {
+        throw new BadRequestException('상품 ID와 수량은 필수입니다.');
+      }
+      
       const product = mockProducts[item.productId];
       if (!product) {
         throw new BadRequestException(`상품 ID ${item.productId}를 찾을 수 없습니다.`);
@@ -42,7 +52,7 @@ export class OrdersService {
     if (couponId) {
       // Mock 쿠폰 데이터
       const mockCoupons = {
-        10: { discountRate: 10, minAmount: 10000 },
+        10: { discountRate: 10, minAmount: 5000 },  // 6000원 주문에 적용되도록 수정
         11: { discountRate: 20, minAmount: 20000 },
         12: { discountAmount: 1000, minAmount: 5000 },
         13: { discountAmount: 2000, minAmount: 10000 }
