@@ -37,8 +37,11 @@
   - API 기능별로 구체화하여 분리 작성
   - api 명세서에 명세된 api들로 재구성
 
-- **상태 다이어그램** ([da2455d](https://github.com/seuthootDev/hanghae-plus-backend/commit/da2455d))
+- **상태 다이어그램** ([da2455d](https://github.com/seuthootDev/hanghae-plus-backend/commit/da2455d77d14b1c0a6047505d0cafb43801eb2b4))
   - 작성 완료
+
+- **정책 문서** ([0197e0c](https://github.com/seuthootDev/hanghae-plus-backend/commit/0197e0cfdfaa0dc6a272f40ae267f53f1ee5bb31))
+  - 정책 문서 추가
 
 ## 🔍 리뷰 포인트
 
