@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, Min, Max } from 'class-validator';
+import { IsNumber, Min, Max, IsNotEmpty } from 'class-validator';
 
 export class ChargePointsDto {
   @ApiProperty({
@@ -11,5 +11,6 @@ export class ChargePointsDto {
   @IsNumber()
   @Min(1000)
   @Max(1000000)
+  @IsNotEmpty()
   amount: number;
 } 

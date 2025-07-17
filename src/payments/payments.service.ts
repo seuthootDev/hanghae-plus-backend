@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { ProcessPaymentDto } from './dto/process-payment.dto';
 import { PaymentResponseDto } from './dto/payment-response.dto';
 
@@ -31,18 +31,18 @@ export class PaymentsService {
     
     const order = mockOrders[orderId];
     if (!order) {
-      throw new Error(`주문 ID ${orderId}를 찾을 수 없습니다.`);
+      throw new BadRequestException(`주문 ID ${orderId}를 찾을 수 없습니다.`);
     }
     
     // Mock 사용자 포인트 데이터
     const mockUserPoints = {
       1: 15000,
-      2: 8000
+      2: 15000  // 12000 결제를 위해 충분한 포인트로 수정
     };
     
     const userPoints = mockUserPoints[order.userId];
     if (userPoints < order.finalAmount) {
-      throw new Error('포인트가 부족합니다.');
+      throw new BadRequestException('포인트가 부족합니다.');
     }
     
     // 결제 성공 처리

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderResponseDto } from './dto/order-response.dto';
 
@@ -20,7 +20,7 @@ export class OrdersService {
     const orderItems = items.map(item => {
       const product = mockProducts[item.productId];
       if (!product) {
-        throw new Error(`상품 ID ${item.productId}를 찾을 수 없습니다.`);
+        throw new BadRequestException(`상품 ID ${item.productId}를 찾을 수 없습니다.`);
       }
       
       return {
@@ -31,7 +31,7 @@ export class OrdersService {
     });
     
     // 총 금액 계산
-    const totalAmount = orderItems.reduce((sum, item) => {
+    let totalAmount = orderItems.reduce((sum, item) => {
       return sum + (item.price * item.quantity);
     }, 0);
     

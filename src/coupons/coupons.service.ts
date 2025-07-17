@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { IssueCouponDto } from './dto/issue-coupon.dto';
 import { CouponResponseDto } from './dto/coupon-response.dto';
 
@@ -19,7 +19,7 @@ export class CouponsService {
     
     const config = couponConfigs[couponType];
     if (!config) {
-      throw new Error(`유효하지 않은 쿠폰 타입입니다: ${couponType}`);
+      throw new BadRequestException(`유효하지 않은 쿠폰 타입입니다: ${couponType}`);
     }
     
     // Mock 쿠폰 소진 체크 (선착순 발급)
@@ -32,7 +32,7 @@ export class CouponsService {
     
     const issuedCount = mockIssuedCoupons[couponType];
     if (issuedCount >= 100) {
-      throw new Error('쿠폰이 소진되었습니다.');
+      throw new BadRequestException('쿠폰이 소진되었습니다.');
     }
     
     // 유효기간 계산
@@ -54,7 +54,7 @@ export class CouponsService {
     const mockUserCoupons: CouponResponseDto[] = [
       {
         couponId: 10,
-        userId,
+        userId: 1,
         couponType: 'DISCOUNT_10PERCENT',
         discountRate: 10,
         expiryDate: '2024-12-31',
@@ -62,7 +62,7 @@ export class CouponsService {
       },
       {
         couponId: 11,
-        userId,
+        userId: 1,
         couponType: 'FIXED_1000',
         discountRate: 0,
         expiryDate: '2024-11-30',
@@ -70,7 +70,7 @@ export class CouponsService {
       },
       {
         couponId: 12,
-        userId,
+        userId: 1,
         couponType: 'DISCOUNT_20PERCENT',
         discountRate: 20,
         expiryDate: '2024-10-15',
@@ -78,6 +78,7 @@ export class CouponsService {
       }
     ];
     
-    return mockUserCoupons;
+    // 사용자별 쿠폰 필터링
+    return mockUserCoupons.filter(coupon => coupon.userId === userId);
   }
 } 
