@@ -20,7 +20,7 @@ describe('Payments API (e2e)', () => {
   });
 
   describe('/payments/process (POST)', () => {
-    it('should process payment successfully', () => {
+    it('결제 처리가 성공적으로 완료되어야 한다', () => {
       const paymentData = {
         orderId: 100
       };
@@ -56,7 +56,7 @@ describe('Payments API (e2e)', () => {
         });
     });
 
-    it('should process payment for different order', () => {
+    it('다른 주문에 대한 결제 처리가 성공적으로 완료되어야 한다', () => {
       const paymentData = {
         orderId: 101
       };
@@ -84,7 +84,7 @@ describe('Payments API (e2e)', () => {
         });
     });
 
-    it('should return 400 for non-existent order', () => {
+    it('존재하지 않는 주문에 대해 400을 반환해야 한다', () => {
       const paymentData = {
         orderId: 999
       };
@@ -95,7 +95,7 @@ describe('Payments API (e2e)', () => {
         .expect(400);
     });
 
-    it('should return 400 for insufficient points', () => {
+    it('포인트가 부족한 경우 400을 반환해야 한다', () => {
       // Mock 서비스에서 포인트 부족 시나리오를 시뮬레이션
       const paymentData = {
         orderId: 102 // 존재하지 않는 주문 ID로 포인트 부족 시뮬레이션
@@ -107,7 +107,7 @@ describe('Payments API (e2e)', () => {
         .expect(400);
     });
 
-    it('should return 400 for missing orderId', () => {
+    it('주문 ID가 누락된 경우 400을 반환해야 한다', () => {
       const paymentData = {};
 
       return request(app.getHttpServer())
@@ -116,7 +116,7 @@ describe('Payments API (e2e)', () => {
         .expect(400);
     });
 
-    it('should return 400 for invalid orderId type', () => {
+    it('잘못된 주문 ID 타입에 대해 400을 반환해야 한다', () => {
       const paymentData = {
         orderId: 'invalid'
       };
@@ -127,7 +127,7 @@ describe('Payments API (e2e)', () => {
         .expect(400);
     });
 
-    it('should have valid paidAt timestamp', () => {
+    it('유효한 결제 시간 타임스탬프를 가져야 한다', () => {
       const paymentData = {
         orderId: 100
       };

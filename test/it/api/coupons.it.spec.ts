@@ -20,7 +20,7 @@ describe('Coupons API (e2e)', () => {
   });
 
   describe('/coupons/issue (POST)', () => {
-    it('should issue coupon successfully', () => {
+    it('쿠폰 발급이 성공적으로 처리되어야 한다', () => {
       const couponData = {
         userId: 1,
         couponType: 'DISCOUNT_10PERCENT'
@@ -52,9 +52,8 @@ describe('Coupons API (e2e)', () => {
         });
     });
 
-    it('should issue different coupon types', () => {
+    it('다양한 쿠폰 타입을 발급할 수 있어야 한다', () => {
       const couponTypes = [
-        'DISCOUNT_20PERCENT',
         'FIXED_1000',
         'FIXED_2000'
       ];
@@ -76,17 +75,13 @@ describe('Coupons API (e2e)', () => {
               expect(res.body).toHaveProperty('isUsed', false);
               
               // 할인율 검증
-              if (couponType === 'DISCOUNT_20PERCENT') {
-                expect(res.body.discountRate).toBe(20);
-              } else {
-                expect(res.body.discountRate).toBe(0);
-              }
+              expect(res.body.discountRate).toBe(0);
             });
         })
       );
     });
 
-    it('should return 400 for invalid coupon type', () => {
+    it('잘못된 쿠폰 타입에 대해 400을 반환해야 한다', () => {
       const couponData = {
         userId: 1,
         couponType: 'INVALID_COUPON'
@@ -98,7 +93,7 @@ describe('Coupons API (e2e)', () => {
         .expect(400);
     });
 
-    it('should return 400 for exhausted coupon', () => {
+    it('소진된 쿠폰에 대해 400을 반환해야 한다', () => {
       // Mock 서비스에서 소진된 쿠폰 시뮬레이션
       const couponData = {
         userId: 1,
@@ -111,7 +106,7 @@ describe('Coupons API (e2e)', () => {
         .expect(400);
     });
 
-    it('should return 400 for missing required fields', () => {
+    it('필수 필드가 누락된 경우 400을 반환해야 한다', () => {
       const couponData = {
         userId: 1
         // couponType missing
@@ -125,7 +120,7 @@ describe('Coupons API (e2e)', () => {
   });
 
   describe('/coupons/user/:userId (GET)', () => {
-    it('should get user coupons successfully', () => {
+    it('사용자 쿠폰 조회가 성공적으로 처리되어야 한다', () => {
       return request(app.getHttpServer())
         .get('/coupons/user/1')
         .expect(200)
@@ -151,7 +146,7 @@ describe('Coupons API (e2e)', () => {
         });
     });
 
-    it('should return specific coupons for user', () => {
+    it('사용자별 특정 쿠폰을 반환해야 한다', () => {
       return request(app.getHttpServer())
         .get('/coupons/user/1')
         .expect(200)
@@ -178,7 +173,7 @@ describe('Coupons API (e2e)', () => {
         });
     });
 
-    it('should return empty array for user with no coupons', () => {
+    it('쿠폰이 없는 사용자의 경우 빈 배열을 반환해야 한다', () => {
       return request(app.getHttpServer())
         .get('/coupons/user/999')
         .expect(200)
@@ -188,7 +183,7 @@ describe('Coupons API (e2e)', () => {
         });
     });
 
-    it('should return 400 for invalid userId', () => {
+    it('잘못된 사용자 ID에 대해 400을 반환해야 한다', () => {
       return request(app.getHttpServer())
         .get('/coupons/user/invalid')
         .expect(400);

@@ -20,7 +20,7 @@ describe('Users API (e2e)', () => {
   });
 
   describe('/users/:userId/points (POST)', () => {
-    it('should charge points successfully', () => {
+    it('포인트 충전이 성공적으로 처리되어야 한다', () => {
       return request(app.getHttpServer())
         .post('/users/1/points')
         .send({ amount: 10000 })
@@ -33,21 +33,21 @@ describe('Users API (e2e)', () => {
         });
     });
 
-    it('should return 400 for invalid amount (too low)', () => {
+    it('잘못된 금액(너무 낮음)에 대해 400을 반환해야 한다', () => {
       return request(app.getHttpServer())
         .post('/users/1/points')
         .send({ amount: 500 })
         .expect(400);
     });
 
-    it('should return 400 for invalid amount (too high)', () => {
+    it('잘못된 금액(너무 높음)에 대해 400을 반환해야 한다', () => {
       return request(app.getHttpServer())
         .post('/users/1/points')
         .send({ amount: 2000000 })
         .expect(400);
     });
 
-    it('should return 400 for missing amount', () => {
+    it('금액이 누락된 경우 400을 반환해야 한다', () => {
       return request(app.getHttpServer())
         .post('/users/1/points')
         .send({})
@@ -56,7 +56,7 @@ describe('Users API (e2e)', () => {
   });
 
   describe('/users/:userId/points (GET)', () => {
-    it('should get user points successfully', () => {
+    it('사용자 포인트 조회가 성공적으로 처리되어야 한다', () => {
       return request(app.getHttpServer())
         .get('/users/1/points')
         .expect(200)
@@ -68,7 +68,7 @@ describe('Users API (e2e)', () => {
         });
     });
 
-    it('should get different user points', () => {
+    it('다른 사용자의 포인트를 조회할 수 있어야 한다', () => {
       return request(app.getHttpServer())
         .get('/users/2/points')
         .expect(200)
@@ -79,7 +79,7 @@ describe('Users API (e2e)', () => {
         });
     });
 
-    it('should return 0 balance for non-existent user', () => {
+    it('존재하지 않는 사용자의 경우 잔액 0을 반환해야 한다', () => {
       return request(app.getHttpServer())
         .get('/users/999/points')
         .expect(200)

@@ -20,7 +20,7 @@ describe('Orders API (e2e)', () => {
   });
 
   describe('/orders (POST)', () => {
-    it('should create order successfully without coupon', () => {
+    it('쿠폰 없이 주문 생성이 성공적으로 처리되어야 한다', () => {
       const orderData = {
         userId: 1,
         items: [
@@ -62,7 +62,7 @@ describe('Orders API (e2e)', () => {
         });
     });
 
-    it('should create order successfully with coupon', () => {
+    it('쿠폰과 함께 주문 생성이 성공적으로 처리되어야 한다', () => {
       const orderData = {
         userId: 1,
         items: [
@@ -97,7 +97,7 @@ describe('Orders API (e2e)', () => {
         });
     });
 
-    it('should create order with multiple items', () => {
+    it('여러 상품으로 주문을 생성할 수 있어야 한다', () => {
       const orderData = {
         userId: 2,
         items: [
@@ -129,7 +129,7 @@ describe('Orders API (e2e)', () => {
         });
     });
 
-    it('should return 400 for non-existent product', () => {
+    it('존재하지 않는 상품에 대해 400을 반환해야 한다', () => {
       const orderData = {
         userId: 1,
         items: [
@@ -146,7 +146,7 @@ describe('Orders API (e2e)', () => {
         .expect(400);
     });
 
-    it('should return 400 for missing required fields', () => {
+    it('필수 필드가 누락된 경우 400을 반환해야 한다', () => {
       const orderData = {
         userId: 1
         // items missing
@@ -158,7 +158,7 @@ describe('Orders API (e2e)', () => {
         .expect(400);
     });
 
-    it('should return 400 for invalid item structure', () => {
+    it('잘못된 상품 구조에 대해 400을 반환해야 한다', () => {
       const orderData = {
         userId: 1,
         items: [

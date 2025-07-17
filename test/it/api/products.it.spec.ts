@@ -20,7 +20,7 @@ describe('Products API (e2e)', () => {
   });
 
   describe('/products (GET)', () => {
-    it('should get products list successfully', () => {
+    it('상품 목록 조회가 성공적으로 처리되어야 한다', () => {
       return request(app.getHttpServer())
         .get('/products')
         .expect(200)
@@ -48,7 +48,7 @@ describe('Products API (e2e)', () => {
         });
     });
 
-    it('should return specific products with correct data', () => {
+    it('정확한 데이터로 특정 상품들을 반환해야 한다', () => {
       return request(app.getHttpServer())
         .get('/products')
         .expect(200)
@@ -71,7 +71,7 @@ describe('Products API (e2e)', () => {
   });
 
   describe('/products/top-sellers (GET)', () => {
-    it('should get top sellers successfully', () => {
+    it('인기 상품 조회가 성공적으로 처리되어야 한다', () => {
       return request(app.getHttpServer())
         .get('/products/top-sellers')
         .expect(200)
@@ -101,7 +101,7 @@ describe('Products API (e2e)', () => {
         });
     });
 
-    it('should return top sellers in correct order', () => {
+    it('올바른 순서로 인기 상품을 반환해야 한다', () => {
       return request(app.getHttpServer())
         .get('/products/top-sellers')
         .expect(200)
@@ -120,7 +120,7 @@ describe('Products API (e2e)', () => {
         });
     });
 
-    it('should have correct revenue calculations', () => {
+    it('올바른 매출 계산을 해야 한다', () => {
       return request(app.getHttpServer())
         .get('/products/top-sellers')
         .expect(200)
