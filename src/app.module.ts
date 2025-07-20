@@ -1,18 +1,25 @@
-import { Module } from "@nestjs/common";
-// import { DatabaseModule } from "./database/database.module";
-import { UsersController } from "./users/users.controller";
-import { UsersService } from "./users/users.service";
-import { ProductsController } from "./products/products.controller";
-import { ProductsService } from "./products/products.service";
-import { OrdersController } from "./orders/orders.controller";
-import { OrdersService } from "./orders/orders.service";
-import { CouponsController } from "./coupons/coupons.controller";
-import { CouponsService } from "./coupons/coupons.service";
-import { PaymentsController } from "./payments/payments.controller";
-import { PaymentsService } from "./payments/payments.service";
+import { Module } from '@nestjs/common';
+// import { DatabaseModule } from './database/database.module';
+import { UsersController } from './presentation/controllers/users.controller';
+import { ProductsController } from './presentation/controllers/products.controller';
+import { OrdersController } from './presentation/controllers/orders.controller';
+import { CouponsController } from './presentation/controllers/coupons.controller';
+import { PaymentsController } from './presentation/controllers/payments.controller';
+import { UsersService } from './infrastructure/services/real/users.service';
+import { ProductsService } from './infrastructure/services/real/products.service';
+import { OrdersService } from './infrastructure/services/real/orders.service';
+import { CouponsService } from './infrastructure/services/real/coupons.service';
+import { PaymentsService } from './infrastructure/services/real/payments.service';
+import { USERS_SERVICE } from './application/interfaces/services/users-service.interface';
+import { PRODUCTS_SERVICE } from './application/interfaces/services/products-service.interface';
+import { ORDERS_SERVICE } from './application/interfaces/services/orders-service.interface';
+import { COUPONS_SERVICE } from './application/interfaces/services/coupons-service.interface';
+import { PAYMENTS_SERVICE } from './application/interfaces/services/payments-service.interface';
+import { ChargePointsUseCase } from './application/use-cases/charge-points.use-case';
+import { GetUserPointsUseCase } from './application/use-cases/get-user-points.use-case';
 
 @Module({
-  imports: [], // DatabaseModule 주석처리
+  imports: [],
   controllers: [
     UsersController,
     ProductsController,
@@ -21,11 +28,31 @@ import { PaymentsService } from "./payments/payments.service";
     PaymentsController
   ],
   providers: [
-    UsersService,
-    ProductsService,
-    OrdersService,
-    CouponsService,
-    PaymentsService
+    // 유스케이스들
+    ChargePointsUseCase,
+    GetUserPointsUseCase,
+    
+    // 인터페이스와 구현체 연결 (의존성 역전)
+    {
+      provide: USERS_SERVICE,
+      useClass: UsersService,
+    },
+    {
+      provide: PRODUCTS_SERVICE,
+      useClass: ProductsService,
+    },
+    {
+      provide: ORDERS_SERVICE,
+      useClass: OrdersService,
+    },
+    {
+      provide: COUPONS_SERVICE,
+      useClass: CouponsService,
+    },
+    {
+      provide: PAYMENTS_SERVICE,
+      useClass: PaymentsService,
+    },
   ],
 })
 export class AppModule {}

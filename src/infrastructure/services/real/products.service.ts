@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { ProductResponseDto } from './dto/product-response.dto';
-import { TopSellerResponseDto } from './dto/top-seller-response.dto';
+import { ProductResponseDto } from '../../../presentation/dto/productsDTO/product-response.dto';
+import { TopSellerResponseDto } from '../../../presentation/dto/productsDTO/top-seller-response.dto';
+import { ProductsServiceInterface } from '../../../application/interfaces/services/products-service.interface';
 
 @Injectable()
-export class ProductsService {
+export class ProductsService implements ProductsServiceInterface {
   
   async getProducts(): Promise<ProductResponseDto[]> {
     // Mock 비즈니스 로직: 상품 목록 조회

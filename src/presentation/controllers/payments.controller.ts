@@ -1,14 +1,17 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Inject } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { ProcessPaymentDto } from './dto/process-payment.dto';
-import { PaymentResponseDto } from './dto/payment-response.dto';
-import { PaymentsService } from './payments.service';
+import { ProcessPaymentDto } from '../dto/paymentsDTO/process-payment.dto';
+import { PaymentResponseDto } from '../dto/paymentsDTO/payment-response.dto';
+import { PaymentsServiceInterface, PAYMENTS_SERVICE } from '../../application/interfaces/services/payments-service.interface';
 
 @ApiTags('Payments')
 @Controller('payments')
 export class PaymentsController {
 
-  constructor(private readonly paymentsService: PaymentsService) {}
+  constructor(
+    @Inject(PAYMENTS_SERVICE)
+    private readonly paymentsService: PaymentsServiceInterface
+  ) {}
 
   @Post('process')
   @ApiOperation({ summary: '결제 처리' })

@@ -1,9 +1,10 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
-import { CreateOrderDto } from './dto/create-order.dto';
-import { OrderResponseDto } from './dto/order-response.dto';
+import { CreateOrderDto } from '../../../presentation/dto/ordersDTO/create-order.dto';
+import { OrderResponseDto } from '../../../presentation/dto/ordersDTO/order-response.dto';
+import { OrdersServiceInterface } from '../../../application/interfaces/services/orders-service.interface';
 
 @Injectable()
-export class OrdersService {
+export class OrdersService implements OrdersServiceInterface {
   
   async createOrder(createOrderDto: CreateOrderDto): Promise<OrderResponseDto> {
     // Mock 비즈니스 로직: 주문 생성

@@ -1,14 +1,17 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Inject } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { ProductResponseDto } from './dto/product-response.dto';
-import { TopSellerResponseDto } from './dto/top-seller-response.dto';
-import { ProductsService } from './products.service';
+import { ProductResponseDto } from '../dto/productsDTO/product-response.dto';
+import { TopSellerResponseDto } from '../dto/productsDTO/top-seller-response.dto';
+import { ProductsServiceInterface, PRODUCTS_SERVICE } from '../../application/interfaces/services/products-service.interface';
 
 @ApiTags('Products')
 @Controller('products')
 export class ProductsController {
 
-  constructor(private readonly productsService: ProductsService) {}
+  constructor(
+    @Inject(PRODUCTS_SERVICE)
+    private readonly productsService: ProductsServiceInterface
+  ) {}
 
   @Get()
   @ApiOperation({ summary: '상품 목록 조회' })

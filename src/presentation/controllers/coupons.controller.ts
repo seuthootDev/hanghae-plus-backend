@@ -1,14 +1,17 @@
-import { Controller, Post, Get, Body, Param, ParseIntPipe } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, ParseIntPipe, Inject } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
-import { IssueCouponDto } from './dto/issue-coupon.dto';
-import { CouponResponseDto } from './dto/coupon-response.dto';
-import { CouponsService } from './coupons.service';
+import { IssueCouponDto } from '../dto/couponsDTO/issue-coupon.dto';
+import { CouponResponseDto } from '../dto/couponsDTO/coupon-response.dto';
+import { CouponsServiceInterface, COUPONS_SERVICE } from '../../application/interfaces/services/coupons-service.interface';
 
 @ApiTags('Coupons')
 @Controller('coupons')
 export class CouponsController {
 
-  constructor(private readonly couponsService: CouponsService) {}
+  constructor(
+    @Inject(COUPONS_SERVICE)
+    private readonly couponsService: CouponsServiceInterface
+  ) {}
 
   @Post('issue')
   @ApiOperation({ summary: '쿠폰 발급' })

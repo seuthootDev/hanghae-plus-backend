@@ -1,9 +1,10 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
-import { ProcessPaymentDto } from './dto/process-payment.dto';
-import { PaymentResponseDto } from './dto/payment-response.dto';
+import { ProcessPaymentDto } from '../../../presentation/dto/paymentsDTO/process-payment.dto';
+import { PaymentResponseDto } from '../../../presentation/dto/paymentsDTO/payment-response.dto';
+import { PaymentsServiceInterface } from '../../../application/interfaces/services/payments-service.interface';
 
 @Injectable()
-export class PaymentsService {
+export class PaymentsService implements PaymentsServiceInterface {
   
   async processPayment(processPaymentDto: ProcessPaymentDto): Promise<PaymentResponseDto> {
     // Mock 비즈니스 로직: 결제 처리

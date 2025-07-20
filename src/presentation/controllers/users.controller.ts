@@ -1,14 +1,18 @@
-import { Controller, Post, Get, Param, Body, ParseIntPipe } from '@nestjs/common';
+import { Controller, Post, Get, Param, Body, ParseIntPipe, Inject } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
-import { ChargePointsDto } from './dto/charge-points.dto';
-import { PointsResponseDto } from './dto/points-response.dto';
-import { UsersService } from './users.service';
+import { ChargePointsDto } from '../dto/usersDTO/charge-points.dto';
+import { PointsResponseDto } from '../dto/usersDTO/points-response.dto';
+import { ChargePointsUseCase } from '../../application/use-cases/charge-points.use-case';
+import { GetUserPointsUseCase } from '../../application/use-cases/get-user-points.use-case';
 
 @ApiTags('Users')
 @Controller('users')
 export class UsersController {
   
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly chargePointsUseCase: ChargePointsUseCase,
+    private readonly getUserPointsUseCase: GetUserPointsUseCase
+  ) {}
   
   @Post(':userId/points')
   @ApiOperation({ summary: '포인트 충전' })
@@ -23,7 +27,7 @@ export class UsersController {
     @Param('userId', ParseIntPipe) userId: number,
     @Body() chargePointsDto: ChargePointsDto
   ): Promise<PointsResponseDto> {
-    return this.usersService.chargePoints(userId, chargePointsDto);
+    return this.chargePointsUseCase.execute(userId, chargePointsDto);
   }
 
   @Get(':userId/points')
@@ -37,6 +41,6 @@ export class UsersController {
   async getUserPoints(
     @Param('userId', ParseIntPipe) userId: number
   ): Promise<PointsResponseDto> {
-    return this.usersService.getUserPoints(userId);
+    return this.getUserPointsUseCase.execute(userId);
   }
 } 

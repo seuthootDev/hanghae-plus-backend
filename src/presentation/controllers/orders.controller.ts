@@ -1,14 +1,17 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Inject } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { CreateOrderDto } from './dto/create-order.dto';
-import { OrderResponseDto } from './dto/order-response.dto';
-import { OrdersService } from './orders.service';
+import { CreateOrderDto } from '../dto/ordersDTO/create-order.dto';
+import { OrderResponseDto } from '../dto/ordersDTO/order-response.dto';
+import { OrdersServiceInterface, ORDERS_SERVICE } from '../../application/interfaces/services/orders-service.interface';
 
 @ApiTags('Orders')
 @Controller('orders')
 export class OrdersController {
 
-  constructor(private readonly ordersService: OrdersService) {}
+  constructor(
+    @Inject(ORDERS_SERVICE)
+    private readonly ordersService: OrdersServiceInterface
+  ) {}
 
   @Post()
   @ApiOperation({ summary: '주문 생성' })

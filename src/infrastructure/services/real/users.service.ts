@@ -1,9 +1,10 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { ChargePointsDto } from './dto/charge-points.dto';
-import { PointsResponseDto } from './dto/points-response.dto';
+import { ChargePointsDto } from '../../../presentation/dto/usersDTO/charge-points.dto';
+import { PointsResponseDto } from '../../../presentation/dto/usersDTO/points-response.dto';
+import { UsersServiceInterface } from '../../../application/interfaces/services/users-service.interface';
 
 @Injectable()
-export class UsersService {
+export class UsersService implements UsersServiceInterface {
   
   async chargePoints(userId: number, chargePointsDto: ChargePointsDto): Promise<PointsResponseDto> {
     // Mock 비즈니스 로직: 포인트 충전

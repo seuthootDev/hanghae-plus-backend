@@ -1,9 +1,10 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { IssueCouponDto } from './dto/issue-coupon.dto';
-import { CouponResponseDto } from './dto/coupon-response.dto';
+import { IssueCouponDto } from '../../../presentation/dto/couponsDTO/issue-coupon.dto';
+import { CouponResponseDto } from '../../../presentation/dto/couponsDTO/coupon-response.dto';
+import { CouponsServiceInterface } from '../../../application/interfaces/services/coupons-service.interface';
 
 @Injectable()
-export class CouponsService {
+export class CouponsService implements CouponsServiceInterface {
   
   async issueCoupon(issueCouponDto: IssueCouponDto): Promise<CouponResponseDto> {
     // Mock 비즈니스 로직: 쿠폰 발급
