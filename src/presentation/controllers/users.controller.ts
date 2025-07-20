@@ -2,8 +2,8 @@ import { Controller, Post, Get, Param, Body, ParseIntPipe, Inject } from '@nestj
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { ChargePointsDto } from '../dto/usersDTO/charge-points.dto';
 import { PointsResponseDto } from '../dto/usersDTO/points-response.dto';
-import { ChargePointsUseCase } from '../../application/use-cases/charge-points.use-case';
-import { GetUserPointsUseCase } from '../../application/use-cases/get-user-points.use-case';
+import { ChargePointsUseCase } from '../../application/use-cases/users/charge-points.use-case';
+import { GetUserPointsUseCase } from '../../application/use-cases/users/get-user-points.use-case';
 
 @ApiTags('Users')
 @Controller('users')

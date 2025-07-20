@@ -1,16 +1,17 @@
-import { Controller, Get, Inject } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ProductResponseDto } from '../dto/productsDTO/product-response.dto';
 import { TopSellerResponseDto } from '../dto/productsDTO/top-seller-response.dto';
-import { ProductsServiceInterface, PRODUCTS_SERVICE } from '../../application/interfaces/services/products-service.interface';
+import { GetProductsUseCase } from '../../application/use-cases/products/get-products.use-case';
+import { GetTopSellersUseCase } from '../../application/use-cases/products/get-top-sellers.use-case';
 
 @ApiTags('Products')
 @Controller('products')
 export class ProductsController {
 
   constructor(
-    @Inject(PRODUCTS_SERVICE)
-    private readonly productsService: ProductsServiceInterface
+    private readonly getProductsUseCase: GetProductsUseCase,
+    private readonly getTopSellersUseCase: GetTopSellersUseCase
   ) {}
 
   @Get()
@@ -21,7 +22,7 @@ export class ProductsController {
     type: [ProductResponseDto]
   })
   async getProducts(): Promise<ProductResponseDto[]> {
-    return this.productsService.getProducts();
+    return this.getProductsUseCase.execute();
   }
 
   @Get('top-sellers')
@@ -32,6 +33,6 @@ export class ProductsController {
     type: [TopSellerResponseDto]
   })
   async getTopSellers(): Promise<TopSellerResponseDto[]> {
-    return this.productsService.getTopSellers();
+    return this.getTopSellersUseCase.execute();
   }
 } 

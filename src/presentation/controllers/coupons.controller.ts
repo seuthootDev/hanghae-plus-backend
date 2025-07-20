@@ -1,16 +1,17 @@
-import { Controller, Post, Get, Body, Param, ParseIntPipe, Inject } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, ParseIntPipe } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { IssueCouponDto } from '../dto/couponsDTO/issue-coupon.dto';
 import { CouponResponseDto } from '../dto/couponsDTO/coupon-response.dto';
-import { CouponsServiceInterface, COUPONS_SERVICE } from '../../application/interfaces/services/coupons-service.interface';
+import { IssueCouponUseCase } from '../../application/use-cases/coupons/issue-coupon.use-case';
+import { GetUserCouponsUseCase } from '../../application/use-cases/coupons/get-user-coupons.use-case';
 
 @ApiTags('Coupons')
 @Controller('coupons')
 export class CouponsController {
 
   constructor(
-    @Inject(COUPONS_SERVICE)
-    private readonly couponsService: CouponsServiceInterface
+    private readonly issueCouponUseCase: IssueCouponUseCase,
+    private readonly getUserCouponsUseCase: GetUserCouponsUseCase
   ) {}
 
   @Post('issue')
@@ -22,7 +23,7 @@ export class CouponsController {
   })
   @ApiResponse({ status: 400, description: '쿠폰 소진' })
   async issueCoupon(@Body() issueCouponDto: IssueCouponDto): Promise<CouponResponseDto> {
-    return this.couponsService.issueCoupon(issueCouponDto);
+    return this.issueCouponUseCase.execute(issueCouponDto);
   }
 
   @Get('user/:userId')
@@ -34,6 +35,6 @@ export class CouponsController {
     type: [CouponResponseDto]
   })
   async getUserCoupons(@Param('userId', ParseIntPipe) userId: number): Promise<CouponResponseDto[]> {
-    return this.couponsService.getUserCoupons(userId);
+    return this.getUserCouponsUseCase.execute(userId);
   }
 } 

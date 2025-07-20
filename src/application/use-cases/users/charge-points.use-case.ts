@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { ChargePointsDto } from '../../presentation/dto/usersDTO/charge-points.dto';
-import { PointsResponseDto } from '../../presentation/dto/usersDTO/points-response.dto';
-import { UsersServiceInterface, USERS_SERVICE } from '../interfaces/services/users-service.interface';
+import { ChargePointsDto } from '../../../presentation/dto/usersDTO/charge-points.dto';
+import { PointsResponseDto } from '../../../presentation/dto/usersDTO/points-response.dto';
+import { UsersServiceInterface, USERS_SERVICE } from '../../interfaces/services/users-service.interface';
 
 @Injectable()
 export class ChargePointsUseCase {

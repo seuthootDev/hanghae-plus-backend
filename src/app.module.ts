@@ -15,8 +15,14 @@ import { PRODUCTS_SERVICE } from './application/interfaces/services/products-ser
 import { ORDERS_SERVICE } from './application/interfaces/services/orders-service.interface';
 import { COUPONS_SERVICE } from './application/interfaces/services/coupons-service.interface';
 import { PAYMENTS_SERVICE } from './application/interfaces/services/payments-service.interface';
-import { ChargePointsUseCase } from './application/use-cases/charge-points.use-case';
-import { GetUserPointsUseCase } from './application/use-cases/get-user-points.use-case';
+import { ChargePointsUseCase } from './application/use-cases/users/charge-points.use-case';
+import { GetUserPointsUseCase } from './application/use-cases/users/get-user-points.use-case';
+import { GetProductsUseCase } from './application/use-cases/products/get-products.use-case';
+import { GetTopSellersUseCase } from './application/use-cases/products/get-top-sellers.use-case';
+import { CreateOrderUseCase } from './application/use-cases/orders/create-order.use-case';
+import { IssueCouponUseCase } from './application/use-cases/coupons/issue-coupon.use-case';
+import { GetUserCouponsUseCase } from './application/use-cases/coupons/get-user-coupons.use-case';
+import { ProcessPaymentUseCase } from './application/use-cases/payments/process-payment.use-case';
 
 @Module({
   imports: [],
@@ -31,6 +37,12 @@ import { GetUserPointsUseCase } from './application/use-cases/get-user-points.us
     // 유스케이스들
     ChargePointsUseCase,
     GetUserPointsUseCase,
+    GetProductsUseCase,
+    GetTopSellersUseCase,
+    CreateOrderUseCase,
+    IssueCouponUseCase,
+    GetUserCouponsUseCase,
+    ProcessPaymentUseCase,
     
     // 인터페이스와 구현체 연결 (의존성 역전)
     {
