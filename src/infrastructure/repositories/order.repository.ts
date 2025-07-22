@@ -1,60 +1,89 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { Order, OrderItem } from '../../domain/entities/order.entity';
 import { OrderRepositoryInterface } from '../../application/interfaces/repositories/order-repository.interface';
+import { OrderEntity } from './typeorm/order.entity';
 
 @Injectable()
 export class OrderRepository implements OrderRepositoryInterface {
-  private orders: Map<number, Order> = new Map();
-  private nextOrderId = 100;
-
-  constructor() {
-    // Mock 데이터 초기화
-    const mockOrderItems: OrderItem[] = [
-      { productId: 1, quantity: 2, price: 3000 },
-      { productId: 2, quantity: 1, price: 4000 }
-    ];
-
-    const order1 = new Order(
-      this.nextOrderId++,
-      1, // userId
-      mockOrderItems,
-      10000, // totalAmount
-      1000, // discountAmount
-      9000, // finalAmount
-      true, // couponUsed
-      'PENDING' // status
-    );
-
-    this.orders.set(order1.id, order1);
-  }
+  constructor(
+    @InjectRepository(OrderEntity)
+    private readonly orderRepository: Repository<OrderEntity>
+  ) {}
 
   async findById(id: number): Promise<Order | null> {
-    return this.orders.get(id) || null;
+    const orderEntity = await this.orderRepository.findOne({ where: { id } });
+    if (!orderEntity) {
+      return null;
+    }
+    
+    return new Order(
+      orderEntity.id,
+      orderEntity.userId,
+      orderEntity.items,
+      orderEntity.totalAmount,
+      orderEntity.discountAmount,
+      orderEntity.finalAmount,
+      orderEntity.couponUsed,
+      orderEntity.status
+    );
   }
 
   async save(order: Order): Promise<Order> {
-    if (!order.id) {
-      // 새 주문인 경우 ID 할당
-      const newOrder = new Order(
-        this.nextOrderId++,
-        order.userId,
-        order.items,
-        order.totalAmount,
-        order.discountAmount,
-        order.finalAmount,
-        order.couponUsed,
-        order.status
-      );
-      this.orders.set(newOrder.id, newOrder);
-      return newOrder;
-    } else {
+    let orderEntity: OrderEntity;
+    
+    if (order.id) {
       // 기존 주문 업데이트
-      this.orders.set(order.id, order);
-      return order;
+      orderEntity = await this.orderRepository.findOne({ where: { id: order.id } });
+      if (!orderEntity) {
+        throw new Error('주문을 찾을 수 없습니다.');
+      }
+      orderEntity.items = order.items;
+      orderEntity.totalAmount = order.totalAmount;
+      orderEntity.discountAmount = order.discountAmount;
+      orderEntity.finalAmount = order.finalAmount;
+      orderEntity.couponUsed = order.couponUsed;
+      orderEntity.status = order.status;
+    } else {
+      // 새 주문 생성
+      orderEntity = this.orderRepository.create({
+        userId: order.userId,
+        items: order.items,
+        totalAmount: order.totalAmount,
+        discountAmount: order.discountAmount,
+        finalAmount: order.finalAmount,
+        couponUsed: order.couponUsed,
+        status: order.status
+      });
     }
+    
+    const savedEntity = await this.orderRepository.save(orderEntity);
+    
+    return new Order(
+      savedEntity.id,
+      savedEntity.userId,
+      savedEntity.items,
+      savedEntity.totalAmount,
+      savedEntity.discountAmount,
+      savedEntity.finalAmount,
+      savedEntity.couponUsed,
+      savedEntity.status
+    );
   }
 
   async findByUserId(userId: number): Promise<Order[]> {
-    return Array.from(this.orders.values()).filter(order => order.userId === userId);
+    const orderEntities = await this.orderRepository.find({ where: { userId } });
+    
+    return orderEntities.map(entity => new Order(
+      entity.id,
+      entity.userId,
+      entity.items,
+      entity.totalAmount,
+      entity.discountAmount,
+      entity.finalAmount,
+      entity.couponUsed,
+      entity.status
+    ));
   }
 } 

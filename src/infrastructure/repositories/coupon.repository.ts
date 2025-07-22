@@ -1,74 +1,99 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { Coupon } from '../../domain/entities/coupon.entity';
 import { CouponRepositoryInterface } from '../../application/interfaces/repositories/coupon-repository.interface';
+import { CouponEntity } from './typeorm/coupon.entity';
 
 @Injectable()
 export class CouponRepository implements CouponRepositoryInterface {
-  private coupons: Map<number, Coupon> = new Map();
-  private nextCouponId = 10;
-
-  constructor() {
-    // Mock 데이터 초기화
-    const expiryDate1 = new Date();
-    expiryDate1.setDate(expiryDate1.getDate() + 30);
-
-    const expiryDate2 = new Date();
-    expiryDate2.setDate(expiryDate2.getDate() + 15);
-
-    const coupon1 = new Coupon(
-      this.nextCouponId++,
-      1, // userId
-      'DISCOUNT_10PERCENT',
-      10, // discountRate
-      0, // discountAmount
-      expiryDate1,
-      false // isUsed
-    );
-
-    const coupon2 = new Coupon(
-      this.nextCouponId++,
-      1, // userId
-      'FIXED_1000',
-      0, // discountRate
-      1000, // discountAmount
-      expiryDate2,
-      true // isUsed
-    );
-
-    this.coupons.set(coupon1.id, coupon1);
-    this.coupons.set(coupon2.id, coupon2);
-  }
+  constructor(
+    @InjectRepository(CouponEntity)
+    private readonly couponRepository: Repository<CouponEntity>
+  ) {}
 
   async findById(id: number): Promise<Coupon | null> {
-    return this.coupons.get(id) || null;
+    const couponEntity = await this.couponRepository.findOne({ where: { id } });
+    if (!couponEntity) {
+      return null;
+    }
+    
+    return new Coupon(
+      couponEntity.id,
+      couponEntity.userId,
+      couponEntity.couponType,
+      couponEntity.discountRate,
+      couponEntity.discountAmount,
+      couponEntity.expiryDate,
+      couponEntity.isUsed
+    );
   }
 
   async save(coupon: Coupon): Promise<Coupon> {
-    if (!coupon.id) {
-      // 새 쿠폰인 경우 ID 할당
-      const newCoupon = new Coupon(
-        this.nextCouponId++,
-        coupon.userId,
-        coupon.couponType,
-        coupon.discountRate,
-        coupon.discountAmount,
-        coupon.expiryDate,
-        coupon.isUsed
-      );
-      this.coupons.set(newCoupon.id, newCoupon);
-      return newCoupon;
-    } else {
+    let couponEntity: CouponEntity;
+    
+    if (coupon.id) {
       // 기존 쿠폰 업데이트
-      this.coupons.set(coupon.id, coupon);
-      return coupon;
+      couponEntity = await this.couponRepository.findOne({ where: { id: coupon.id } });
+      if (!couponEntity) {
+        throw new Error('쿠폰을 찾을 수 없습니다.');
+      }
+      couponEntity.userId = coupon.userId;
+      couponEntity.couponType = coupon.couponType;
+      couponEntity.discountRate = coupon.discountRate;
+      couponEntity.discountAmount = coupon.discountAmount;
+      couponEntity.expiryDate = coupon.expiryDate;
+      couponEntity.isUsed = coupon.isUsed;
+    } else {
+      // 새 쿠폰 생성
+      couponEntity = this.couponRepository.create({
+        userId: coupon.userId,
+        couponType: coupon.couponType,
+        discountRate: coupon.discountRate,
+        discountAmount: coupon.discountAmount,
+        expiryDate: coupon.expiryDate,
+        isUsed: coupon.isUsed
+      });
     }
+    
+    const savedEntity = await this.couponRepository.save(couponEntity);
+    
+    return new Coupon(
+      savedEntity.id,
+      savedEntity.userId,
+      savedEntity.couponType,
+      savedEntity.discountRate,
+      savedEntity.discountAmount,
+      savedEntity.expiryDate,
+      savedEntity.isUsed
+    );
   }
 
   async findByUserId(userId: number): Promise<Coupon[]> {
-    return Array.from(this.coupons.values()).filter(coupon => coupon.userId === userId);
+    const couponEntities = await this.couponRepository.find({ where: { userId } });
+    
+    return couponEntities.map(entity => new Coupon(
+      entity.id,
+      entity.userId,
+      entity.couponType,
+      entity.discountRate,
+      entity.discountAmount,
+      entity.expiryDate,
+      entity.isUsed
+    ));
   }
 
   async findByType(couponType: string): Promise<Coupon[]> {
-    return Array.from(this.coupons.values()).filter(coupon => coupon.couponType === couponType);
+    const couponEntities = await this.couponRepository.find({ where: { couponType } });
+    
+    return couponEntities.map(entity => new Coupon(
+      entity.id,
+      entity.userId,
+      entity.couponType,
+      entity.discountRate,
+      entity.discountAmount,
+      entity.expiryDate,
+      entity.isUsed
+    ));
   }
 } 

@@ -1,70 +1,98 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { Payment } from '../../domain/entities/payment.entity';
 import { PaymentRepositoryInterface } from '../../application/interfaces/repositories/payment-repository.interface';
+import { PaymentEntity } from './typeorm/payment.entity';
 
 @Injectable()
 export class PaymentRepository implements PaymentRepositoryInterface {
-  private payments: Map<number, Payment> = new Map();
-  private nextPaymentId = 1;
-
-  constructor() {
-    // Mock 데이터 초기화
-    const payment1 = new Payment(
-      this.nextPaymentId++,
-      100, // orderId
-      1, // userId
-      6000, // totalAmount
-      600, // discountAmount
-      5400, // finalAmount
-      true, // couponUsed
-      'SUCCESS', // status
-      new Date() // paidAt
-    );
-
-    const payment2 = new Payment(
-      this.nextPaymentId++,
-      101, // orderId
-      2, // userId
-      12000, // totalAmount
-      0, // discountAmount
-      12000, // finalAmount
-      false, // couponUsed
-      'SUCCESS', // status
-      new Date() // paidAt
-    );
-
-    this.payments.set(payment1.id, payment1);
-    this.payments.set(payment2.id, payment2);
-  }
+  constructor(
+    @InjectRepository(PaymentEntity)
+    private readonly paymentRepository: Repository<PaymentEntity>
+  ) {}
 
   async findById(id: number): Promise<Payment | null> {
-    return this.payments.get(id) || null;
+    const paymentEntity = await this.paymentRepository.findOne({ where: { id } });
+    if (!paymentEntity) {
+      return null;
+    }
+    
+    return new Payment(
+      paymentEntity.id,
+      paymentEntity.orderId,
+      paymentEntity.userId,
+      paymentEntity.totalAmount,
+      paymentEntity.discountAmount,
+      paymentEntity.finalAmount,
+      paymentEntity.couponUsed,
+      paymentEntity.status,
+      paymentEntity.paidAt
+    );
   }
 
   async save(payment: Payment): Promise<Payment> {
-    if (!payment.id) {
-      // 새 결제인 경우 ID 할당
-      const newPayment = new Payment(
-        this.nextPaymentId++,
-        payment.orderId,
-        payment.userId,
-        payment.totalAmount,
-        payment.discountAmount,
-        payment.finalAmount,
-        payment.couponUsed,
-        payment.status,
-        payment.paidAt
-      );
-      this.payments.set(newPayment.id, newPayment);
-      return newPayment;
-    } else {
+    let paymentEntity: PaymentEntity;
+    
+    if (payment.id) {
       // 기존 결제 업데이트
-      this.payments.set(payment.id, payment);
-      return payment;
+      paymentEntity = await this.paymentRepository.findOne({ where: { id: payment.id } });
+      if (!paymentEntity) {
+        throw new Error('결제를 찾을 수 없습니다.');
+      }
+      paymentEntity.orderId = payment.orderId;
+      paymentEntity.userId = payment.userId;
+      paymentEntity.totalAmount = payment.totalAmount;
+      paymentEntity.discountAmount = payment.discountAmount;
+      paymentEntity.finalAmount = payment.finalAmount;
+      paymentEntity.couponUsed = payment.couponUsed;
+      paymentEntity.status = payment.status;
+      paymentEntity.paidAt = payment.paidAt;
+    } else {
+      // 새 결제 생성
+      paymentEntity = this.paymentRepository.create({
+        orderId: payment.orderId,
+        userId: payment.userId,
+        totalAmount: payment.totalAmount,
+        discountAmount: payment.discountAmount,
+        finalAmount: payment.finalAmount,
+        couponUsed: payment.couponUsed,
+        status: payment.status,
+        paidAt: payment.paidAt
+      });
     }
+    
+    const savedEntity = await this.paymentRepository.save(paymentEntity);
+    
+    return new Payment(
+      savedEntity.id,
+      savedEntity.orderId,
+      savedEntity.userId,
+      savedEntity.totalAmount,
+      savedEntity.discountAmount,
+      savedEntity.finalAmount,
+      savedEntity.couponUsed,
+      savedEntity.status,
+      savedEntity.paidAt
+    );
   }
 
   async findByOrderId(orderId: number): Promise<Payment | null> {
-    return Array.from(this.payments.values()).find(payment => payment.orderId === orderId) || null;
+    const paymentEntity = await this.paymentRepository.findOne({ where: { orderId } });
+    if (!paymentEntity) {
+      return null;
+    }
+    
+    return new Payment(
+      paymentEntity.id,
+      paymentEntity.orderId,
+      paymentEntity.userId,
+      paymentEntity.totalAmount,
+      paymentEntity.discountAmount,
+      paymentEntity.finalAmount,
+      paymentEntity.couponUsed,
+      paymentEntity.status,
+      paymentEntity.paidAt
+    );
   }
 } 
