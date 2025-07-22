@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
-// import { DatabaseModule } from './database/database.module';
+import { DatabaseModule } from './database/database.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersController } from './presentation/controllers/users.controller';
 import { ProductsController } from './presentation/controllers/products.controller';
 import { OrdersController } from './presentation/controllers/orders.controller';
@@ -33,9 +34,23 @@ import { ProductRepository } from './infrastructure/repositories/product.reposit
 import { OrderRepository } from './infrastructure/repositories/order.repository';
 import { CouponRepository } from './infrastructure/repositories/coupon.repository';
 import { PaymentRepository } from './infrastructure/repositories/payment.repository';
+import { UserEntity } from './infrastructure/repositories/typeorm/user.entity';
+import { ProductEntity } from './infrastructure/repositories/typeorm/product.entity';
+import { OrderEntity } from './infrastructure/repositories/typeorm/order.entity';
+import { CouponEntity } from './infrastructure/repositories/typeorm/coupon.entity';
+import { PaymentEntity } from './infrastructure/repositories/typeorm/payment.entity';
 
 @Module({
-  imports: [],
+  imports: [
+    DatabaseModule,
+    TypeOrmModule.forFeature([
+      UserEntity,
+      ProductEntity,
+      OrderEntity,
+      CouponEntity,
+      PaymentEntity
+    ])
+  ],
   controllers: [
     UsersController,
     ProductsController,
