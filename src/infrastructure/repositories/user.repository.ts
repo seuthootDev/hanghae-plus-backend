@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { User } from '../../domain/entities/user.entity';
-import { UserRepository } from '../../application/interfaces/repositories/user-repository.interface';
+import { UserRepositoryInterface } from '../../application/interfaces/repositories/user-repository.interface';
 
 @Injectable()
-export class MockUserRepository implements UserRepository {
+export class UserRepository implements UserRepositoryInterface {
   private users: Map<number, User> = new Map();
 
   constructor() {
@@ -28,9 +28,9 @@ export class MockUserRepository implements UserRepository {
       throw new Error('사용자를 찾을 수 없습니다.');
     }
     
-    // 새로운 User 객체 생성 (불변성 유지)
-    const updatedUser = new User(user.id, user.name, user.email, points);
-    this.users.set(userId, updatedUser);
-    return updatedUser;
+    // 포인트 업데이트
+    user.chargePoints(points - user.points); // 차이값만큼 충전
+    this.users.set(userId, user);
+    return user;
   }
 } 
