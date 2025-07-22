@@ -9,6 +9,9 @@ export class DatabaseSeeder {
   async seed() {
     console.log('🌱 데이터베이스 시딩 시작...');
 
+    // 테이블이 생성될 때까지 기다립니다
+    await this.waitForTables();
+
     // 사용자 시딩
     await this.seedUsers();
     
@@ -19,6 +22,27 @@ export class DatabaseSeeder {
     await this.seedCoupons();
 
     console.log('✅ 데이터베이스 시딩 완료!');
+  }
+
+  private async waitForTables() {
+    console.log('⏳ 테이블 생성 대기 중...');
+    let retries = 0;
+    const maxRetries = 30; // 30초 대기
+
+    while (retries < maxRetries) {
+      try {
+        // users 테이블이 존재하는지 확인
+        await this.dataSource.query('SELECT 1 FROM users LIMIT 1');
+        console.log('✅ 테이블이 준비되었습니다!');
+        return;
+      } catch (error) {
+        retries++;
+        console.log(`⏳ 테이블 대기 중... (${retries}/${maxRetries})`);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    }
+    
+    throw new Error('테이블 생성 시간 초과');
   }
 
   private async seedUsers() {

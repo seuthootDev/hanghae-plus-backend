@@ -15,7 +15,7 @@ import { DatabaseConfig, dbConfig } from "./database.config";
       useFactory: (configService: ConfigService) => ({
         type: "mysql",
         ...configService.get<DatabaseConfig>("database"),
-        synchronize: false,
+        synchronize: process.env.NODE_ENV === 'development',
         autoLoadEntities: true,
         relationLoadStrategy: "join",
       }),
