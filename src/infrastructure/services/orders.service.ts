@@ -26,7 +26,7 @@ export class OrdersService implements OrdersServiceInterface {
     private readonly userValidationService: UserValidationService
   ) {}
 
-  async createOrder(createOrderDto: CreateOrderDto): Promise<OrderResponseDto> {
+  async createOrder(createOrderDto: CreateOrderDto): Promise<Order> {
     const { userId, items, couponId } = createOrderDto;
     
     try {
@@ -95,19 +95,10 @@ export class OrdersService implements OrdersServiceInterface {
         'PENDING'
       );
       
-      // 주문 저장
-      const savedOrder = await this.orderRepository.save(order);
-      
-      return {
-        orderId: savedOrder.id,
-        userId: savedOrder.userId,
-        items: savedOrder.items,
-        totalAmount: savedOrder.totalAmount,
-        discountAmount: savedOrder.discountAmount,
-        finalAmount: savedOrder.finalAmount,
-        couponUsed: savedOrder.couponUsed,
-        status: savedOrder.status
-      };
+          // 주문 저장
+    const savedOrder = await this.orderRepository.save(order);
+    
+    return savedOrder;
     } catch (error) {
       // 도메인 예외를 HTTP 예외로 변환
       if (error.message.includes('주문 상품이 필요합니다')) {

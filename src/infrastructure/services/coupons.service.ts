@@ -15,7 +15,7 @@ export class CouponsService implements CouponsServiceInterface {
     private readonly couponValidationService: CouponValidationService
   ) {}
 
-  async issueCoupon(issueCouponDto: IssueCouponDto): Promise<CouponResponseDto> {
+  async issueCoupon(issueCouponDto: IssueCouponDto): Promise<Coupon> {
     const { userId, couponType } = issueCouponDto;
     
     try {
@@ -53,14 +53,7 @@ export class CouponsService implements CouponsServiceInterface {
       // 쿠폰 저장
       const savedCoupon = await this.couponRepository.save(coupon);
       
-      return {
-        couponId: savedCoupon.id,
-        userId: savedCoupon.userId,
-        couponType: savedCoupon.couponType,
-        discountRate: savedCoupon.discountRate,
-        expiryDate: savedCoupon.expiryDate.toISOString().split('T')[0], // YYYY-MM-DD 형식
-        isUsed: savedCoupon.isUsed
-      };
+      return savedCoupon;
     } catch (error) {
       // 도메인 예외를 HTTP 예외로 변환
       if (error.message.includes('유효하지 않은 쿠폰 타입입니다')) {
@@ -73,16 +66,8 @@ export class CouponsService implements CouponsServiceInterface {
     }
   }
 
-  async getUserCoupons(userId: number): Promise<CouponResponseDto[]> {
+  async getUserCoupons(userId: number): Promise<Coupon[]> {
     const coupons = await this.couponRepository.findByUserId(userId);
-    
-    return coupons.map(coupon => ({
-      couponId: coupon.id,
-      userId: coupon.userId,
-      couponType: coupon.couponType,
-      discountRate: coupon.discountRate,
-      expiryDate: coupon.expiryDate.toISOString().split('T')[0],
-      isUsed: coupon.isUsed
-    }));
+    return coupons;
   }
 } 

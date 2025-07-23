@@ -4,6 +4,7 @@ import { PointsResponseDto } from '../../presentation/dto/usersDTO/points-respon
 import { UsersServiceInterface } from '../../application/interfaces/services/users-service.interface';
 import { UserRepositoryInterface, USER_REPOSITORY } from '../../application/interfaces/repositories/user-repository.interface';
 import { UserValidationService } from '../../domain/services/user-validation.service';
+import { User } from '../../domain/entities/user.entity';
 
 @Injectable()
 export class UsersService implements UsersServiceInterface {
@@ -14,7 +15,7 @@ export class UsersService implements UsersServiceInterface {
     private readonly userValidationService: UserValidationService
   ) {}
 
-  async chargePoints(userId: number, chargePointsDto: ChargePointsDto): Promise<PointsResponseDto> {
+  async chargePoints(userId: number, chargePointsDto: ChargePointsDto): Promise<User> {
     const { amount } = chargePointsDto;
     
     try {
@@ -30,10 +31,7 @@ export class UsersService implements UsersServiceInterface {
       // 저장
       const updatedUser = await this.userRepository.save(user!);
       
-      return {
-        userId: updatedUser.id,
-        balance: updatedUser.points
-      };
+      return updatedUser;
     } catch (error) {
       // 도메인 예외를 HTTP 예외로 변환
       if (error.message.includes('포인트 충전 금액')) {
@@ -49,17 +47,14 @@ export class UsersService implements UsersServiceInterface {
     }
   }
 
-  async getUserPoints(userId: number): Promise<PointsResponseDto> {
+  async getUserPoints(userId: number): Promise<User> {
     try {
       const user = await this.userRepository.findById(userId);
       
       // 도메인 서비스를 사용한 검증
       this.userValidationService.validateUserExists(user);
       
-      return {
-        userId: user!.id,
-        balance: user!.points
-      };
+      return user!;
     } catch (error) {
       // 도메인 예외를 HTTP 예외로 변환
       if (error.message.includes('사용자를 찾을 수 없습니다')) {

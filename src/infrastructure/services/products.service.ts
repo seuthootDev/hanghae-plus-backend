@@ -4,6 +4,7 @@ import { TopSellerResponseDto } from '../../presentation/dto/productsDTO/top-sel
 import { ProductsServiceInterface } from '../../application/interfaces/services/products-service.interface';
 import { ProductRepositoryInterface, PRODUCT_REPOSITORY } from '../../application/interfaces/repositories/product-repository.interface';
 import { ProductValidationService } from '../../domain/services/product-validation.service';
+import { Product } from '../../domain/entities/product.entity';
 
 @Injectable()
 export class ProductsService implements ProductsServiceInterface {
@@ -14,7 +15,7 @@ export class ProductsService implements ProductsServiceInterface {
     private readonly productValidationService: ProductValidationService
   ) {}
   
-  async getProducts(): Promise<ProductResponseDto[]> {
+  async getProducts(): Promise<Product[]> {
     try {
       const products = await this.productRepository.findAll();
       
@@ -23,13 +24,7 @@ export class ProductsService implements ProductsServiceInterface {
         this.productValidationService.validateProductExists(product);
       });
       
-      return products.map(product => ({
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        stock: product.stock,
-        category: product.category
-      }));
+      return products;
     } catch (error) {
       // 도메인 예외를 HTTP 예외로 변환
       if (error.message.includes('상품을 찾을 수 없습니다')) {
@@ -39,15 +34,8 @@ export class ProductsService implements ProductsServiceInterface {
     }
   }
 
-  async getTopSellers(): Promise<TopSellerResponseDto[]> {
+  async getTopSellers(): Promise<Product[]> {
     const topSellers = await this.productRepository.findTopSellers();
-    
-    return topSellers.map(product => ({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      salesCount: product.salesCount,
-      totalRevenue: product.totalRevenue
-    }));
+    return topSellers;
   }
 } 

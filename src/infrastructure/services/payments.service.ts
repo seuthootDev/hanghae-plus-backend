@@ -23,7 +23,7 @@ export class PaymentsService implements PaymentsServiceInterface {
     private readonly userValidationService: UserValidationService
   ) {}
 
-  async processPayment(processPaymentDto: ProcessPaymentDto): Promise<PaymentResponseDto> {
+  async processPayment(processPaymentDto: ProcessPaymentDto): Promise<Payment> {
     const { orderId } = processPaymentDto;
     
     try {
@@ -60,16 +60,7 @@ export class PaymentsService implements PaymentsServiceInterface {
       user!.usePoints(order!.finalAmount);
       await this.userRepository.save(user!);
       
-      return {
-        paymentId: savedPayment.id,
-        orderId: savedPayment.orderId,
-        totalAmount: savedPayment.totalAmount,
-        discountAmount: savedPayment.discountAmount,
-        finalAmount: savedPayment.finalAmount,
-        couponUsed: savedPayment.couponUsed,
-        status: savedPayment.status,
-        paidAt: savedPayment.paidAt
-      };
+      return savedPayment;
     } catch (error) {
       // 도메인 예외를 HTTP 예외로 변환
       if (error.message.includes('주문을 찾을 수 없습니다')) {
