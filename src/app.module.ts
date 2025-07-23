@@ -39,6 +39,11 @@ import { ProductEntity } from './infrastructure/repositories/typeorm/product.ent
 import { OrderEntity } from './infrastructure/repositories/typeorm/order.entity';
 import { CouponEntity } from './infrastructure/repositories/typeorm/coupon.entity';
 import { PaymentEntity } from './infrastructure/repositories/typeorm/payment.entity';
+import { OrderValidationService } from './domain/services/order-validation.service';
+import { UserValidationService } from './domain/services/user-validation.service';
+import { PaymentValidationService } from './domain/services/payment-validation.service';
+import { CouponValidationService } from './domain/services/coupon-validation.service';
+import { ProductValidationService } from './domain/services/product-validation.service';
 
 @Module({
   imports: [
@@ -112,6 +117,13 @@ import { PaymentEntity } from './infrastructure/repositories/typeorm/payment.ent
       provide: PAYMENT_REPOSITORY,
       useClass: PaymentRepository,
     },
+    
+    // 도메인 서비스들
+    OrderValidationService,
+    UserValidationService,
+    PaymentValidationService,
+    CouponValidationService,
+    ProductValidationService,
   ],
 })
 export class AppModule {}
