@@ -28,6 +28,9 @@ export class Product {
   }
 
   decreaseStock(quantity: number): void {
+    if (quantity < 0) {
+      throw new Error('수량은 음수일 수 없습니다.');
+    }
     if (!this.hasStock(quantity)) {
       throw new Error('재고가 부족합니다.');
     }

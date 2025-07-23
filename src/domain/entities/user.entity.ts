@@ -12,18 +12,18 @@ export class User {
   }
 
   chargePoints(amount: number): void {
-    if (amount < 1000 || amount > 1000000) {
-      throw new Error('포인트 충전 금액은 1,000원 ~ 1,000,000원 사이여야 합니다.');
+    if (amount < 0) {
+      throw new Error('포인트는 음수일 수 없습니다.');
     }
     this._points += amount;
   }
 
   usePoints(amount: number): void {
+    if (amount < 0) {
+      throw new Error('포인트는 음수일 수 없습니다.');
+    }
     if (amount > this._points) {
       throw new Error('포인트가 부족합니다.');
-    }
-    if (amount < 1000) {
-      throw new Error('최소 사용 금액은 1,000원입니다.');
     }
     this._points -= amount;
   }

@@ -16,12 +16,6 @@ export class Coupon {
 
   // 쿠폰 관련 비즈니스 로직
   use(): void {
-    if (this._isUsed) {
-      throw new Error('이미 사용된 쿠폰입니다.');
-    }
-    if (this.isExpired()) {
-      throw new Error('만료된 쿠폰입니다.');
-    }
     this._isUsed = true;
   }
 
