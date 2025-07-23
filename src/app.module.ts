@@ -44,6 +44,16 @@ import { UserValidationService } from './domain/services/user-validation.service
 import { PaymentValidationService } from './domain/services/payment-validation.service';
 import { CouponValidationService } from './domain/services/coupon-validation.service';
 import { ProductValidationService } from './domain/services/product-validation.service';
+import { UserPresenter } from './infrastructure/presenters/user.presenter';
+import { OrderPresenter } from './infrastructure/presenters/order.presenter';
+import { ProductPresenter } from './infrastructure/presenters/product.presenter';
+import { CouponPresenter } from './infrastructure/presenters/coupon.presenter';
+import { PaymentPresenter } from './infrastructure/presenters/payment.presenter';
+import { USER_PRESENTER } from './application/interfaces/presenters/user-presenter.interface';
+import { ORDER_PRESENTER } from './application/interfaces/presenters/order-presenter.interface';
+import { PRODUCT_PRESENTER } from './application/interfaces/presenters/product-presenter.interface';
+import { COUPON_PRESENTER } from './application/interfaces/presenters/coupon-presenter.interface';
+import { PAYMENT_PRESENTER } from './application/interfaces/presenters/payment-presenter.interface';
 
 @Module({
   imports: [
@@ -124,6 +134,28 @@ import { ProductValidationService } from './domain/services/product-validation.s
     PaymentValidationService,
     CouponValidationService,
     ProductValidationService,
+    
+    // Presenter 인터페이스와 구현체 연결
+    {
+      provide: USER_PRESENTER,
+      useClass: UserPresenter,
+    },
+    {
+      provide: ORDER_PRESENTER,
+      useClass: OrderPresenter,
+    },
+    {
+      provide: PRODUCT_PRESENTER,
+      useClass: ProductPresenter,
+    },
+    {
+      provide: COUPON_PRESENTER,
+      useClass: CouponPresenter,
+    },
+    {
+      provide: PAYMENT_PRESENTER,
+      useClass: PaymentPresenter,
+    },
   ],
 })
 export class AppModule {}
