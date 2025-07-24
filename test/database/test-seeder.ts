@@ -23,11 +23,11 @@ export class TestSeeder {
   ) {}
 
   async seedTestData(): Promise<void> {
-    // 사용자 데이터
+    // 테스트용 사용자 데이터 (빠른 테스트 실행을 위해 하드코딩)
     const users = [
-      { name: 'Test User 1', email: 'test1@example.com', points: 25000 },
-      { name: 'Test User 2', email: 'test2@example.com', points: 15000 },
-      { name: 'Test User 3', email: 'test3@example.com', points: 0 },
+      { name: 'Test User 1', email: 'test1@example.com', password: 'hashed_password123', points: 25000 },
+      { name: 'Test User 2', email: 'test2@example.com', password: 'hashed_password123', points: 15000 },
+      { name: 'Test User 3', email: 'test3@example.com', password: 'hashed_password123', points: 0 },
     ];
 
     for (const userData of users) {
