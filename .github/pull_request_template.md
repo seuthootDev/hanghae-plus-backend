@@ -1,13 +1,17 @@
 ## :pushpin: PR 제목 규칙
 [STEP05] 이름 - 선택 시나리오 (e-commerce)
-([아키텍처 분석](https://github.com/seuthootDev/hanghae-plus-backend/blob/step05/docs/%EC%95%84%ED%82%A4%ED%85%8D%EC%B2%98_%EB%B6%84%EC%84%9D.md))
+
+[아키텍처 분석](https://github.com/seuthootDev/hanghae-plus-backend/blob/step05/docs/%EC%95%84%ED%82%A4%ED%85%8D%EC%B2%98_%EB%B6%84%EC%84%9D.md)
+
+[레이어별 책임](https://github.com/seuthootDev/hanghae-plus-backend/blob/step06/README.md)
+
 ---
 ### **핵심 체크리스트** :white_check_mark:
 
 #### :one: 아키텍처 설계 (3개)
 - [✔] 선택한 아키텍처 패턴이 일관되게 적용되었는가?
 - [✔] 계층 간 의존성이 단방향으로 흐르는가? (순환참조 X)
-- [] README에 아키텍처 설명이 있는가? (Step06)
+- [✔] README에 아키텍처 설명이 있는가?
 
 #### :two: 핵심 구현 (3개)
 - [✔] 비즈니스 로직이 적절한 계층에 위치하는가?
@@ -25,7 +29,7 @@
 - [✔] **E-commerce**: 상품조회 + 주문/결제 + 포인트
 
 #### STEP06
-- [] **E-commerce**: 선착순 쿠폰 + 재고 동시성 + 결제 실패 복구
+- [] **E-commerce**: 선착순 쿠폰 + 재고 동시성 + 결제 실패 복구 (이번 과제 내용에 동시성이 빠져서 jwt와 bcrypt를 활용한 인증 시스템 구현)
 
 ---
 ### **간단 회고** (3줄 이내)
