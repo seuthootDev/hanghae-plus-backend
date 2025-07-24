@@ -3,8 +3,18 @@ export class User {
     public readonly id: number,
     public readonly name: string,
     public readonly email: string,
-    private _points: number = 0
+    private _points: number = 0,
+    private _password: string = ''
   ) {}
+
+  // 인증 관련 비즈니스 로직
+  get password(): string {
+    return this._password;
+  }
+
+  setPassword(password: string): void {
+    this._password = password;
+  }
 
   // 포인트 관련 비즈니스 로직
   get points(): number {
