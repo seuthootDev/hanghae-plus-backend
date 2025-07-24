@@ -25,8 +25,8 @@ export class TestSeeder {
   async seedTestData(): Promise<void> {
     // 사용자 데이터
     const users = [
-      { name: 'Test User 1', email: 'test1@example.com', points: 10000 },
-      { name: 'Test User 2', email: 'test2@example.com', points: 5000 },
+      { name: 'Test User 1', email: 'test1@example.com', points: 25000 },
+      { name: 'Test User 2', email: 'test2@example.com', points: 15000 },
       { name: 'Test User 3', email: 'test3@example.com', points: 0 },
     ];
 
