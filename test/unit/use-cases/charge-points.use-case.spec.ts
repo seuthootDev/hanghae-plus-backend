@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ChargePointsUseCase } from '../users/charge-points.use-case';
-import { UsersServiceInterface } from '../../interfaces/services/users-service.interface';
-import { UserPresenterInterface } from '../../interfaces/presenters/user-presenter.interface';
-import { User } from '../../../domain/entities/user.entity';
-import { ChargePointsDto } from '../../../presentation/dto/usersDTO/charge-points.dto';
-import { PointsResponseDto } from '../../../presentation/dto/usersDTO/points-response.dto';
+import { ChargePointsUseCase } from '../../../src/application/use-cases/users/charge-points.use-case';
+import { UsersServiceInterface } from '../../../src/application/interfaces/services/users-service.interface';
+import { UserPresenterInterface } from '../../../src/application/interfaces/presenters/user-presenter.interface';
+import { User } from '../../../src/domain/entities/user.entity';
+import { ChargePointsDto } from '../../../src/presentation/dto/usersDTO/charge-points.dto';
+import { PointsResponseDto } from '../../../src/presentation/dto/usersDTO/points-response.dto';
 
 describe('ChargePointsUseCase', () => {
   let useCase: ChargePointsUseCase;
@@ -59,7 +59,7 @@ describe('ChargePointsUseCase', () => {
       const result = await useCase.execute(userId, chargePointsDto);
 
       // Assert
-      expect(mockUsersService.chargePoints).toHaveBeenCalledWith(userId, amount);
+      expect(mockUsersService.chargePoints).toHaveBeenCalledWith(userId, chargePointsDto);
       expect(mockUserPresenter.presentUserPoints).toHaveBeenCalledWith(mockUser);
       expect(result).toBe(mockResponseDto);
     });

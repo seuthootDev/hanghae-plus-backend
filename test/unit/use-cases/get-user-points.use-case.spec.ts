@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { GetUserPointsUseCase } from '../users/get-user-points.use-case';
-import { UsersServiceInterface } from '../../interfaces/services/users-service.interface';
-import { UserPresenterInterface } from '../../interfaces/presenters/user-presenter.interface';
-import { User } from '../../../domain/entities/user.entity';
-import { PointsResponseDto } from '../../../presentation/dto/usersDTO/points-response.dto';
+import { GetUserPointsUseCase } from '../../../src/application/use-cases/users/get-user-points.use-case';
+import { UsersServiceInterface } from '../../../src/application/interfaces/services/users-service.interface';
+import { UserPresenterInterface } from '../../../src/application/interfaces/presenters/user-presenter.interface';
+import { User } from '../../../src/domain/entities/user.entity';
+import { PointsResponseDto } from '../../../src/presentation/dto/usersDTO/points-response.dto';
 
 describe('GetUserPointsUseCase', () => {
   let useCase: GetUserPointsUseCase;

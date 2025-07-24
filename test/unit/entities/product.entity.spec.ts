@@ -1,4 +1,4 @@
-import { Product } from '../product.entity';
+import { Product } from '../../../src/domain/entities/product.entity';
 
 describe('Product Entity', () => {
   let product: Product;

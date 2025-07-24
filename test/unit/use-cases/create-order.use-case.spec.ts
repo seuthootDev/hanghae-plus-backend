@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CreateOrderUseCase } from '../orders/create-order.use-case';
-import { OrdersServiceInterface } from '../../interfaces/services/orders-service.interface';
-import { OrderPresenterInterface } from '../../interfaces/presenters/order-presenter.interface';
-import { Order } from '../../../domain/entities/order.entity';
-import { CreateOrderDto } from '../../../presentation/dto/ordersDTO/create-order.dto';
-import { OrderResponseDto } from '../../../presentation/dto/ordersDTO/order-response.dto';
+import { CreateOrderUseCase } from '../../../src/application/use-cases/orders/create-order.use-case';
+import { OrdersServiceInterface } from '../../../src/application/interfaces/services/orders-service.interface';
+import { OrderPresenterInterface } from '../../../src/application/interfaces/presenters/order-presenter.interface';
+import { Order } from '../../../src/domain/entities/order.entity';
+import { CreateOrderDto } from '../../../src/presentation/dto/ordersDTO/create-order.dto';
+import { OrderResponseDto } from '../../../src/presentation/dto/ordersDTO/order-response.dto';
 
 describe('CreateOrderUseCase', () => {
   let useCase: CreateOrderUseCase;

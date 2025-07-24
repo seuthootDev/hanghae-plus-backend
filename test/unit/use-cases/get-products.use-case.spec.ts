@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { GetProductsUseCase } from '../products/get-products.use-case';
-import { ProductsServiceInterface } from '../../interfaces/services/products-service.interface';
-import { ProductPresenterInterface } from '../../interfaces/presenters/product-presenter.interface';
-import { Product } from '../../../domain/entities/product.entity';
-import { ProductResponseDto } from '../../../presentation/dto/productsDTO/product-response.dto';
+import { GetProductsUseCase } from '../../../src/application/use-cases/products/get-products.use-case';
+import { ProductsServiceInterface } from '../../../src/application/interfaces/services/products-service.interface';
+import { ProductPresenterInterface } from '../../../src/application/interfaces/presenters/product-presenter.interface';
+import { Product } from '../../../src/domain/entities/product.entity';
+import { ProductResponseDto } from '../../../src/presentation/dto/productsDTO/product-response.dto';
 
 describe('GetProductsUseCase', () => {
   let useCase: GetProductsUseCase;

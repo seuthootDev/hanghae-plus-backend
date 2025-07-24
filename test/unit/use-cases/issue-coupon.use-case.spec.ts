@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { IssueCouponUseCase } from '../coupons/issue-coupon.use-case';
-import { CouponsServiceInterface } from '../../interfaces/services/coupons-service.interface';
-import { CouponPresenterInterface } from '../../interfaces/presenters/coupon-presenter.interface';
-import { Coupon } from '../../../domain/entities/coupon.entity';
-import { IssueCouponDto, CouponType } from '../../../presentation/dto/couponsDTO/issue-coupon.dto';
-import { CouponResponseDto } from '../../../presentation/dto/couponsDTO/coupon-response.dto';
+import { IssueCouponUseCase } from '../../../src/application/use-cases/coupons/issue-coupon.use-case';
+import { CouponsServiceInterface } from '../../../src/application/interfaces/services/coupons-service.interface';
+import { CouponPresenterInterface } from '../../../src/application/interfaces/presenters/coupon-presenter.interface';
+import { Coupon } from '../../../src/domain/entities/coupon.entity';
+import { IssueCouponDto, CouponType } from '../../../src/presentation/dto/couponsDTO/issue-coupon.dto';
+import { CouponResponseDto } from '../../../src/presentation/dto/couponsDTO/coupon-response.dto';
 
 describe('IssueCouponUseCase', () => {
   let useCase: IssueCouponUseCase;

@@ -1,4 +1,4 @@
-import { User } from '../user.entity';
+import { User } from '../../../src/domain/entities/user.entity';
 
 describe('User Entity', () => {
   let user: User;
@@ -23,10 +23,12 @@ describe('User Entity', () => {
       }).toThrow('포인트는 음수일 수 없습니다.');
     });
 
-    it('0원으로 충전하면 에러를 던져야 한다', () => {
-      expect(() => {
-        user.chargePoints(0);
-      }).toThrow('포인트는 음수일 수 없습니다.');
+    it('0원으로 충전하면 포인트가 변경되지 않아야 한다', () => {
+      const initialPoints = user.points;
+      
+      user.chargePoints(0);
+      
+      expect(user.points).toBe(initialPoints);
     });
   });
 

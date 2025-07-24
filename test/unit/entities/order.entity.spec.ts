@@ -1,4 +1,4 @@
-import { Order, OrderItem } from '../order.entity';
+import { Order, OrderItem } from '../../../src/domain/entities/order.entity';
 
 describe('Order Entity', () => {
   let order: Order;

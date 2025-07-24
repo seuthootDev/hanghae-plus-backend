@@ -1,4 +1,4 @@
-import { Payment } from '../payment.entity';
+import { Payment } from '../../../src/domain/entities/payment.entity';
 
 describe('Payment Entity', () => {
   let pendingPayment: Payment;

@@ -1,4 +1,4 @@
-import { Coupon } from '../coupon.entity';
+import { Coupon } from '../../../src/domain/entities/coupon.entity';
 
 describe('Coupon Entity', () => {
   let validCoupon: Coupon;
