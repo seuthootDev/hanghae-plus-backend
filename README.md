@@ -1,269 +1,219 @@
-# 항해+ E-Commerce Backend
+# 항해플러스 백엔드
 
-## 🏗️ 아키텍처 개요
+Clean Architecture 패턴을 적용한 NestJS 기반 백엔드 애플리케이션입니다.
 
-이 프로젝트는 **Clean Architecture** 패턴을 적용하여 구현된 E-Commerce 백엔드 서비스입니다.
+## 🏗️ 아키텍처
 
-## 🏛️ Clean Architecture 레이어별 책임
+### Clean Architecture 레이어 구조
 
-### 1. **Domain Layer (도메인 계층)** - 가장 안쪽
-**책임**: 핵심 비즈니스 로직과 규칙을 담당
+#### **1. Domain Layer (도메인 계층)**
+- **책임**: 비즈니스 로직의 핵심 규칙과 엔티티 정의
+- **구성요소**:
+  - `entities/`: 비즈니스 엔티티 (User, Product, Order, Coupon, Payment, AuthToken)
+  - `services/`: 도메인 서비스 (검증 로직, 비즈니스 규칙)
+  - `value-objects/`: 값 객체들
 
-#### 📁 구조
+#### **2. Application Layer (애플리케이션 계층)**
+- **책임**: 유스케이스 구현 및 비즈니스 워크플로우 조정
+- **구성요소**:
+  - `use-cases/`: 애플리케이션 유스케이스들
+  - `interfaces/`: 추상화된 인터페이스들 (Repository, Service, Presenter)
+
+#### **3. Infrastructure Layer (인프라스트럭처 계층)**
+- **책임**: 외부 시스템과의 통신 및 데이터 접근
+- **구성요소**:
+  - `repositories/`: 데이터 접근 구현체 (TypeORM, Mock)
+  - `services/`: 외부 서비스 구현체
+  - `presenters/`: 데이터 변환 로직
+
+#### **4. Presentation Layer (프레젠테이션 계층)**
+- **책임**: HTTP 요청/응답 처리 및 API 엔드포인트 정의
+- **구성요소**:
+  - `controllers/`: API 컨트롤러들
+  - `dto/`: 데이터 전송 객체들
+
+### 의존성 방향
 ```
-src/domain/
-├── entities/          # 도메인 엔티티 (핵심 비즈니스 객체)
-└── services/          # 도메인 서비스 (복잡한 비즈니스 로직)
-```
-
-#### ✅ 구현 가이드라인
-- **외부 의존성 금지**: 데이터베이스, HTTP, 외부 라이브러리 직접 사용 금지
-- **순수한 비즈니스 로직**: 외부 상태에 의존하지 않는 순수 함수로 구현
-- **도메인 규칙 보호**: 비즈니스 규칙을 엔티티와 도메인 서비스에 캡슐화
-
-#### 📝 예시
-```typescript
-// ✅ 올바른 구현
-export class User {
-  constructor(
-    public readonly id: number,
-    public readonly name: string,
-    private _points: number = 0
-  ) {}
-
-  chargePoints(amount: number): void {
-    if (amount < 0) {
-      throw new Error('포인트는 음수일 수 없습니다.');
-    }
-    this._points += amount;
-  }
-
-  hasEnoughPoints(amount: number): boolean {
-    return this._points >= amount;
-  }
-}
-
-// ❌ 잘못된 구현 (외부 의존성 포함)
-export class User {
-  async chargePoints(amount: number): Promise<void> {
-    // 데이터베이스 직접 접근 금지
-    await this.database.updatePoints(this.id, amount);
-  }
-}
+Presentation → Application → Domain
+     ↓              ↓
+Infrastructure → Application → Domain
 ```
 
-### 2. **Application Layer (애플리케이션 계층)**
-**책임**: 유스케이스와 애플리케이션 서비스를 담당
+## 🚀 시작하기
 
-#### 📁 구조
-```
-src/application/
-├── use-cases/         # 유스케이스 (애플리케이션 비즈니스 로직)
-└── interfaces/        # 인터페이스 정의
-    ├── repositories/  # 리포지토리 인터페이스
-    ├── services/      # 서비스 인터페이스
-    └── presenters/    # 프레젠터 인터페이스
-```
+### 1. 환경변수 설정
 
-#### ✅ 구현 가이드라인
-- **의존성 역전**: 인터페이스를 통해 외부 계층에 의존
-- **유스케이스 중심**: 각 기능을 유스케이스로 캡슐화
-- **오케스트레이션**: 도메인 객체들을 조합하여 비즈니스 시나리오 구현
-
-#### 📝 예시
-```typescript
-// ✅ 올바른 구현
-@Injectable()
-export class ChargePointsUseCase {
-  constructor(
-    @Inject(USERS_SERVICE)
-    private readonly usersService: UsersServiceInterface,
-    @Inject(USER_PRESENTER)
-    private readonly userPresenter: UserPresenterInterface
-  ) {}
-
-  async execute(userId: number, chargePointsDto: ChargePointsDto): Promise<PointsResponseDto> {
-    const user = await this.usersService.chargePoints(userId, chargePointsDto);
-    return this.userPresenter.presentUserPoints(user);
-  }
-}
-
-// ❌ 잘못된 구현 (도메인 로직을 애플리케이션 계층에 구현)
-@Injectable()
-export class ChargePointsUseCase {
-  async execute(userId: number, amount: number): Promise<void> {
-    // 도메인 로직을 여기서 구현하면 안됨
-    if (amount < 0) throw new Error('포인트는 음수일 수 없습니다.');
-    await this.userRepository.updatePoints(userId, amount);
-  }
-}
-```
-
-### 3. **Infrastructure Layer (인프라스트럭처 계층)**
-**책임**: 외부 시스템과의 통신을 담당
-
-#### 📁 구조
-```
-src/infrastructure/
-├── repositories/      # 리포지토리 구현체
-├── services/          # 서비스 구현체
-└── presenters/        # 프레젠터 구현체
-```
-
-#### ✅ 구현 가이드라인
-- **인터페이스 구현**: 애플리케이션 계층의 인터페이스를 구현
-- **외부 시스템 추상화**: 데이터베이스, 외부 API 등을 추상화
-- **기술적 세부사항**: 프레임워크, 라이브러리 의존성을 이 계층에 격리
-
-#### 📝 예시
-```typescript
-// ✅ 올바른 구현
-@Injectable()
-export class UserRepository implements UserRepositoryInterface {
-  constructor(
-    @InjectRepository(UserEntity)
-    private readonly userRepository: Repository<UserEntity>
-  ) {}
-
-  async findById(id: number): Promise<User | null> {
-    const userEntity = await this.userRepository.findOne({ where: { id } });
-    if (!userEntity) return null;
-    
-    return new User(
-      userEntity.id,
-      userEntity.name,
-      userEntity.email,
-      userEntity.points
-    );
-  }
-}
-
-// ❌ 잘못된 구현 (도메인 로직을 인프라 계층에 구현)
-@Injectable()
-export class UserRepository {
-  async findById(id: number): Promise<User | null> {
-    const userEntity = await this.userRepository.findOne({ where: { id } });
-    // 도메인 로직을 여기서 구현하면 안됨
-    if (userEntity.points < 0) throw new Error('잘못된 포인트');
-    return userEntity;
-  }
-}
-```
-
-### 4. **Presentation Layer (프레젠테이션 계층)** - 가장 바깥쪽
-**책임**: 사용자 인터페이스와 API 엔드포인트를 담당
-
-#### 📁 구조
-```
-src/presentation/
-├── controllers/       # 컨트롤러 (HTTP 요청/응답 처리)
-├── dto/              # 데이터 전송 객체
-└── presenters/       # 프레젠터 구현체
-```
-
-#### ✅ 구현 가이드라인
-- **HTTP 처리**: 요청 검증, 응답 변환만 담당
-- **비즈니스 로직 금지**: 비즈니스 로직은 유스케이스에 위임
-- **DTO 변환**: 외부 데이터를 내부 도메인 객체로 변환
-
-#### 📝 예시
-```typescript
-// ✅ 올바른 구현
-@Controller('users')
-export class UsersController {
-  constructor(
-    private readonly chargePointsUseCase: ChargePointsUseCase
-  ) {}
-
-  @Post(':id/charge')
-  async chargePoints(
-    @Param('id') userId: number,
-    @Body() chargePointsDto: ChargePointsDto
-  ): Promise<PointsResponseDto> {
-    return this.chargePointsUseCase.execute(userId, chargePointsDto);
-  }
-}
-
-// ❌ 잘못된 구현 (비즈니스 로직을 컨트롤러에 구현)
-@Controller('users')
-export class UsersController {
-  @Post(':id/charge')
-  async chargePoints(@Param('id') userId: number, @Body() dto: any) {
-    // 비즈니스 로직을 여기서 구현하면 안됨
-    if (dto.amount < 0) throw new BadRequestException();
-    const user = await this.userService.findById(userId);
-    user.chargePoints(dto.amount);
-    await this.userService.save(user);
-  }
-}
-```
-
-## 🔄 의존성 방향
-
-```
-Presentation Layer (Controllers)
-           ↓
-Application Layer (Use Cases)
-           ↓
-Domain Layer (Entities, Services)
-           ↑
-Infrastructure Layer (Repositories, External Services)
-```
-
-**핵심 원칙**: 의존성은 항상 안쪽(Domain)을 향합니다.
-
-## 🧪 테스트 전략
-
-### 단위 테스트
-- **Domain Layer**: 순수 함수 테스트 (Mock 불필요)
-- **Application Layer**: Use Case 테스트 (Service, Repository Mock)
-- **Infrastructure Layer**: Repository 테스트 (실제 DB 또는 Mock DB)
-
-### 통합 테스트
-- **E2E 테스트**: 전체 API 플로우 테스트
-- **인메모리 DB**: 테스트 환경에서 실제 DB 대신 인메모리 DB 사용
-
-## 📋 개발 가이드라인
-
-### 1. 새로운 기능 추가 시
-1. **Domain Layer**: 엔티티와 도메인 서비스 정의
-2. **Application Layer**: 유스케이스와 인터페이스 정의
-3. **Infrastructure Layer**: 리포지토리/서비스 구현체 작성
-4. **Presentation Layer**: 컨트롤러와 DTO 작성
-
-### 2. 코드 리뷰 체크리스트
-- [ ] 도메인 로직이 적절한 계층에 위치하는가?
-- [ ] 외부 의존성이 도메인 계층에 침투하지 않았는가?
-- [ ] 인터페이스를 통한 의존성 역전이 적용되었는가?
-- [ ] 각 계층의 책임이 명확히 분리되었는가?
-
-### 3. 아키텍처 위반 방지
-- **Domain Layer**: `@nestjs/common`, `typeorm` 등 외부 라이브러리 import 금지
-- **Application Layer**: HTTP 요청/응답 객체 직접 사용 금지
-- **Infrastructure Layer**: 도메인 로직 구현 금지
-- **Presentation Layer**: 비즈니스 로직 구현 금지
-
-## 🚀 실행 방법
+프로젝트 루트에 `.env` 파일을 생성하고 다음 환경변수들을 설정하세요:
 
 ```bash
-# 의존성 설치
-npm install
+# JWT 설정
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+JWT_EXPIRES_IN=24h
+JWT_REFRESH_EXPIRES_IN=7d
 
-# 개발 서버 실행
-npm run start:dev
+# 비밀번호 해싱 설정
+BCRYPT_SALT_ROUNDS=10
 
-# 테스트 실행
-npm run test:unit
-npm run test:e2e
+# 관리자 계정 설정
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=admin123
+ADMIN_NAME=admin
 
-# 빌드
-npm run build
+# 데이터베이스 설정
+DB_HOST=localhost
+DB_PORT=3306
+DB_USERNAME=root
+DB_PASSWORD=password
+DB_DATABASE=hanghae_plus
+DB_LOGGING_ENABLED=false
+
+# 애플리케이션 설정
+PORT=3000
+NODE_ENV=development
 ```
 
-## 📖 API 문서
+### 2. 의존성 설치
 
-Swagger UI: http://localhost:3000/api
+```bash
+npm install
+```
 
-## �� 라이선스
+### 3. 데이터베이스 설정
 
-MIT License
+```bash
+# 데이터베이스 마이그레이션 실행
+npm run migration:run
+
+# 초기 데이터 시딩
+npm run seed
+```
+
+### 4. 애플리케이션 실행
+
+```bash
+# 개발 모드
+npm run start:dev
+
+# 프로덕션 모드
+npm run start:prod
+```
+
+## 🐳 Docker 사용법
+
+### 개발 환경
+
+```bash
+# Docker Compose로 개발 환경 실행
+docker-compose up -d
+
+# 로그 확인
+docker-compose logs -f
+
+# 서비스 중지
+docker-compose down
+```
+
+### 프로덕션 환경
+
+```bash
+# 프로덕션 환경변수 파일 생성
+cp docker.env .env.prod
+
+# .env.prod 파일에서 프로덕션 값들로 수정
+# 특히 JWT_SECRET, DB_PASSWORD 등 보안 관련 값들
+
+# 프로덕션 환경 실행
+docker-compose -f docker-compose.prod.yml --env-file .env.prod up -d
+```
+
+### Docker 환경변수 설정
+
+Docker Compose는 자동으로 `.env` 파일을 읽어서 환경변수를 설정합니다:
+
+```bash
+# 기본 .env 파일 사용
+docker-compose up
+
+# 특정 환경변수 파일 사용
+docker-compose --env-file .env.prod up
+
+# 환경변수 직접 전달
+DB_PASSWORD=mypassword docker-compose up
+```
+
+## 📚 API 문서
+
+애플리케이션 실행 후 다음 URL에서 Swagger API 문서를 확인할 수 있습니다:
+
+```
+http://localhost:3000/api
+```
+
+## 🧪 테스트
+
+```bash
+# 단위 테스트
+npm run test
+
+# E2E 테스트
+npm run test:e2e
+
+# 테스트 커버리지
+npm run test:cov
+```
+
+## 🔐 인증 시스템
+
+### JWT 기반 인증
+- **액세스 토큰**: 24시간 유효
+- **리프레시 토큰**: 7일 유효
+- **비밀번호 해싱**: bcrypt (Salt Rounds: 10)
+
+### API 엔드포인트
+- `POST /auth/register`: 회원가입
+- `POST /auth/login`: 로그인
+- `POST /auth/refresh`: 토큰 갱신
+- `POST /auth/logout`: 로그아웃
+
+## 📁 프로젝트 구조
+
+```
+src/
+├── application/          # 애플리케이션 계층
+│   ├── interfaces/       # 추상화된 인터페이스들
+│   └── use-cases/        # 유스케이스들
+├── domain/              # 도메인 계층
+│   ├── entities/        # 비즈니스 엔티티
+│   └── services/        # 도메인 서비스
+├── infrastructure/      # 인프라스트럭처 계층
+│   ├── repositories/    # 데이터 접근 구현체
+│   ├── services/        # 외부 서비스 구현체
+│   └── presenters/      # 데이터 변환 로직
+├── presentation/        # 프레젠테이션 계층
+│   ├── controllers/     # API 컨트롤러
+│   └── dto/            # 데이터 전송 객체
+└── config/             # 설정 파일들
+    └── env.config.ts   # 환경변수 설정
+```
+
+## 🔧 개발 가이드라인
+
+### 1. 새로운 기능 추가 시
+1. **Domain Layer**: 엔티티 및 도메인 서비스 정의
+2. **Application Layer**: 유스케이스 및 인터페이스 정의
+3. **Infrastructure Layer**: 구체적인 구현체 작성
+4. **Presentation Layer**: API 엔드포인트 및 DTO 정의
+
+### 2. 의존성 주입
+- 인터페이스는 Application Layer에서 정의
+- 구현체는 Infrastructure Layer에서 작성
+- DI 컨테이너를 통해 의존성 주입
+
+### 3. 테스트 작성
+- **단위 테스트**: 각 레이어별 독립적 테스트
+- **E2E 테스트**: 전체 API 플로우 테스트
+- **Mock 사용**: 외부 의존성 격리
+
+## 📝 라이센스
+
+이 프로젝트는 MIT 라이센스 하에 배포됩니다.
