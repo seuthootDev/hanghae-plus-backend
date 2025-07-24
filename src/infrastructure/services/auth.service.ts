@@ -6,10 +6,8 @@ import { AuthValidationService } from '../../domain/services/auth-validation.ser
 import { User } from '../../domain/entities/user.entity';
 import { AuthToken } from '../../domain/entities/auth-token.entity';
 import * as jwt from 'jsonwebtoken';
-
-const JWT_SECRET = 'hanghae-plus-secret'; 
-const JWT_EXPIRES_IN = '24h';
-const JWT_REFRESH_EXPIRES_IN = '7d';
+import * as bcrypt from 'bcrypt';
+import { envConfig } from '../../config/env.config';
 
 @Injectable()
 export class AuthService implements AuthServiceInterface {
@@ -30,7 +28,7 @@ export class AuthService implements AuthServiceInterface {
     if (existingUser) {
       throw new ConflictException('이미 사용 중인 이메일입니다.');
     }
-    // 비밀번호 암호화 (실제로는 bcrypt 사용)
+    // 비밀번호 암호화
     const hashedPassword = await this.hashPassword(password);
     // 사용자 생성
     const user = new User(0, name, email, 0, hashedPassword);
@@ -66,7 +64,7 @@ export class AuthService implements AuthServiceInterface {
     if (!user) {
       throw new NotFoundException('사용자를 찾을 수 없습니다.');
     }
-    // 비밀번호 검증 (실제로는 bcrypt.compare 사용)
+    // 비밀번호 검증
     const isValid = await this.verifyPassword(password, user.password);
     if (!isValid) {
       throw new UnauthorizedException('비밀번호가 일치하지 않습니다.');
@@ -102,7 +100,7 @@ export class AuthService implements AuthServiceInterface {
     // JWT 검증 및 디코딩
     let payload: any;
     try {
-      payload = jwt.verify(token, JWT_SECRET);
+      payload = jwt.verify(token, envConfig.jwt.secret);
     } catch (e) {
       throw new UnauthorizedException('유효하지 않은 토큰입니다.');
     }
@@ -128,7 +126,7 @@ export class AuthService implements AuthServiceInterface {
     // JWT 검증 및 디코딩
     let payload: any;
     try {
-      payload = jwt.verify(refreshToken, JWT_SECRET);
+      payload = jwt.verify(refreshToken, envConfig.jwt.secret);
     } catch (e) {
       throw new UnauthorizedException('유효하지 않은 리프레시 토큰입니다.');
     }
@@ -163,22 +161,31 @@ export class AuthService implements AuthServiceInterface {
     await this.authRepository.revokeToken(token);
   }
 
-  // 임시 Mock 메서드들 (실제로는 적절한 라이브러리 사용)
+  // 실제 bcrypt를 사용한 비밀번호 해싱
   private async hashPassword(password: string): Promise<string> {
-    // 실제로는 bcrypt.hash 사용
-    return `hashed_${password}`;
+    return bcrypt.hash(password, envConfig.bcrypt.saltRounds);
   }
 
+  // 실제 bcrypt를 사용한 비밀번호 검증
   private async verifyPassword(password: string, hashedPassword: string): Promise<boolean> {
-    // 실제로는 bcrypt.compare 사용
-    return hashedPassword === `hashed_${password}`;
+    return bcrypt.compare(password, hashedPassword);
   }
 
   private generateToken(userId: number, email: string): string {
-    return jwt.sign({ userId, email }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+    // @ts-ignore - jsonwebtoken 타입 정의 문제로 인한 임시 해결책
+    return jwt.sign(
+      { userId, email }, 
+      envConfig.jwt.secret, 
+      { expiresIn: envConfig.jwt.expiresIn }
+    );
   }
 
   private generateRefreshToken(userId: number, email: string): string {
-    return jwt.sign({ userId, email }, JWT_SECRET, { expiresIn: JWT_REFRESH_EXPIRES_IN });
+    // @ts-ignore - jsonwebtoken 타입 정의 문제로 인한 임시 해결책
+    return jwt.sign(
+      { userId, email }, 
+      envConfig.jwt.secret, 
+      { expiresIn: envConfig.jwt.refreshExpiresIn }
+    );
   }
 } 

@@ -2,6 +2,8 @@ import { DataSource } from 'typeorm';
 import { UserEntity } from '../infrastructure/repositories/typeorm/user.entity';
 import { ProductEntity } from '../infrastructure/repositories/typeorm/product.entity';
 import { CouponEntity } from '../infrastructure/repositories/typeorm/coupon.entity';
+import * as bcrypt from 'bcrypt';
+import { envConfig } from '../config/env.config';
 
 export class DatabaseSeeder {
   constructor(private dataSource: DataSource) {}
@@ -49,11 +51,12 @@ export class DatabaseSeeder {
     const userRepository = this.dataSource.getRepository(UserEntity);
     
     // 관리자 계정만 시딩 (일반 사용자는 회원가입 API로 생성)
-    const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+    const hashedPassword = await bcrypt.hash(envConfig.admin.password, envConfig.bcrypt.saltRounds);
+    
     const adminUser = { 
-      name: 'admin', 
-      email: 'admin@example.com', 
-      password: `hashed_${adminPassword}`, // 실제로는 bcrypt로 해싱된 비밀번호
+      name: envConfig.admin.name, 
+      email: envConfig.admin.email, 
+      password: hashedPassword,
       points: 100000 
     };
 
