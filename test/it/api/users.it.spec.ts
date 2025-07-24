@@ -81,14 +81,10 @@ describe('Users API (e2e)', () => {
         });
     });
 
-    it('존재하지 않는 사용자의 경우 잔액 0을 반환해야 한다', () => {
+    it('존재하지 않는 사용자의 경우 404을 반환해야 한다', () => {
       return request(app.getHttpServer())
         .get('/users/999/points')
-        .expect(200)
-        .expect((res) => {
-          expect(res.body).toHaveProperty('userId', 999);
-          expect(res.body).toHaveProperty('balance', 0);
-        });
+        .expect(404);
     });
   });
 }); 
