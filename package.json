@@ -19,7 +19,10 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "test:it": "jest --config ./test/it/it.jest.json",
-    "test:api": "jest --config ./test/it/api/api.jest.json"
+    "test:api": "jest --config ./test/it/api/api.jest.json",
+    "test:unit": "jest --config ./test/jest-unit.json",
+    "test:unit:watch": "jest --config ./test/jest-unit.json --watch",
+    "test:unit:coverage": "jest --config ./test/jest-unit.json --coverage"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
@@ -33,6 +36,7 @@
     "mysql2": "^3.9.2",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
+    "sqlite3": "^5.1.7",
     "swagger-ui-express": "^5.0.1",
     "typeorm": "^0.3.20"
   },
