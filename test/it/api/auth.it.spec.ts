@@ -153,6 +153,28 @@ describe('Auth API (e2e)', () => {
       expect(typeof response.body.refreshToken).toBe('string');
     });
 
+    it('기존 테스트 사용자로 로그인이 성공해야 한다', async () => {
+      // 시더에서 생성된 테스트 사용자로 로그인
+      const loginDto = {
+        email: 'test1@example.com',
+        password: 'password123',
+      };
+
+      const response = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send(loginDto)
+        .expect(200);
+
+      expect(response.body).toHaveProperty('userId');
+      expect(response.body).toHaveProperty('email', 'test1@example.com');
+      expect(response.body).toHaveProperty('name', 'Test User 1');
+      expect(response.body).toHaveProperty('token');
+      expect(response.body).toHaveProperty('refreshToken');
+      expect(response.body).toHaveProperty('expiresAt');
+      expect(typeof response.body.token).toBe('string');
+      expect(typeof response.body.refreshToken).toBe('string');
+    });
+
     it('존재하지 않는 사용자로 로그인 시 404를 반환해야 한다', async () => {
       const loginDto = {
         email: 'nonexistent@example.com',

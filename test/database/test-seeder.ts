@@ -6,6 +6,8 @@ import { ProductEntity } from '../../src/infrastructure/repositories/typeorm/pro
 import { CouponEntity } from '../../src/infrastructure/repositories/typeorm/coupon.entity';
 import { OrderEntity } from '../../src/infrastructure/repositories/typeorm/order.entity';
 import { PaymentEntity } from '../../src/infrastructure/repositories/typeorm/payment.entity';
+import * as bcrypt from 'bcrypt';
+import { envConfig } from '../../src/config/env.config';
 
 @Injectable()
 export class TestSeeder {
@@ -24,10 +26,13 @@ export class TestSeeder {
 
   async seedTestData(): Promise<void> {
     // 테스트용 사용자 데이터 (빠른 테스트 실행을 위해 하드코딩)
+    const testPassword = 'password123';
+    const hashedPassword = await bcrypt.hash(testPassword, envConfig.bcrypt.saltRounds);
+    
     const users = [
-      { name: 'Test User 1', email: 'test1@example.com', password: 'hashed_password123', points: 25000 },
-      { name: 'Test User 2', email: 'test2@example.com', password: 'hashed_password123', points: 15000 },
-      { name: 'Test User 3', email: 'test3@example.com', password: 'hashed_password123', points: 0 },
+      { name: 'Test User 1', email: 'test1@example.com', password: hashedPassword, points: 25000 },
+      { name: 'Test User 2', email: 'test2@example.com', password: hashedPassword, points: 15000 },
+      { name: 'Test User 3', email: 'test3@example.com', password: hashedPassword, points: 0 },
     ];
 
     for (const userData of users) {
