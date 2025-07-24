@@ -22,7 +22,23 @@ export class UserRepository implements UserRepositoryInterface {
       userEntity.id,
       userEntity.name,
       userEntity.email,
-      userEntity.points
+      userEntity.points,
+      userEntity.password
+    );
+  }
+
+  async findByEmail(email: string): Promise<User | null> {
+    const userEntity = await this.userRepository.findOne({ where: { email } });
+    if (!userEntity) {
+      return null;
+    }
+    
+    return new User(
+      userEntity.id,
+      userEntity.name,
+      userEntity.email,
+      userEntity.points,
+      userEntity.password
     );
   }
 
@@ -41,6 +57,7 @@ export class UserRepository implements UserRepositoryInterface {
       userEntity = this.userRepository.create({
         name: user.name,
         email: user.email,
+        password: user.password,
         points: user.points
       });
     }
@@ -51,7 +68,8 @@ export class UserRepository implements UserRepositoryInterface {
       savedEntity.id,
       savedEntity.name,
       savedEntity.email,
-      savedEntity.points
+      savedEntity.points,
+      savedEntity.password
     );
   }
 
@@ -68,7 +86,8 @@ export class UserRepository implements UserRepositoryInterface {
       savedEntity.id,
       savedEntity.name,
       savedEntity.email,
-      savedEntity.points
+      savedEntity.points,
+      savedEntity.password
     );
   }
 } 
