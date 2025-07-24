@@ -1,18 +1,29 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { AppModule } from '../../../src/app.module';
+import { TestAppModule } from '../../app.module';
+import { TestSeeder } from '../../database/test-seeder';
 
 describe('Orders API (e2e)', () => {
   let app: INestApplication;
+  let testSeeder: TestSeeder;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [TestAppModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    testSeeder = moduleFixture.get<TestSeeder>(TestSeeder);
     await app.init();
+    
+    // 테스트 데이터 시딩
+    await testSeeder.seedTestData();
+  });
+
+  afterAll(async () => {
+    await testSeeder.clearTestData();
+    await app.close();
   });
 
   afterAll(async () => {
