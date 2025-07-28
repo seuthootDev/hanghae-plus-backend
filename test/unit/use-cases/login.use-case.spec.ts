@@ -140,5 +140,109 @@ describe('LoginUseCase', () => {
       expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(loginDto.email);
       expect(mockAuthService.verifyPassword).toHaveBeenCalledWith(loginDto.password, mockUser.password);
     });
+
+    describe('트랜잭션 동작 테스트', () => {
+      it('@Transactional 데코레이터가 적용되어야 한다', () => {
+        // Arrange & Act
+        const method = useCase.execute;
+        const metadata = Reflect.getMetadata('transactional', method);
+
+        // Assert
+        expect(metadata).toBe(true);
+      });
+
+      it('사용자 조회 중 에러가 발생하면 트랜잭션이 롤백되어야 한다', async () => {
+        // Arrange
+        const loginDto: LoginDto = {
+          email: 'test@example.com',
+          password: 'password123',
+        };
+
+        mockUserRepository.findByEmail.mockRejectedValue(new Error('Database error'));
+
+        // Act & Assert
+        await expect(useCase.execute(loginDto)).rejects.toThrow('Database error');
+        
+        // 트랜잭션이 롤백되었으므로 비밀번호 검증과 로그인이 호출되지 않아야 함
+        expect(mockAuthService.verifyPassword).not.toHaveBeenCalled();
+        expect(mockAuthService.login).not.toHaveBeenCalled();
+        expect(mockAuthPresenter.presentAuth).not.toHaveBeenCalled();
+      });
+
+      it('비밀번호 검증 중 에러가 발생하면 트랜잭션이 롤백되어야 한다', async () => {
+        // Arrange
+        const loginDto: LoginDto = {
+          email: 'test@example.com',
+          password: 'password123',
+        };
+
+        const mockUser = new User(1, '홍길동', 'test@example.com', 1000, 'hashed_password');
+        mockUserRepository.findByEmail.mockResolvedValue(mockUser);
+        mockAuthService.verifyPassword.mockRejectedValue(new Error('Password verification failed'));
+
+        // Act & Assert
+        await expect(useCase.execute(loginDto)).rejects.toThrow('Password verification failed');
+        
+        // 사용자 조회는 성공했지만 비밀번호 검증에서 실패하여 트랜잭션이 롤백되어야 함
+        expect(mockUserRepository.findByEmail).toHaveBeenCalled();
+        expect(mockAuthService.login).not.toHaveBeenCalled();
+        expect(mockAuthPresenter.presentAuth).not.toHaveBeenCalled();
+      });
+
+      it('인증 토큰 생성 중 에러가 발생하면 트랜잭션이 롤백되어야 한다', async () => {
+        // Arrange
+        const loginDto: LoginDto = {
+          email: 'test@example.com',
+          password: 'password123',
+        };
+
+        const mockUser = new User(1, '홍길동', 'test@example.com', 1000, 'hashed_password');
+        mockUserRepository.findByEmail.mockResolvedValue(mockUser);
+        mockAuthService.verifyPassword.mockResolvedValue(true);
+        mockAuthService.login.mockRejectedValue(new Error('Token creation failed'));
+
+        // Act & Assert
+        await expect(useCase.execute(loginDto)).rejects.toThrow('Token creation failed');
+        
+        // 사용자 조회와 비밀번호 검증은 성공했지만 토큰 생성에서 실패하여 트랜잭션이 롤백되어야 함
+        expect(mockUserRepository.findByEmail).toHaveBeenCalled();
+        expect(mockAuthService.verifyPassword).toHaveBeenCalled();
+        expect(mockAuthPresenter.presentAuth).not.toHaveBeenCalled();
+      });
+
+      it('모든 단계가 성공하면 트랜잭션이 커밋되어야 한다', async () => {
+        // Arrange
+        const loginDto: LoginDto = {
+          email: 'test@example.com',
+          password: 'password123',
+        };
+
+        const mockUser = new User(1, '홍길동', 'test@example.com', 1000, 'hashed_password');
+        const mockAuthToken = new AuthToken(1, 1, 'test-token', 'test-refresh-token', new Date());
+        const mockResponse: AuthResponseDto = {
+          userId: 1,
+          email: 'test@example.com',
+          name: '홍길동',
+          token: 'test-token',
+          refreshToken: 'test-refresh-token',
+          expiresAt: new Date(),
+        };
+
+        mockUserRepository.findByEmail.mockResolvedValue(mockUser);
+        mockAuthService.verifyPassword.mockResolvedValue(true);
+        mockAuthService.login.mockResolvedValue(mockAuthToken);
+        mockAuthPresenter.presentAuth.mockReturnValue(mockResponse);
+
+        // Act
+        const result = await useCase.execute(loginDto);
+
+        // Assert - 모든 단계가 성공적으로 실행되어야 함
+        expect(mockUserRepository.findByEmail).toHaveBeenCalled();
+        expect(mockAuthService.verifyPassword).toHaveBeenCalled();
+        expect(mockAuthService.login).toHaveBeenCalled();
+        expect(mockAuthPresenter.presentAuth).toHaveBeenCalled();
+        expect(result).toEqual(mockResponse);
+      });
+    });
   });
 }); 
