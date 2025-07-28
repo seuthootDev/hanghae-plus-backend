@@ -26,10 +26,6 @@ describe('Users API (e2e)', () => {
     await app.close();
   });
 
-  afterAll(async () => {
-    await app.close();
-  });
-
   describe('/users/:userId/points (POST)', () => {
     it('포인트 충전이 성공적으로 처리되어야 한다', () => {
       return request(app.getHttpServer())
