@@ -10,9 +10,25 @@ export interface AuthResult {
 }
 
 export interface AuthServiceInterface {
-  register(email: string, password: string, name: string): Promise<AuthResult>;
-  login(email: string, password: string): Promise<AuthResult>;
-  validateToken(token: string): Promise<User>;
-  refreshToken(refreshToken: string): Promise<AuthResult>;
+  register(authData: {
+    email: string;
+    password: string;
+    name: string;
+    hashedPassword: string;
+    user: User;
+  }): Promise<AuthToken>;
+  
+  login(authData: {
+    user: User;
+  }): Promise<AuthToken>;
+  
+  validateToken(token: string): Promise<AuthToken>;
+  
+  refreshToken(refreshToken: string): Promise<AuthToken>;
+  
   logout(token: string): Promise<void>;
+  
+  hashPassword(password: string): Promise<string>;
+  
+  verifyPassword(password: string, hashedPassword: string): Promise<boolean>;
 } 
