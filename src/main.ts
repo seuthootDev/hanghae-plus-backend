@@ -4,6 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { DatabaseSeeder } from './database/seeder';
 import { DataSource } from 'typeorm';
+import { TransactionInterceptor } from './common/interceptors/transaction.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -14,6 +15,10 @@ async function bootstrap() {
     forbidNonWhitelisted: true,
     transform: true,
   }));
+
+  // 트랜잭션 인터셉터 설정
+  const transactionInterceptor = app.get(TransactionInterceptor);
+  app.useGlobalInterceptors(transactionInterceptor);
 
   // Swagger 설정
   const config = new DocumentBuilder()

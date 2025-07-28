@@ -9,6 +9,7 @@ import { UserRepositoryInterface, USER_REPOSITORY } from '../../interfaces/repos
 import { OrderValidationService } from '../../../domain/services/order-validation.service';
 import { UserValidationService } from '../../../domain/services/user-validation.service';
 import { OrderItem } from '../../../domain/entities/order.entity';
+import { Transactional } from '../../../common/decorators/transactional.decorator';
 
 @Injectable()
 export class CreateOrderUseCase {
@@ -27,6 +28,7 @@ export class CreateOrderUseCase {
     private readonly userValidationService: UserValidationService
   ) {}
 
+  @Transactional()
   async execute(createOrderDto: CreateOrderDto): Promise<OrderResponseDto> {
     const { userId, items, couponId } = createOrderDto;
     

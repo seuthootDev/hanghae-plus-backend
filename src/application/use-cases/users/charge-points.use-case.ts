@@ -3,6 +3,7 @@ import { ChargePointsDto } from '../../../presentation/dto/usersDTO/charge-point
 import { PointsResponseDto } from '../../../presentation/dto/usersDTO/points-response.dto';
 import { UsersServiceInterface, USERS_SERVICE } from '../../interfaces/services/users-service.interface';
 import { UserPresenterInterface, USER_PRESENTER } from '../../interfaces/presenters/user-presenter.interface';
+import { Transactional } from '../../../common/decorators/transactional.decorator';
 
 @Injectable()
 export class ChargePointsUseCase {
@@ -13,6 +14,7 @@ export class ChargePointsUseCase {
     private readonly userPresenter: UserPresenterInterface
   ) {}
 
+  @Transactional()
   async execute(userId: number, chargePointsDto: ChargePointsDto): Promise<PointsResponseDto> {
     // 서비스 계층을 통해 포인트 충전 처리
     const user = await this.usersService.chargePoints(userId, chargePointsDto);

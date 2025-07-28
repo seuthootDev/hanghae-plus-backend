@@ -7,6 +7,7 @@ import { OrderRepositoryInterface, ORDER_REPOSITORY } from '../../interfaces/rep
 import { UserRepositoryInterface, USER_REPOSITORY } from '../../interfaces/repositories/user-repository.interface';
 import { PaymentValidationService } from '../../../domain/services/payment-validation.service';
 import { UserValidationService } from '../../../domain/services/user-validation.service';
+import { Transactional } from '../../../common/decorators/transactional.decorator';
 
 @Injectable()
 export class ProcessPaymentUseCase {
@@ -23,6 +24,7 @@ export class ProcessPaymentUseCase {
     private readonly userValidationService: UserValidationService
   ) {}
 
+  @Transactional()
   async execute(processPaymentDto: ProcessPaymentDto): Promise<PaymentResponseDto> {
     const { orderId } = processPaymentDto;
     

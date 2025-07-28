@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from './database/database.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { TransactionInterceptor } from './common/interceptors/transaction.interceptor';
 import { UsersController } from './presentation/controllers/users.controller';
 import { ProductsController } from './presentation/controllers/products.controller';
 import { OrdersController } from './presentation/controllers/orders.controller';
@@ -186,6 +187,9 @@ import { AUTH_PRESENTER } from './application/interfaces/presenters/auth-present
       provide: AUTH_PRESENTER,
       useClass: AuthPresenter,
     },
+    
+    // 트랜잭션 인터셉터
+    TransactionInterceptor,
   ],
 })
 export class AppModule {}
