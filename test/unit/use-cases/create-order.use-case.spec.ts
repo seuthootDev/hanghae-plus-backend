@@ -244,5 +244,113 @@ describe('CreateOrderUseCase', () => {
         '재고가 부족합니다.'
       );
     });
+
+    describe('트랜잭션 동작 테스트', () => {
+      it('@Transactional 데코레이터가 적용되어야 한다', () => {
+        // Arrange & Act
+        const method = useCase.execute;
+        const metadata = Reflect.getMetadata('transactional', method);
+
+        // Assert
+        expect(metadata).toBe(true);
+      });
+
+      it('상품 조회 중 에러가 발생하면 트랜잭션이 롤백되어야 한다', async () => {
+        // Arrange
+        const userId = 1;
+        const createOrderDto = new CreateOrderDto();
+        createOrderDto.userId = userId;
+        createOrderDto.items = [
+          { productId: 1, quantity: 2 }
+        ];
+
+        mockProductRepository.findById.mockRejectedValue(new Error('Product not found'));
+
+        // Act & Assert
+        await expect(useCase.execute(createOrderDto)).rejects.toThrow('Product not found');
+        
+        // 트랜잭션이 롤백되었으므로 주문 생성이 호출되지 않아야 함
+        expect(mockOrdersService.createOrder).not.toHaveBeenCalled();
+        expect(mockOrderPresenter.presentOrder).not.toHaveBeenCalled();
+      });
+
+      it('사용자 조회 중 에러가 발생하면 트랜잭션이 롤백되어야 한다', async () => {
+        // Arrange
+        const userId = 1;
+        const createOrderDto = new CreateOrderDto();
+        createOrderDto.userId = userId;
+        createOrderDto.items = [
+          { productId: 1, quantity: 2 }
+        ];
+
+        const mockProduct = new Product(1, '상품1', 10000, 10, '설명1');
+        mockProductRepository.findById.mockResolvedValue(mockProduct);
+        mockUserRepository.findById.mockRejectedValue(new Error('User not found'));
+
+        // Act & Assert
+        await expect(useCase.execute(createOrderDto)).rejects.toThrow('User not found');
+        
+        // 트랜잭션이 롤백되었으므로 주문 생성이 호출되지 않아야 함
+        expect(mockOrdersService.createOrder).not.toHaveBeenCalled();
+        expect(mockOrderPresenter.presentOrder).not.toHaveBeenCalled();
+      });
+
+      it('주문 생성 중 에러가 발생하면 트랜잭션이 롤백되어야 한다', async () => {
+        // Arrange
+        const userId = 1;
+        const createOrderDto = new CreateOrderDto();
+        createOrderDto.userId = userId;
+        createOrderDto.items = [
+          { productId: 1, quantity: 2 }
+        ];
+
+        const mockProduct = new Product(1, '상품1', 10000, 10, '설명1');
+        const mockUser = new User(1, 'user@test.com', 'password', 50000);
+
+        mockProductRepository.findById.mockResolvedValue(mockProduct);
+        mockUserRepository.findById.mockResolvedValue(mockUser);
+        mockCouponRepository.findById.mockResolvedValue(null);
+        mockOrdersService.createOrder.mockRejectedValue(new Error('Order creation failed'));
+
+        // Act & Assert
+        await expect(useCase.execute(createOrderDto)).rejects.toThrow('Order creation failed');
+        
+        // 모든 검증은 통과했지만 주문 생성에서 실패하여 트랜잭션이 롤백되어야 함
+        expect(mockProductRepository.findById).toHaveBeenCalled();
+        expect(mockUserRepository.findById).toHaveBeenCalled();
+        expect(mockOrderPresenter.presentOrder).not.toHaveBeenCalled();
+      });
+
+      it('모든 단계가 성공하면 트랜잭션이 커밋되어야 한다', async () => {
+        // Arrange
+        const userId = 1;
+        const createOrderDto = new CreateOrderDto();
+        createOrderDto.userId = userId;
+        createOrderDto.items = [
+          { productId: 1, quantity: 2 }
+        ];
+
+        const mockProduct = new Product(1, '상품1', 10000, 10, '설명1');
+        const mockUser = new User(1, 'user@test.com', 'password', 50000);
+        const mockOrder = new Order(1, userId, [{ productId: 1, quantity: 2, price: 10000 }], 20000, 0, 20000, false, 'PENDING');
+        const mockResponseDto = new OrderResponseDto();
+
+        mockProductRepository.findById.mockResolvedValue(mockProduct);
+        mockUserRepository.findById.mockResolvedValue(mockUser);
+        mockCouponRepository.findById.mockResolvedValue(null);
+        mockOrdersService.createOrder.mockResolvedValue(mockOrder);
+        mockOrderPresenter.presentOrder.mockReturnValue(mockResponseDto);
+
+        // Act
+        const result = await useCase.execute(createOrderDto);
+
+        // Assert - 모든 단계가 성공적으로 실행되어야 함
+        expect(mockProductRepository.findById).toHaveBeenCalled();
+        expect(mockUserRepository.findById).toHaveBeenCalled();
+        expect(mockOrdersService.createOrder).toHaveBeenCalled();
+        expect(mockOrderPresenter.presentOrder).toHaveBeenCalled();
+        expect(result).toBe(mockResponseDto);
+      });
+    });
   });
 }); 

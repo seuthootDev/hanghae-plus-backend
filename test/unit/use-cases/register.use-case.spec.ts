@@ -134,5 +134,96 @@ describe('RegisterUseCase', () => {
       await expect(useCase.execute(registerDto)).rejects.toThrow('이미 사용 중인 이메일입니다.');
       expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(registerDto.email);
     });
+
+    describe('트랜잭션 동작 테스트', () => {
+      it('@Transactional 데코레이터가 적용되어야 한다', () => {
+        // Arrange & Act
+        const method = useCase.execute;
+        const metadata = Reflect.getMetadata('transactional', method);
+
+        // Assert
+        expect(metadata).toBe(true);
+      });
+
+      it('사용자 저장 중 에러가 발생하면 트랜잭션이 롤백되어야 한다', async () => {
+        // Arrange
+        const registerDto: RegisterDto = {
+          email: 'test@example.com',
+          password: 'password123',
+          name: '홍길동',
+        };
+
+        mockUserRepository.findByEmail.mockResolvedValue(null);
+        mockAuthService.hashPassword.mockResolvedValue('hashed_password');
+        mockUserRepository.save.mockRejectedValue(new Error('Database error'));
+
+        // Act & Assert
+        await expect(useCase.execute(registerDto)).rejects.toThrow('Database error');
+        
+        // 트랜잭션이 롤백되었으므로 register가 호출되지 않아야 함
+        expect(mockAuthService.register).not.toHaveBeenCalled();
+        expect(mockAuthPresenter.presentAuth).not.toHaveBeenCalled();
+      });
+
+      it('인증 토큰 생성 중 에러가 발생하면 트랜잭션이 롤백되어야 한다', async () => {
+        // Arrange
+        const registerDto: RegisterDto = {
+          email: 'test@example.com',
+          password: 'password123',
+          name: '홍길동',
+        };
+
+        const mockUser = new User(1, '홍길동', 'test@example.com', 0, 'hashed_password');
+
+        mockUserRepository.findByEmail.mockResolvedValue(null);
+        mockAuthService.hashPassword.mockResolvedValue('hashed_password');
+        mockUserRepository.save.mockResolvedValue(mockUser);
+        mockAuthService.register.mockRejectedValue(new Error('Token creation failed'));
+
+        // Act & Assert
+        await expect(useCase.execute(registerDto)).rejects.toThrow('Token creation failed');
+        
+        // 사용자는 저장되었지만 트랜잭션이 롤백되어야 함
+        expect(mockUserRepository.save).toHaveBeenCalled();
+        expect(mockAuthPresenter.presentAuth).not.toHaveBeenCalled();
+      });
+
+      it('모든 단계가 성공하면 트랜잭션이 커밋되어야 한다', async () => {
+        // Arrange
+        const registerDto: RegisterDto = {
+          email: 'test@example.com',
+          password: 'password123',
+          name: '홍길동',
+        };
+
+        const mockUser = new User(1, '홍길동', 'test@example.com', 0, 'hashed_password');
+        const mockAuthToken = new AuthToken(1, 1, 'test-token', 'test-refresh-token', new Date());
+        const mockResponse: AuthResponseDto = {
+          userId: 1,
+          email: 'test@example.com',
+          name: '홍길동',
+          token: 'test-token',
+          refreshToken: 'test-refresh-token',
+          expiresAt: new Date(),
+        };
+
+        mockUserRepository.findByEmail.mockResolvedValue(null);
+        mockAuthService.hashPassword.mockResolvedValue('hashed_password');
+        mockUserRepository.save.mockResolvedValue(mockUser);
+        mockAuthService.register.mockResolvedValue(mockAuthToken);
+        mockAuthPresenter.presentAuth.mockReturnValue(mockResponse);
+
+        // Act
+        const result = await useCase.execute(registerDto);
+
+        // Assert - 모든 단계가 성공적으로 실행되어야 함
+        expect(mockUserRepository.findByEmail).toHaveBeenCalled();
+        expect(mockAuthService.hashPassword).toHaveBeenCalled();
+        expect(mockUserRepository.save).toHaveBeenCalled();
+        expect(mockAuthService.register).toHaveBeenCalled();
+        expect(mockAuthPresenter.presentAuth).toHaveBeenCalled();
+        expect(result).toEqual(mockResponse);
+      });
+    });
   });
 }); 

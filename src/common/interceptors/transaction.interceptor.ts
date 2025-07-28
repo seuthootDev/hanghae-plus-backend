@@ -1,7 +1,7 @@
 import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { DataSource } from 'typeorm';
-import { Observable } from 'rxjs';
+import { Observable, from } from 'rxjs';
 import { TRANSACTIONAL_KEY } from '../decorators/transactional.decorator';
 
 @Injectable()
@@ -11,7 +11,7 @@ export class TransactionInterceptor implements NestInterceptor {
     private readonly reflector: Reflector,
   ) {}
 
-  async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const isTransactional = this.reflector.get<boolean>(
       TRANSACTIONAL_KEY,
       context.getHandler(),
@@ -21,6 +21,10 @@ export class TransactionInterceptor implements NestInterceptor {
       return next.handle();
     }
 
+    return from(this.executeWithTransaction(next));
+  }
+
+  private async executeWithTransaction(next: CallHandler): Promise<any> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
