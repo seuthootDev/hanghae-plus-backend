@@ -97,6 +97,7 @@ export class CreateOrderUseCase {
         totalAmount,
         discountAmount,
         finalAmount,
+        couponId: couponUsed ? couponId : null,
         couponUsed
       });
       

@@ -19,6 +19,7 @@ export class OrdersService implements OrdersServiceInterface {
     totalAmount: number;
     discountAmount: number;
     finalAmount: number;
+    couponId: number | null;
     couponUsed: boolean;
   }): Promise<Order> {
     try {
@@ -30,6 +31,7 @@ export class OrdersService implements OrdersServiceInterface {
         orderData.totalAmount,
         orderData.discountAmount,
         orderData.finalAmount,
+        orderData.couponId,
         orderData.couponUsed,
         'PENDING'
       );

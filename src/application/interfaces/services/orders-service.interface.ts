@@ -11,6 +11,7 @@ export interface OrdersServiceInterface {
     totalAmount: number;
     discountAmount: number;
     finalAmount: number;
+    couponId: number | null;
     couponUsed: boolean;
   }): Promise<Order>;
   findById(orderId: number): Promise<Order | null>;

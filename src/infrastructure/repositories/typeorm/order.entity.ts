@@ -20,6 +20,9 @@ export class OrderEntity {
   @Column({ type: 'int' })
   finalAmount: number;
 
+  @Column({ type: 'int', nullable: true })
+  couponId: number;
+
   @Column({ type: 'boolean', default: false })
   couponUsed: boolean;
 
