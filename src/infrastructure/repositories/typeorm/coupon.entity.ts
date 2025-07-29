@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import { OrderEntity } from './order.entity';
 
 @Entity('coupons')
 export class CouponEntity {
@@ -28,4 +29,7 @@ export class CouponEntity {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @OneToMany(() => OrderEntity, order => order.coupon)
+  orders: OrderEntity[];
 } 
