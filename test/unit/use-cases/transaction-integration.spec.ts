@@ -7,7 +7,7 @@ import { UserRepositoryInterface, USER_REPOSITORY } from '../../../src/applicati
 import { AuthValidationService } from '../../../src/domain/services/auth-validation.service';
 import { RegisterDto } from '../../../src/presentation/dto/authDTO/register.dto';
 import { User } from '../../../src/domain/entities/user.entity';
-import { AuthToken } from '../../../src/domain/entities/auth-token.entity';
+
 
 describe('Transaction Integration Tests', () => {
   let registerUseCase: RegisterUseCase;
@@ -111,12 +111,12 @@ describe('Transaction Integration Tests', () => {
       };
 
       const mockUser = new User(1, '홍길동', 'test@example.com', 0, 'hashed_password');
-      const mockAuthToken = new AuthToken(1, 1, 'test-token', 'test-refresh-token', new Date());
+      const mockAuthResult = { token: 'test-token', refreshToken: 'test-refresh-token' };
 
       mockUserRepository.findByEmail.mockResolvedValue(null);
       mockAuthService.hashPassword.mockResolvedValue('hashed_password');
       mockUserRepository.save.mockResolvedValue(mockUser);
-      mockAuthService.register.mockResolvedValue(mockAuthToken);
+      mockAuthService.register.mockResolvedValue(mockAuthResult);
 
       // Act
       await registerUseCase.execute(registerDto);

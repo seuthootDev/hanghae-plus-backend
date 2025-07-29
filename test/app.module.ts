@@ -34,19 +34,16 @@ import { PRODUCT_REPOSITORY } from '../src/application/interfaces/repositories/p
 import { ORDER_REPOSITORY } from '../src/application/interfaces/repositories/order-repository.interface';
 import { COUPON_REPOSITORY } from '../src/application/interfaces/repositories/coupon-repository.interface';
 import { PAYMENT_REPOSITORY } from '../src/application/interfaces/repositories/payment-repository.interface';
-import { AUTH_REPOSITORY } from '../src/application/interfaces/repositories/auth-repository.interface';
 import { UserRepository } from '../src/infrastructure/repositories/user.repository';
 import { ProductRepository } from '../src/infrastructure/repositories/product.repository';
 import { OrderRepository } from '../src/infrastructure/repositories/order.repository';
 import { CouponRepository } from '../src/infrastructure/repositories/coupon.repository';
 import { PaymentRepository } from '../src/infrastructure/repositories/payment.repository';
-import { AuthRepository } from '../src/infrastructure/repositories/auth.repository';
 import { UserEntity } from '../src/infrastructure/repositories/typeorm/user.entity';
 import { ProductEntity } from '../src/infrastructure/repositories/typeorm/product.entity';
 import { OrderEntity } from '../src/infrastructure/repositories/typeorm/order.entity';
 import { CouponEntity } from '../src/infrastructure/repositories/typeorm/coupon.entity';
 import { PaymentEntity } from '../src/infrastructure/repositories/typeorm/payment.entity';
-import { AuthTokenEntity } from '../src/infrastructure/repositories/typeorm/auth-token.entity';
 import { OrderValidationService } from '../src/domain/services/order-validation.service';
 import { UserValidationService } from '../src/domain/services/user-validation.service';
 import { PaymentValidationService } from '../src/domain/services/payment-validation.service';
@@ -72,7 +69,7 @@ import { TestSeeder } from './database/test-seeder';
     TypeOrmModule.forRoot({
       type: 'sqlite',
       database: ':memory:',
-      entities: [UserEntity, ProductEntity, OrderEntity, CouponEntity, PaymentEntity, AuthTokenEntity],
+      entities: [UserEntity, ProductEntity, OrderEntity, CouponEntity, PaymentEntity],
       synchronize: true,
       logging: false,
       dropSchema: true,
@@ -83,8 +80,7 @@ import { TestSeeder } from './database/test-seeder';
       ProductEntity,
       OrderEntity,
       CouponEntity,
-      PaymentEntity,
-      AuthTokenEntity
+      PaymentEntity
     ])
   ],
   controllers: [
@@ -155,10 +151,6 @@ import { TestSeeder } from './database/test-seeder';
     {
       provide: PAYMENT_REPOSITORY,
       useClass: PaymentRepository,
-    },
-    {
-      provide: AUTH_REPOSITORY,
-      useClass: AuthRepository,
     },
     
     // 도메인 서비스들

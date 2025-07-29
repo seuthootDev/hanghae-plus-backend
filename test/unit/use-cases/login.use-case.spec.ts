@@ -7,7 +7,7 @@ import { AuthValidationService } from '../../../src/domain/services/auth-validat
 import { LoginDto } from '../../../src/presentation/dto/authDTO/login.dto';
 import { AuthResponseDto } from '../../../src/presentation/dto/authDTO/auth-response.dto';
 import { User } from '../../../src/domain/entities/user.entity';
-import { AuthToken } from '../../../src/domain/entities/auth-token.entity';
+
 
 describe('LoginUseCase', () => {
   let useCase: LoginUseCase;
@@ -72,12 +72,7 @@ describe('LoginUseCase', () => {
       };
 
       const mockUser = new User(1, '홍길동', 'test@example.com', 1000, 'hashed_password');
-      const mockAuthToken = new AuthToken(1, 1, 'test-token', 'test-refresh-token', new Date());
-      const mockAuthResult = {
-        user: mockUser,
-        token: 'test-token',
-        refreshToken: 'test-refresh-token',
-      };
+      const mockAuthResult = { token: 'test-token', refreshToken: 'test-refresh-token' };
 
       const mockResponse: AuthResponseDto = {
         userId: 1,
@@ -90,7 +85,7 @@ describe('LoginUseCase', () => {
 
       mockUserRepository.findByEmail.mockResolvedValue(mockUser);
       mockAuthService.verifyPassword.mockResolvedValue(true);
-      mockAuthService.login.mockResolvedValue(mockAuthToken);
+      mockAuthService.login.mockResolvedValue(mockAuthResult);
       mockAuthPresenter.presentAuth.mockReturnValue(mockResponse);
 
       // Act
@@ -104,9 +99,14 @@ describe('LoginUseCase', () => {
       expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(loginDto.email);
       expect(mockAuthService.verifyPassword).toHaveBeenCalledWith(loginDto.password, mockUser.password);
       expect(mockAuthService.login).toHaveBeenCalledWith({
-        user: mockUser
+        userId: mockUser.id,
+        email: mockUser.email
       });
-      expect(mockAuthPresenter.presentAuth).toHaveBeenCalledWith(mockAuthResult);
+      expect(mockAuthPresenter.presentAuth).toHaveBeenCalledWith(
+        mockUser,
+        mockAuthResult.token,
+        mockAuthResult.refreshToken
+      );
       expect(result).toEqual(mockResponse);
     });
 
@@ -218,7 +218,7 @@ describe('LoginUseCase', () => {
         };
 
         const mockUser = new User(1, '홍길동', 'test@example.com', 1000, 'hashed_password');
-        const mockAuthToken = new AuthToken(1, 1, 'test-token', 'test-refresh-token', new Date());
+        const mockAuthResult = { token: 'test-token', refreshToken: 'test-refresh-token' };
         const mockResponse: AuthResponseDto = {
           userId: 1,
           email: 'test@example.com',
@@ -230,7 +230,7 @@ describe('LoginUseCase', () => {
 
         mockUserRepository.findByEmail.mockResolvedValue(mockUser);
         mockAuthService.verifyPassword.mockResolvedValue(true);
-        mockAuthService.login.mockResolvedValue(mockAuthToken);
+        mockAuthService.login.mockResolvedValue(mockAuthResult);
         mockAuthPresenter.presentAuth.mockReturnValue(mockResponse);
 
         // Act

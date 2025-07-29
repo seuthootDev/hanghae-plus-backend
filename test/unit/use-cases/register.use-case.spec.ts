@@ -7,7 +7,7 @@ import { AuthValidationService } from '../../../src/domain/services/auth-validat
 import { RegisterDto } from '../../../src/presentation/dto/authDTO/register.dto';
 import { AuthResponseDto } from '../../../src/presentation/dto/authDTO/auth-response.dto';
 import { User } from '../../../src/domain/entities/user.entity';
-import { AuthToken } from '../../../src/domain/entities/auth-token.entity';
+
 
 describe('RegisterUseCase', () => {
   let useCase: RegisterUseCase;
@@ -74,12 +74,7 @@ describe('RegisterUseCase', () => {
       };
 
       const mockUser = new User(1, '홍길동', 'test@example.com', 0, 'hashed_password');
-      const mockAuthToken = new AuthToken(1, 1, 'test-token', 'test-refresh-token', new Date());
-      const mockAuthResult = {
-        user: mockUser,
-        token: 'test-token',
-        refreshToken: 'test-refresh-token',
-      };
+      const mockAuthResult = { token: 'test-token', refreshToken: 'test-refresh-token' };
 
       const mockResponse: AuthResponseDto = {
         userId: 1,
@@ -93,7 +88,7 @@ describe('RegisterUseCase', () => {
       mockUserRepository.findByEmail.mockResolvedValue(null);
       mockAuthService.hashPassword.mockResolvedValue('hashed_password');
       mockUserRepository.save.mockResolvedValue(mockUser);
-      mockAuthService.register.mockResolvedValue(mockAuthToken);
+      mockAuthService.register.mockResolvedValue(mockAuthResult);
       mockAuthPresenter.presentAuth.mockReturnValue(mockResponse);
 
       // Act
@@ -113,9 +108,13 @@ describe('RegisterUseCase', () => {
         password: registerDto.password,
         name: registerDto.name,
         hashedPassword: 'hashed_password',
-        user: mockUser
+        userId: mockUser.id
       });
-      expect(mockAuthPresenter.presentAuth).toHaveBeenCalledWith(mockAuthResult);
+      expect(mockAuthPresenter.presentAuth).toHaveBeenCalledWith(
+        mockUser,
+        mockAuthResult.token,
+        mockAuthResult.refreshToken
+      );
       expect(result).toEqual(mockResponse);
     });
 
@@ -197,7 +196,7 @@ describe('RegisterUseCase', () => {
         };
 
         const mockUser = new User(1, '홍길동', 'test@example.com', 0, 'hashed_password');
-        const mockAuthToken = new AuthToken(1, 1, 'test-token', 'test-refresh-token', new Date());
+        const mockAuthResult = { token: 'test-token', refreshToken: 'test-refresh-token' };
         const mockResponse: AuthResponseDto = {
           userId: 1,
           email: 'test@example.com',
@@ -210,7 +209,7 @@ describe('RegisterUseCase', () => {
         mockUserRepository.findByEmail.mockResolvedValue(null);
         mockAuthService.hashPassword.mockResolvedValue('hashed_password');
         mockUserRepository.save.mockResolvedValue(mockUser);
-        mockAuthService.register.mockResolvedValue(mockAuthToken);
+        mockAuthService.register.mockResolvedValue(mockAuthResult);
         mockAuthPresenter.presentAuth.mockReturnValue(mockResponse);
 
         // Act
