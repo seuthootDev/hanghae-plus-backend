@@ -128,7 +128,7 @@ describe('CreateOrderUseCase', () => {
         { productId: 1, quantity: 2, price: 10000 },
         { productId: 2, quantity: 1, price: 15000 }
       ];
-      const mockOrder = new Order(1, userId, mockOrderItems, 35000, 3500, 31500, true, 'PENDING');
+      const mockOrder = new Order(1, userId, mockOrderItems, 35000, 3500, 31500, 1, true, 'PENDING');
       const mockResponseDto = new OrderResponseDto();
       mockResponseDto.orderId = 1;
       mockResponseDto.userId = userId;
@@ -153,6 +153,7 @@ describe('CreateOrderUseCase', () => {
         totalAmount: 35000,
         discountAmount: 3500,
         finalAmount: 31500,
+        couponId: 1,
         couponUsed: true
       });
       expect(mockOrderPresenter.presentOrder).toHaveBeenCalledWith(mockOrder);
@@ -178,7 +179,7 @@ describe('CreateOrderUseCase', () => {
       const mockOrderItems = [
         { productId: 1, quantity: 1, price: 10000 }
       ];
-      const mockOrder = new Order(2, userId, mockOrderItems, 10000, 0, 10000, false, 'PENDING');
+      const mockOrder = new Order(2, userId, mockOrderItems, 10000, 0, 10000, null, false, 'PENDING');
       const mockResponseDto = new OrderResponseDto();
       mockResponseDto.orderId = 2;
       mockResponseDto.userId = userId;
@@ -198,6 +199,7 @@ describe('CreateOrderUseCase', () => {
         totalAmount: 10000,
         discountAmount: 0,
         finalAmount: 10000,
+        couponId: null,
         couponUsed: false
       });
       expect(mockOrderPresenter.presentOrder).toHaveBeenCalledWith(mockOrder);
@@ -332,7 +334,7 @@ describe('CreateOrderUseCase', () => {
 
         const mockProduct = new Product(1, '상품1', 10000, 10, '설명1');
         const mockUser = new User(1, 'user@test.com', 'password', 50000);
-        const mockOrder = new Order(1, userId, [{ productId: 1, quantity: 2, price: 10000 }], 20000, 0, 20000, false, 'PENDING');
+        const mockOrder = new Order(1, userId, [{ productId: 1, quantity: 2, price: 10000 }], 20000, 0, 20000, null, false, 'PENDING');
         const mockResponseDto = new OrderResponseDto();
 
         mockProductRepository.findById.mockResolvedValue(mockProduct);

@@ -99,7 +99,7 @@ describe('ProcessPaymentUseCase', () => {
       const mockOrderItems = [
         { productId: 1, quantity: 2, price: 10000 }
       ];
-      const mockOrder = new Order(1, 1, mockOrderItems, 20000, 0, 20000, false, 'PENDING');
+      const mockOrder = new Order(1, 1, mockOrderItems, 20000, 0, 20000, null, false, 'PENDING');
       const mockUser = new User(1, 'user@test.com', 'password', 50000);
       const mockPayment = new Payment(
         1,
@@ -165,7 +165,7 @@ describe('ProcessPaymentUseCase', () => {
       const mockOrderItems = [
         { productId: 1, quantity: 1, price: 10000 }
       ];
-      const mockOrder = new Order(2, 1, mockOrderItems, 10000, 1000, 9000, true, 'PENDING');
+      const mockOrder = new Order(2, 1, mockOrderItems, 10000, 1000, 9000, 1, true, 'PENDING');
       const mockUser = new User(1, 'user@test.com', 'password', 50000);
       const mockPayment = new Payment(
         2,
@@ -281,7 +281,7 @@ describe('ProcessPaymentUseCase', () => {
           orderId: 1,
         };
 
-        const mockOrder = new Order(1, 1, [{ productId: 1, quantity: 2, price: 10000 }], 20000, 0, 20000, false, 'PENDING');
+        const mockOrder = new Order(1, 1, [{ productId: 1, quantity: 2, price: 10000 }], 20000, 0, 20000, null, false, 'PENDING');
         mockOrderRepository.findById.mockResolvedValue(mockOrder);
         mockUserRepository.findById.mockRejectedValue(new Error('User not found'));
 
@@ -300,7 +300,7 @@ describe('ProcessPaymentUseCase', () => {
           orderId: 1,
         };
 
-        const mockOrder = new Order(1, 1, [{ productId: 1, quantity: 2, price: 10000 }], 20000, 0, 20000, false, 'PENDING');
+        const mockOrder = new Order(1, 1, [{ productId: 1, quantity: 2, price: 10000 }], 20000, 0, 20000, null, false, 'PENDING');
         const mockUser = new User(1, 'user@test.com', 'password', 50000);
         mockUser.usePoints = jest.fn();
 
@@ -323,7 +323,7 @@ describe('ProcessPaymentUseCase', () => {
           orderId: 1,
         };
 
-        const mockOrder = new Order(1, 1, [{ productId: 1, quantity: 2, price: 10000 }], 20000, 0, 20000, false, 'PENDING');
+        const mockOrder = new Order(1, 1, [{ productId: 1, quantity: 2, price: 10000 }], 20000, 0, 20000, null, false, 'PENDING');
         const mockUser = new User(1, 'user@test.com', 'password', 50000);
         const mockPayment = new Payment(1, 1, 1, 20000, 0, 20000, false, 'SUCCESS', new Date());
 
@@ -356,7 +356,7 @@ describe('ProcessPaymentUseCase', () => {
           orderId: 1,
         };
 
-        const mockOrder = new Order(1, 1, [{ productId: 1, quantity: 2, price: 10000 }], 20000, 0, 20000, false, 'PENDING');
+        const mockOrder = new Order(1, 1, [{ productId: 1, quantity: 2, price: 10000 }], 20000, 0, 20000, null, false, 'PENDING');
         const mockUser = new User(1, 'user@test.com', 'password', 50000);
         const mockPayment = new Payment(1, 1, 1, 20000, 0, 20000, false, 'SUCCESS', new Date());
         const mockResponse: PaymentResponseDto = {
