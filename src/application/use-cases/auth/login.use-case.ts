@@ -39,19 +39,18 @@ export class LoginUseCase {
         throw new UnauthorizedException('비밀번호가 일치하지 않습니다.');
       }
       
-      // 4. 인증 토큰 생성 (간소화된 서비스 사용)
+      // 4. 인증 토큰 생성
       const authToken = await this.authService.login({
-        user
+        userId: user.id,
+        email: user.email
       });
       
-      // 5. 응답 생성
-      const authResult = {
+      // 5. 응답 생성 (다른 프레젠터들과 일관된 패턴)
+      return this.authPresenter.presentAuth(
         user,
-        token: authToken.token,
-        refreshToken: authToken.refreshToken
-      };
-      
-      return this.authPresenter.presentAuth(authResult);
+        authToken.token,
+        authToken.refreshToken
+      );
     } catch (error) {
       // 도메인 예외를 HTTP 예외로 변환
       if (error.message.includes('이메일은 필수입니다')) {

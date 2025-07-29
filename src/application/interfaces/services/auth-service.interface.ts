@@ -1,34 +1,47 @@
-import { User } from '../../../domain/entities/user.entity';
-import { AuthToken } from '../../../domain/entities/auth-token.entity';
-
 export const AUTH_SERVICE = 'AUTH_SERVICE';
 
-export interface AuthResult {
-  user: User;
-  token: string;
-  refreshToken: string;
-}
-
 export interface AuthServiceInterface {
+  /**
+   * 회원가입 시 토큰 생성
+   */
   register(authData: {
     email: string;
     password: string;
     name: string;
     hashedPassword: string;
-    user: User;
-  }): Promise<AuthToken>;
-  
+    userId: number;
+  }): Promise<{ token: string; refreshToken: string }>;
+
+  /**
+   * 로그인 시 토큰 생성
+   */
   login(authData: {
-    user: User;
-  }): Promise<AuthToken>;
-  
-  validateToken(token: string): Promise<AuthToken>;
-  
-  refreshToken(refreshToken: string): Promise<AuthToken>;
-  
+    userId: number;
+    email: string;
+  }): Promise<{ token: string; refreshToken: string }>;
+
+  /**
+   * 토큰 검증
+   */
+  validateToken(token: string): Promise<{ userId: number; email: string }>;
+
+  /**
+   * 리프레시 토큰으로 새 토큰 생성
+   */
+  refreshToken(refreshToken: string): Promise<{ token: string; refreshToken: string }>;
+
+  /**
+   * 로그아웃 (stateless JWT에서는 클라이언트에서 처리)
+   */
   logout(token: string): Promise<void>;
-  
+
+  /**
+   * 비밀번호 해싱
+   */
   hashPassword(password: string): Promise<string>;
-  
+
+  /**
+   * 비밀번호 검증
+   */
   verifyPassword(password: string, hashedPassword: string): Promise<boolean>;
 } 

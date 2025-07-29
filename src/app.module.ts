@@ -36,19 +36,16 @@ import { PRODUCT_REPOSITORY } from './application/interfaces/repositories/produc
 import { ORDER_REPOSITORY } from './application/interfaces/repositories/order-repository.interface';
 import { COUPON_REPOSITORY } from './application/interfaces/repositories/coupon-repository.interface';
 import { PAYMENT_REPOSITORY } from './application/interfaces/repositories/payment-repository.interface';
-import { AUTH_REPOSITORY } from './application/interfaces/repositories/auth-repository.interface';
 import { UserRepository } from './infrastructure/repositories/user.repository';
 import { ProductRepository } from './infrastructure/repositories/product.repository';
 import { OrderRepository } from './infrastructure/repositories/order.repository';
 import { CouponRepository } from './infrastructure/repositories/coupon.repository';
 import { PaymentRepository } from './infrastructure/repositories/payment.repository';
-import { AuthRepository } from './infrastructure/repositories/auth.repository';
 import { UserEntity } from './infrastructure/repositories/typeorm/user.entity';
 import { ProductEntity } from './infrastructure/repositories/typeorm/product.entity';
 import { OrderEntity } from './infrastructure/repositories/typeorm/order.entity';
 import { CouponEntity } from './infrastructure/repositories/typeorm/coupon.entity';
 import { PaymentEntity } from './infrastructure/repositories/typeorm/payment.entity';
-import { AuthTokenEntity } from './infrastructure/repositories/typeorm/auth-token.entity';
 import { OrderValidationService } from './domain/services/order-validation.service';
 import { UserValidationService } from './domain/services/user-validation.service';
 import { PaymentValidationService } from './domain/services/payment-validation.service';
@@ -76,8 +73,7 @@ import { AUTH_PRESENTER } from './application/interfaces/presenters/auth-present
       ProductEntity,
       OrderEntity,
       CouponEntity,
-      PaymentEntity,
-      AuthTokenEntity
+      PaymentEntity
     ])
   ],
   controllers: [
@@ -148,10 +144,6 @@ import { AUTH_PRESENTER } from './application/interfaces/presenters/auth-present
     {
       provide: PAYMENT_REPOSITORY,
       useClass: PaymentRepository,
-    },
-    {
-      provide: AUTH_REPOSITORY,
-      useClass: AuthRepository,
     },
     
     // 도메인 서비스들
