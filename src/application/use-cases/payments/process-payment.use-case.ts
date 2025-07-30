@@ -5,6 +5,7 @@ import { PaymentsServiceInterface, PAYMENTS_SERVICE } from '../../interfaces/ser
 import { PaymentPresenterInterface, PAYMENT_PRESENTER } from '../../interfaces/presenters/payment-presenter.interface';
 import { OrderRepositoryInterface, ORDER_REPOSITORY } from '../../interfaces/repositories/order-repository.interface';
 import { UserRepositoryInterface, USER_REPOSITORY } from '../../interfaces/repositories/user-repository.interface';
+import { ProductRepositoryInterface, PRODUCT_REPOSITORY } from '../../interfaces/repositories/product-repository.interface';
 import { PaymentValidationService } from '../../../domain/services/payment-validation.service';
 import { UserValidationService } from '../../../domain/services/user-validation.service';
 import { Transactional } from '../../../common/decorators/transactional.decorator';
@@ -20,6 +21,8 @@ export class ProcessPaymentUseCase {
     private readonly orderRepository: OrderRepositoryInterface,
     @Inject(USER_REPOSITORY)
     private readonly userRepository: UserRepositoryInterface,
+    @Inject(PRODUCT_REPOSITORY)
+    private readonly productRepository: ProductRepositoryInterface,
     private readonly paymentValidationService: PaymentValidationService,
     private readonly userValidationService: UserValidationService
   ) {}
@@ -27,10 +30,11 @@ export class ProcessPaymentUseCase {
   @Transactional()
   async execute(processPaymentDto: ProcessPaymentDto): Promise<PaymentResponseDto> {
     const { orderId } = processPaymentDto;
+    let order: any = null;
     
     try {
       // 1. 주문 조회 및 검증
-      const order = await this.orderRepository.findById(orderId);
+      order = await this.orderRepository.findById(orderId);
       this.paymentValidationService.validateOrderExists(order);
       
       // 2. 사용자 조회 및 검증
@@ -61,6 +65,22 @@ export class ProcessPaymentUseCase {
       
       return this.paymentPresenter.presentPayment(payment);
     } catch (error) {
+      // 결제 실패 시 재고 반환
+      if (order) {
+        try {
+          for (const item of order.items) {
+            const product = await this.productRepository.findById(item.productId);
+            if (product) {
+              product.increaseStock(item.quantity);
+              await this.productRepository.save(product);
+            }
+          }
+        } catch (stockError) {
+          // 재고 반환 실패는 로그만 남기고 원래 에러를 던짐
+          console.error('재고 반환 실패:', stockError);
+        }
+      }
+      
       // 도메인 예외를 HTTP 예외로 변환
       if (error.message.includes('주문을 찾을 수 없습니다')) {
         throw new NotFoundException(error.message);

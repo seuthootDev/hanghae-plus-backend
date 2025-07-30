@@ -59,4 +59,28 @@ export class ProductRepository implements ProductRepositoryInterface {
       entity.totalRevenue
     ));
   }
+
+  async save(product: Product): Promise<Product> {
+    const productEntity = this.productRepository.create({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      stock: product.stock,
+      category: product.category,
+      salesCount: product.salesCount,
+      totalRevenue: product.totalRevenue
+    });
+    
+    const savedEntity = await this.productRepository.save(productEntity);
+    
+    return new Product(
+      savedEntity.id,
+      savedEntity.name,
+      savedEntity.price,
+      savedEntity.stock,
+      savedEntity.category,
+      savedEntity.salesCount,
+      savedEntity.totalRevenue
+    );
+  }
 } 

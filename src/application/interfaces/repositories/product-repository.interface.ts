@@ -6,4 +6,5 @@ export interface ProductRepositoryInterface {
   findById(id: number): Promise<Product | null>;
   findAll(): Promise<Product[]>;
   findTopSellers(): Promise<Product[]>;
+  save(product: Product): Promise<Product>;
 } 

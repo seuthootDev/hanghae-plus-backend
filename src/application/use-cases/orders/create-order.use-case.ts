@@ -52,6 +52,10 @@ export class CreateOrderUseCase {
         // 상품 검증
         this.orderValidationService.validateProduct(product, item.quantity);
         
+        // 재고 차감
+        product.decreaseStock(item.quantity);
+        await this.productRepository.save(product);
+        
         orderItems.push({
           productId: item.productId,
           quantity: item.quantity,
