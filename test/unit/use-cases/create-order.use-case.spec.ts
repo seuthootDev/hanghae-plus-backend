@@ -43,6 +43,7 @@ describe('CreateOrderUseCase', () => {
       provide: 'PRODUCT_REPOSITORY',
       useValue: {
         findById: jest.fn(),
+        save: jest.fn(),
       },
     };
 
@@ -112,7 +113,9 @@ describe('CreateOrderUseCase', () => {
       createOrderDto.couponId = 1;
 
       const mockProduct1 = new Product(1, '상품1', 10000, 10, '설명1');
+      mockProduct1.decreaseStock = jest.fn();
       const mockProduct2 = new Product(2, '상품2', 15000, 5, '설명2');
+      mockProduct2.decreaseStock = jest.fn();
       const mockUser = new User(1, 'user@test.com', 'password', 50000);
       const mockCoupon = new Coupon(1, 1, 'DISCOUNT_10', 10, 0, new Date(), false);
       mockCoupon.isValid = jest.fn().mockReturnValue(true);
@@ -158,6 +161,12 @@ describe('CreateOrderUseCase', () => {
       });
       expect(mockOrderPresenter.presentOrder).toHaveBeenCalledWith(mockOrder);
       expect(result).toBe(mockResponseDto);
+      
+      // 재고 차감 검증
+      expect(mockProduct1.decreaseStock).toHaveBeenCalledWith(2);
+      expect(mockProduct2.decreaseStock).toHaveBeenCalledWith(1);
+      expect(mockProductRepository.save).toHaveBeenCalledWith(mockProduct1);
+      expect(mockProductRepository.save).toHaveBeenCalledWith(mockProduct2);
     });
 
     it('할인이 없는 주문도 처리해야 한다', async () => {
@@ -170,6 +179,7 @@ describe('CreateOrderUseCase', () => {
       ];
 
       const mockProduct = new Product(1, '상품1', 10000, 10, '설명1');
+      mockProduct.decreaseStock = jest.fn();
       const mockUser = new User(1, 'user@test.com', 'password', 50000);
 
       mockProductRepository.findById.mockResolvedValue(mockProduct);
@@ -204,6 +214,10 @@ describe('CreateOrderUseCase', () => {
       });
       expect(mockOrderPresenter.presentOrder).toHaveBeenCalledWith(mockOrder);
       expect(result).toBe(mockResponseDto);
+      
+      // 재고 차감 검증
+      expect(mockProduct.decreaseStock).toHaveBeenCalledWith(1);
+      expect(mockProductRepository.save).toHaveBeenCalledWith(mockProduct);
     });
 
     it('서비스에서 에러가 발생하면 에러를 전파해야 한다', async () => {
@@ -234,6 +248,7 @@ describe('CreateOrderUseCase', () => {
       ];
 
       const mockProduct = new Product(1, '상품1', 10000, 5, '설명1');
+      mockProduct.decreaseStock = jest.fn();
       mockProductRepository.findById.mockResolvedValue(mockProduct);
 
       const mockError = new Error('재고가 부족합니다.');
@@ -245,6 +260,10 @@ describe('CreateOrderUseCase', () => {
       await expect(useCase.execute(createOrderDto)).rejects.toThrow(
         '재고가 부족합니다.'
       );
+      
+      // 재고 차감이 호출되지 않아야 함
+      expect(mockProduct.decreaseStock).not.toHaveBeenCalled();
+      expect(mockProductRepository.save).not.toHaveBeenCalled();
     });
 
     describe('트랜잭션 동작 테스트', () => {

@@ -4,11 +4,13 @@ import { PaymentsServiceInterface } from '../../../src/application/interfaces/se
 import { PaymentPresenterInterface } from '../../../src/application/interfaces/presenters/payment-presenter.interface';
 import { OrderRepositoryInterface } from '../../../src/application/interfaces/repositories/order-repository.interface';
 import { UserRepositoryInterface } from '../../../src/application/interfaces/repositories/user-repository.interface';
+import { ProductRepositoryInterface } from '../../../src/application/interfaces/repositories/product-repository.interface';
 import { PaymentValidationService } from '../../../src/domain/services/payment-validation.service';
 import { UserValidationService } from '../../../src/domain/services/user-validation.service';
 import { Order } from '../../../src/domain/entities/order.entity';
 import { User } from '../../../src/domain/entities/user.entity';
 import { Payment } from '../../../src/domain/entities/payment.entity';
+import { Product } from '../../../src/domain/entities/product.entity';
 import { ProcessPaymentDto } from '../../../src/presentation/dto/paymentsDTO/process-payment.dto';
 import { PaymentResponseDto } from '../../../src/presentation/dto/paymentsDTO/payment-response.dto';
 
@@ -18,6 +20,7 @@ describe('ProcessPaymentUseCase', () => {
   let mockPaymentPresenter: jest.Mocked<PaymentPresenterInterface>;
   let mockOrderRepository: jest.Mocked<OrderRepositoryInterface>;
   let mockUserRepository: jest.Mocked<UserRepositoryInterface>;
+  let mockProductRepository: jest.Mocked<ProductRepositoryInterface>;
   let mockPaymentValidationService: jest.Mocked<PaymentValidationService>;
   let mockUserValidationService: jest.Mocked<UserValidationService>;
 
@@ -52,6 +55,14 @@ describe('ProcessPaymentUseCase', () => {
       },
     };
 
+    const mockProductRepositoryProvider = {
+      provide: 'PRODUCT_REPOSITORY',
+      useValue: {
+        findById: jest.fn(),
+        save: jest.fn(),
+      },
+    };
+
     const mockPaymentValidationServiceProvider = {
       provide: PaymentValidationService,
       useValue: {
@@ -75,6 +86,7 @@ describe('ProcessPaymentUseCase', () => {
         mockPaymentPresenterProvider,
         mockOrderRepositoryProvider,
         mockUserRepositoryProvider,
+        mockProductRepositoryProvider,
         mockPaymentValidationServiceProvider,
         mockUserValidationServiceProvider,
       ],
@@ -85,6 +97,7 @@ describe('ProcessPaymentUseCase', () => {
     mockPaymentPresenter = module.get('PAYMENT_PRESENTER');
     mockOrderRepository = module.get('ORDER_REPOSITORY');
     mockUserRepository = module.get('USER_REPOSITORY');
+    mockProductRepository = module.get('PRODUCT_REPOSITORY');
     mockPaymentValidationService = module.get(PaymentValidationService);
     mockUserValidationService = module.get(UserValidationService);
   });
@@ -315,6 +328,30 @@ describe('ProcessPaymentUseCase', () => {
         expect(mockOrderRepository.findById).toHaveBeenCalled();
         expect(mockUserRepository.findById).toHaveBeenCalled();
         expect(mockPaymentPresenter.presentPayment).not.toHaveBeenCalled();
+      });
+
+      it('결제 실패 시 재고가 반환되어야 한다', async () => {
+        // Arrange
+        const processPaymentDto: ProcessPaymentDto = {
+          orderId: 1,
+        };
+
+        const mockOrder = new Order(1, 1, [{ productId: 1, quantity: 2, price: 10000 }], 20000, 0, 20000, null, false, 'PENDING');
+        const mockUser = new User(1, 'user@test.com', 'password', 50000);
+        const mockProduct = new Product(1, '상품1', 10000, 8, '음료'); // 재고 8개 (이미 2개 차감된 상태)
+        mockProduct.increaseStock = jest.fn();
+
+        mockOrderRepository.findById.mockResolvedValue(mockOrder);
+        mockUserRepository.findById.mockResolvedValue(mockUser);
+        mockProductRepository.findById.mockResolvedValue(mockProduct);
+        mockPaymentsService.processPayment.mockRejectedValue(new Error('Payment failed'));
+
+        // Act & Assert
+        await expect(useCase.execute(processPaymentDto)).rejects.toThrow('Payment failed');
+        
+        // 재고 반환 검증
+        expect(mockProduct.increaseStock).toHaveBeenCalledWith(2);
+        expect(mockProductRepository.save).toHaveBeenCalledWith(mockProduct);
       });
 
       it('포인트 차감 중 에러가 발생하면 트랜잭션이 롤백되어야 한다', async () => {

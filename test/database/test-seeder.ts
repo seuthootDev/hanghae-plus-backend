@@ -25,7 +25,7 @@ export class TestSeeder {
   ) {}
 
   async seedTestData(): Promise<void> {
-    // 테스트용 사용자 데이터 (빠른 테스트 실행을 위해 하드코딩)
+    // Auth API 테스트를 위한 기본 사용자 데이터만 삽입
     const testPassword = 'password123';
     const hashedPassword = await bcrypt.hash(testPassword, envConfig.bcrypt.saltRounds);
     
@@ -35,10 +35,19 @@ export class TestSeeder {
       { name: 'Test User 3', email: 'test3@example.com', password: hashedPassword, points: 0 },
     ];
 
+    // 사용자 데이터만 삽입 (Auth API 테스트에만 필요)
     for (const userData of users) {
       const user = this.userRepository.create(userData);
       await this.userRepository.save(user);
     }
+
+    // Auth API 테스트에는 다른 테이블 데이터가 필요하지 않음
+    // 다른 API 테스트에서 필요할 때 추가 데이터를 삽입하는 메서드를 별도로 만들 수 있음
+  }
+
+  async seedFullTestData(): Promise<void> {
+    // 모든 테이블에 데이터를 삽입하는 메서드
+    await this.seedTestData(); // 기본 사용자 데이터 삽입
 
     // 상품 데이터
     const products = [
@@ -72,8 +81,8 @@ export class TestSeeder {
 
     // 주문 데이터
     const orders = [
-      { userId: 1, items: [{ productId: 1, quantity: 2, price: 3000 }], totalAmount: 6000, discountAmount: 600, finalAmount: 5400, couponUsed: true, status: 'PENDING' },
-      { userId: 2, items: [{ productId: 2, quantity: 3, price: 4000 }], totalAmount: 12000, discountAmount: 0, finalAmount: 12000, couponUsed: false, status: 'PENDING' },
+      { userId: 1, items: [{ productId: 1, quantity: 2, price: 3000 }], totalAmount: 6000, discountAmount: 600, finalAmount: 5400, couponId: 1, couponUsed: true, status: 'PENDING' },
+      { userId: 2, items: [{ productId: 2, quantity: 3, price: 4000 }], totalAmount: 12000, discountAmount: 0, finalAmount: 12000, couponId: null, couponUsed: false, status: 'PENDING' },
     ];
 
     for (const orderData of orders) {
@@ -93,6 +102,7 @@ export class TestSeeder {
   }
 
   async clearTestData(): Promise<void> {
+    // 외래키 제약조건을 고려하여 역순으로 삭제
     await this.paymentRepository.clear();
     await this.orderRepository.clear();
     await this.couponRepository.clear();

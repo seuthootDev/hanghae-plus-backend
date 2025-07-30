@@ -17,8 +17,8 @@ describe('Products API (e2e)', () => {
     testSeeder = moduleFixture.get<TestSeeder>(TestSeeder);
     await app.init();
     
-    // 테스트 데이터 시딩
-    await testSeeder.seedTestData();
+    // 테스트 데이터 시딩 (상품 데이터 포함)
+    await testSeeder.seedFullTestData();
   });
 
   afterAll(async () => {
