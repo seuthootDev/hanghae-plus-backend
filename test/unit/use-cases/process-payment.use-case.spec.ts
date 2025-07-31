@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProcessPaymentUseCase } from '../../../src/application/use-cases/payments/process-payment.use-case';
 import { PaymentsServiceInterface } from '../../../src/application/interfaces/services/payments-service.interface';
-import { PaymentPresenterInterface } from '../../../src/application/interfaces/presenters/payment-presenter.interface';
 import { OrderRepositoryInterface } from '../../../src/application/interfaces/repositories/order-repository.interface';
 import { UserRepositoryInterface } from '../../../src/application/interfaces/repositories/user-repository.interface';
 import { ProductRepositoryInterface } from '../../../src/application/interfaces/repositories/product-repository.interface';
@@ -17,7 +16,6 @@ import { PaymentResponseDto } from '../../../src/presentation/dto/paymentsDTO/pa
 describe('ProcessPaymentUseCase', () => {
   let useCase: ProcessPaymentUseCase;
   let mockPaymentsService: jest.Mocked<PaymentsServiceInterface>;
-  let mockPaymentPresenter: jest.Mocked<PaymentPresenterInterface>;
   let mockOrderRepository: jest.Mocked<OrderRepositoryInterface>;
   let mockUserRepository: jest.Mocked<UserRepositoryInterface>;
   let mockProductRepository: jest.Mocked<ProductRepositoryInterface>;
@@ -29,13 +27,6 @@ describe('ProcessPaymentUseCase', () => {
       provide: 'PAYMENTS_SERVICE',
       useValue: {
         processPayment: jest.fn(),
-      },
-    };
-
-    const mockPaymentPresenterProvider = {
-      provide: 'PAYMENT_PRESENTER',
-      useValue: {
-        presentPayment: jest.fn(),
       },
     };
 
@@ -83,7 +74,6 @@ describe('ProcessPaymentUseCase', () => {
       providers: [
         ProcessPaymentUseCase,
         mockPaymentsServiceProvider,
-        mockPaymentPresenterProvider,
         mockOrderRepositoryProvider,
         mockUserRepositoryProvider,
         mockProductRepositoryProvider,
@@ -94,7 +84,6 @@ describe('ProcessPaymentUseCase', () => {
 
     useCase = module.get<ProcessPaymentUseCase>(ProcessPaymentUseCase);
     mockPaymentsService = module.get('PAYMENTS_SERVICE');
-    mockPaymentPresenter = module.get('PAYMENT_PRESENTER');
     mockOrderRepository = module.get('ORDER_REPOSITORY');
     mockUserRepository = module.get('USER_REPOSITORY');
     mockProductRepository = module.get('PRODUCT_REPOSITORY');
@@ -143,7 +132,6 @@ describe('ProcessPaymentUseCase', () => {
       mockOrderRepository.findById.mockResolvedValue(mockOrder);
       mockUserRepository.findById.mockResolvedValue(mockUser);
       mockPaymentsService.processPayment.mockResolvedValue(mockPayment);
-      mockPaymentPresenter.presentPayment.mockReturnValue(mockResponse);
 
       // when
       const result = await useCase.execute(processPaymentDto);
@@ -165,7 +153,6 @@ describe('ProcessPaymentUseCase', () => {
       expect(mockUserRepository.save).toHaveBeenCalledWith(mockUser);
       expect(mockOrder.updateStatus).toHaveBeenCalledWith('PAID');
       expect(mockOrderRepository.save).toHaveBeenCalledWith(mockOrder);
-      expect(mockPaymentPresenter.presentPayment).toHaveBeenCalledWith(mockPayment);
       expect(result).toEqual(mockResponse);
     });
 
@@ -209,7 +196,6 @@ describe('ProcessPaymentUseCase', () => {
       mockOrderRepository.findById.mockResolvedValue(mockOrder);
       mockUserRepository.findById.mockResolvedValue(mockUser);
       mockPaymentsService.processPayment.mockResolvedValue(mockPayment);
-      mockPaymentPresenter.presentPayment.mockReturnValue(mockResponse);
 
       // when
       const result = await useCase.execute(processPaymentDto);
@@ -223,7 +209,6 @@ describe('ProcessPaymentUseCase', () => {
         finalAmount: 9000,
         couponUsed: true
       });
-      expect(mockPaymentPresenter.presentPayment).toHaveBeenCalledWith(mockPayment);
       expect(result).toEqual(mockResponse);
       expect(result.couponUsed).toBe(true);
       expect(result.discountAmount).toBe(1000);
@@ -285,7 +270,6 @@ describe('ProcessPaymentUseCase', () => {
         // 트랜잭션이 롤백되었으므로 다른 작업들이 호출되지 않아야 함
         expect(mockUserRepository.findById).not.toHaveBeenCalled();
         expect(mockPaymentsService.processPayment).not.toHaveBeenCalled();
-        expect(mockPaymentPresenter.presentPayment).not.toHaveBeenCalled();
       });
 
       it('사용자 조회 중 에러가 발생하면 트랜잭션이 롤백되어야 한다', async () => {
@@ -304,7 +288,6 @@ describe('ProcessPaymentUseCase', () => {
         // 주문 조회는 성공했지만 사용자 조회에서 실패하여 트랜잭션이 롤백되어야 함
         expect(mockOrderRepository.findById).toHaveBeenCalled();
         expect(mockPaymentsService.processPayment).not.toHaveBeenCalled();
-        expect(mockPaymentPresenter.presentPayment).not.toHaveBeenCalled();
       });
 
       it('결제 처리 중 에러가 발생하면 트랜잭션이 롤백되어야 한다', async () => {
@@ -327,7 +310,6 @@ describe('ProcessPaymentUseCase', () => {
         // 주문과 사용자 조회는 성공했지만 결제 처리에서 실패하여 트랜잭션이 롤백되어야 함
         expect(mockOrderRepository.findById).toHaveBeenCalled();
         expect(mockUserRepository.findById).toHaveBeenCalled();
-        expect(mockPaymentPresenter.presentPayment).not.toHaveBeenCalled();
       });
 
       it('결제 실패 시 재고가 반환되어야 한다', async () => {
@@ -384,7 +366,6 @@ describe('ProcessPaymentUseCase', () => {
         expect(mockUserRepository.save).not.toHaveBeenCalled();
         expect(mockOrder.updateStatus).not.toHaveBeenCalled();
         expect(mockOrderRepository.save).not.toHaveBeenCalled();
-        expect(mockPaymentPresenter.presentPayment).not.toHaveBeenCalled();
       });
 
       it('모든 단계가 성공하면 트랜잭션이 커밋되어야 한다', async () => {
@@ -413,7 +394,6 @@ describe('ProcessPaymentUseCase', () => {
         mockOrderRepository.findById.mockResolvedValue(mockOrder);
         mockUserRepository.findById.mockResolvedValue(mockUser);
         mockPaymentsService.processPayment.mockResolvedValue(mockPayment);
-        mockPaymentPresenter.presentPayment.mockReturnValue(mockResponse);
 
         // Act
         const result = await useCase.execute(processPaymentDto);
@@ -426,7 +406,6 @@ describe('ProcessPaymentUseCase', () => {
         expect(mockUserRepository.save).toHaveBeenCalled();
         expect(mockOrder.updateStatus).toHaveBeenCalled();
         expect(mockOrderRepository.save).toHaveBeenCalled();
-        expect(mockPaymentPresenter.presentPayment).toHaveBeenCalled();
         expect(result).toEqual(mockResponse);
       });
     });

@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CreateOrderUseCase } from '../../../src/application/use-cases/orders/create-order.use-case';
 import { OrdersServiceInterface } from '../../../src/application/interfaces/services/orders-service.interface';
-import { OrderPresenterInterface } from '../../../src/application/interfaces/presenters/order-presenter.interface';
 import { ProductRepositoryInterface } from '../../../src/application/interfaces/repositories/product-repository.interface';
 import { CouponRepositoryInterface } from '../../../src/application/interfaces/repositories/coupon-repository.interface';
 import { UserRepositoryInterface } from '../../../src/application/interfaces/repositories/user-repository.interface';
@@ -17,7 +16,6 @@ import { Coupon } from '../../../src/domain/entities/coupon.entity';
 describe('CreateOrderUseCase', () => {
   let useCase: CreateOrderUseCase;
   let mockOrdersService: jest.Mocked<OrdersServiceInterface>;
-  let mockOrderPresenter: jest.Mocked<OrderPresenterInterface>;
   let mockProductRepository: jest.Mocked<ProductRepositoryInterface>;
   let mockCouponRepository: jest.Mocked<CouponRepositoryInterface>;
   let mockUserRepository: jest.Mocked<UserRepositoryInterface>;
@@ -29,13 +27,6 @@ describe('CreateOrderUseCase', () => {
       provide: 'ORDERS_SERVICE',
       useValue: {
         createOrder: jest.fn(),
-      },
-    };
-
-    const mockOrderPresenterProvider = {
-      provide: 'ORDER_PRESENTER',
-      useValue: {
-        presentOrder: jest.fn(),
       },
     };
 
@@ -81,7 +72,6 @@ describe('CreateOrderUseCase', () => {
       providers: [
         CreateOrderUseCase,
         mockOrdersServiceProvider,
-        mockOrderPresenterProvider,
         mockProductRepositoryProvider,
         mockCouponRepositoryProvider,
         mockUserRepositoryProvider,
@@ -92,7 +82,6 @@ describe('CreateOrderUseCase', () => {
 
     useCase = module.get<CreateOrderUseCase>(CreateOrderUseCase);
     mockOrdersService = module.get('ORDERS_SERVICE');
-    mockOrderPresenter = module.get('ORDER_PRESENTER');
     mockProductRepository = module.get('PRODUCT_REPOSITORY');
     mockCouponRepository = module.get('COUPON_REPOSITORY');
     mockUserRepository = module.get('USER_REPOSITORY');
@@ -139,7 +128,6 @@ describe('CreateOrderUseCase', () => {
       mockResponseDto.finalAmount = 31500;
 
       mockOrdersService.createOrder.mockResolvedValue(mockOrder);
-      mockOrderPresenter.presentOrder.mockReturnValue(mockResponseDto);
 
       // Act
       const result = await useCase.execute(createOrderDto);
@@ -159,8 +147,6 @@ describe('CreateOrderUseCase', () => {
         couponId: 1,
         couponUsed: true
       });
-      expect(mockOrderPresenter.presentOrder).toHaveBeenCalledWith(mockOrder);
-      expect(result).toBe(mockResponseDto);
       
       // 재고 차감 검증
       expect(mockProduct1.decreaseStock).toHaveBeenCalledWith(2);
@@ -197,7 +183,6 @@ describe('CreateOrderUseCase', () => {
       mockResponseDto.finalAmount = 10000;
 
       mockOrdersService.createOrder.mockResolvedValue(mockOrder);
-      mockOrderPresenter.presentOrder.mockReturnValue(mockResponseDto);
 
       // Act
       const result = await useCase.execute(createOrderDto);
@@ -212,8 +197,6 @@ describe('CreateOrderUseCase', () => {
         couponId: null,
         couponUsed: false
       });
-      expect(mockOrderPresenter.presentOrder).toHaveBeenCalledWith(mockOrder);
-      expect(result).toBe(mockResponseDto);
       
       // 재고 차감 검증
       expect(mockProduct.decreaseStock).toHaveBeenCalledWith(1);
@@ -292,7 +275,6 @@ describe('CreateOrderUseCase', () => {
         
         // 트랜잭션이 롤백되었으므로 주문 생성이 호출되지 않아야 함
         expect(mockOrdersService.createOrder).not.toHaveBeenCalled();
-        expect(mockOrderPresenter.presentOrder).not.toHaveBeenCalled();
       });
 
       it('사용자 조회 중 에러가 발생하면 트랜잭션이 롤백되어야 한다', async () => {
@@ -313,7 +295,6 @@ describe('CreateOrderUseCase', () => {
         
         // 트랜잭션이 롤백되었으므로 주문 생성이 호출되지 않아야 함
         expect(mockOrdersService.createOrder).not.toHaveBeenCalled();
-        expect(mockOrderPresenter.presentOrder).not.toHaveBeenCalled();
       });
 
       it('주문 생성 중 에러가 발생하면 트랜잭션이 롤백되어야 한다', async () => {
@@ -339,7 +320,6 @@ describe('CreateOrderUseCase', () => {
         // 모든 검증은 통과했지만 주문 생성에서 실패하여 트랜잭션이 롤백되어야 함
         expect(mockProductRepository.findById).toHaveBeenCalled();
         expect(mockUserRepository.findById).toHaveBeenCalled();
-        expect(mockOrderPresenter.presentOrder).not.toHaveBeenCalled();
       });
 
       it('모든 단계가 성공하면 트랜잭션이 커밋되어야 한다', async () => {
@@ -354,13 +334,23 @@ describe('CreateOrderUseCase', () => {
         const mockProduct = new Product(1, '상품1', 10000, 10, '설명1');
         const mockUser = new User(1, 'user@test.com', 'password', 50000);
         const mockOrder = new Order(1, userId, [{ productId: 1, quantity: 2, price: 10000 }], 20000, 0, 20000, null, false, 'PENDING');
-        const mockResponseDto = new OrderResponseDto();
+        const expectedResponseDto: OrderResponseDto = {
+          orderId: 1,
+          userId: 1,
+          items: [
+            { productId: 1, quantity: 2, price: 10000 }
+          ],
+          totalAmount: 20000,
+          discountAmount: 0,
+          finalAmount: 20000,
+          couponUsed: false,
+          status: 'PENDING'
+        };
 
         mockProductRepository.findById.mockResolvedValue(mockProduct);
         mockUserRepository.findById.mockResolvedValue(mockUser);
         mockCouponRepository.findById.mockResolvedValue(null);
         mockOrdersService.createOrder.mockResolvedValue(mockOrder);
-        mockOrderPresenter.presentOrder.mockReturnValue(mockResponseDto);
 
         // Act
         const result = await useCase.execute(createOrderDto);
@@ -369,8 +359,7 @@ describe('CreateOrderUseCase', () => {
         expect(mockProductRepository.findById).toHaveBeenCalled();
         expect(mockUserRepository.findById).toHaveBeenCalled();
         expect(mockOrdersService.createOrder).toHaveBeenCalled();
-        expect(mockOrderPresenter.presentOrder).toHaveBeenCalled();
-        expect(result).toBe(mockResponseDto);
+        expect(result).toEqual(expectedResponseDto);
       });
     });
   });

@@ -50,18 +50,6 @@ import { PaymentValidationService } from '../src/domain/services/payment-validat
 import { CouponValidationService } from '../src/domain/services/coupon-validation.service';
 import { ProductValidationService } from '../src/domain/services/product-validation.service';
 import { AuthValidationService } from '../src/domain/services/auth-validation.service';
-import { UserPresenter } from '../src/infrastructure/presenters/user.presenter';
-import { OrderPresenter } from '../src/infrastructure/presenters/order.presenter';
-import { ProductPresenter } from '../src/infrastructure/presenters/product.presenter';
-import { CouponPresenter } from '../src/infrastructure/presenters/coupon.presenter';
-import { PaymentPresenter } from '../src/infrastructure/presenters/payment.presenter';
-import { AuthPresenter } from '../src/infrastructure/presenters/auth.presenter';
-import { USER_PRESENTER } from '../src/application/interfaces/presenters/user-presenter.interface';
-import { ORDER_PRESENTER } from '../src/application/interfaces/presenters/order-presenter.interface';
-import { PRODUCT_PRESENTER } from '../src/application/interfaces/presenters/product-presenter.interface';
-import { COUPON_PRESENTER } from '../src/application/interfaces/presenters/coupon-presenter.interface';
-import { PAYMENT_PRESENTER } from '../src/application/interfaces/presenters/payment-presenter.interface';
-import { AUTH_PRESENTER } from '../src/application/interfaces/presenters/auth-presenter.interface';
 import { TestSeeder } from './database/test-seeder';
 
 @Module({
@@ -160,32 +148,6 @@ import { TestSeeder } from './database/test-seeder';
     CouponValidationService,
     ProductValidationService,
     AuthValidationService,
-    
-    // Presenter 인터페이스와 구현체 연결
-    {
-      provide: USER_PRESENTER,
-      useClass: UserPresenter,
-    },
-    {
-      provide: ORDER_PRESENTER,
-      useClass: OrderPresenter,
-    },
-    {
-      provide: PRODUCT_PRESENTER,
-      useClass: ProductPresenter,
-    },
-    {
-      provide: COUPON_PRESENTER,
-      useClass: CouponPresenter,
-    },
-    {
-      provide: PAYMENT_PRESENTER,
-      useClass: PaymentPresenter,
-    },
-    {
-      provide: AUTH_PRESENTER,
-      useClass: AuthPresenter,
-    },
     
     // TestSeeder 추가
     TestSeeder,

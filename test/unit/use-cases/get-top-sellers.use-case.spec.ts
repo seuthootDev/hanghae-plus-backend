@@ -1,14 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { GetTopSellersUseCase } from '../../../src/application/use-cases/products/get-top-sellers.use-case';
 import { ProductsServiceInterface, PRODUCTS_SERVICE } from '../../../src/application/interfaces/services/products-service.interface';
-import { ProductPresenterInterface, PRODUCT_PRESENTER } from '../../../src/application/interfaces/presenters/product-presenter.interface';
 import { TopSellerResponseDto } from '../../../src/presentation/dto/productsDTO/top-seller-response.dto';
 import { Product } from '../../../src/domain/entities/product.entity';
 
 describe('GetTopSellersUseCase', () => {
   let useCase: GetTopSellersUseCase;
   let mockProductsService: jest.Mocked<ProductsServiceInterface>;
-  let mockProductPresenter: jest.Mocked<ProductPresenterInterface>;
 
   beforeEach(async () => {
     const mockProductsServiceProvider = {
@@ -18,24 +16,15 @@ describe('GetTopSellersUseCase', () => {
       },
     };
 
-    const mockProductPresenterProvider = {
-      provide: PRODUCT_PRESENTER,
-      useValue: {
-        presentTopSeller: jest.fn(),
-      },
-    };
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         GetTopSellersUseCase,
         mockProductsServiceProvider,
-        mockProductPresenterProvider,
       ],
     }).compile();
 
     useCase = module.get<GetTopSellersUseCase>(GetTopSellersUseCase);
     mockProductsService = module.get(PRODUCTS_SERVICE);
-    mockProductPresenter = module.get(PRODUCT_PRESENTER);
   });
 
   describe('execute', () => {
@@ -46,7 +35,7 @@ describe('GetTopSellersUseCase', () => {
         new Product(1, '아메리카노', 3000, 100, '음료', 50, 150000),
         new Product(3, '카푸치노', 4500, 60, '음료', 30, 135000),
       ];
-      const mockResponse: TopSellerResponseDto[] = [
+      const expectedResponse: TopSellerResponseDto[] = [
         {
           id: 2,
           name: '카페라떼',
@@ -71,18 +60,13 @@ describe('GetTopSellersUseCase', () => {
       ];
 
       mockProductsService.getTopSellers.mockResolvedValue(mockProducts);
-      mockProductPresenter.presentTopSeller
-        .mockReturnValueOnce(mockResponse[0])
-        .mockReturnValueOnce(mockResponse[1])
-        .mockReturnValueOnce(mockResponse[2]);
 
       // when
       const result = await useCase.execute();
 
       // then
       expect(mockProductsService.getTopSellers).toHaveBeenCalled();
-      expect(mockProductPresenter.presentTopSeller).toHaveBeenCalledTimes(3);
-      expect(result).toEqual(mockResponse);
+      expect(result).toEqual(expectedResponse);
       expect(result).toHaveLength(3);
       
       // 판매 수량 순으로 정렬되어 있는지 확인
@@ -93,7 +77,7 @@ describe('GetTopSellersUseCase', () => {
     it('인기 상품이 없으면 빈 배열을 반환해야 한다', async () => {
       // given
       const mockProducts: Product[] = [];
-      const mockResponse: TopSellerResponseDto[] = [];
+      const expectedResponse: TopSellerResponseDto[] = [];
 
       mockProductsService.getTopSellers.mockResolvedValue(mockProducts);
 
@@ -102,8 +86,7 @@ describe('GetTopSellersUseCase', () => {
 
       // then
       expect(mockProductsService.getTopSellers).toHaveBeenCalled();
-      expect(mockProductPresenter.presentTopSeller).not.toHaveBeenCalled();
-      expect(result).toEqual(mockResponse);
+      expect(result).toEqual(expectedResponse);
       expect(result).toHaveLength(0);
     });
 
@@ -112,7 +95,7 @@ describe('GetTopSellersUseCase', () => {
       const mockProducts: Product[] = [
         new Product(1, '아메리카노', 3000, 100, '음료', 50, 150000),
       ];
-      const mockResponse: TopSellerResponseDto[] = [
+      const expectedResponse: TopSellerResponseDto[] = [
         {
           id: 1,
           name: '아메리카노',
@@ -123,15 +106,13 @@ describe('GetTopSellersUseCase', () => {
       ];
 
       mockProductsService.getTopSellers.mockResolvedValue(mockProducts);
-      mockProductPresenter.presentTopSeller.mockReturnValue(mockResponse[0]);
 
       // when
       const result = await useCase.execute();
 
       // then
       expect(mockProductsService.getTopSellers).toHaveBeenCalled();
-      expect(mockProductPresenter.presentTopSeller).toHaveBeenCalledTimes(1);
-      expect(result).toEqual(mockResponse);
+      expect(result).toEqual(expectedResponse);
       expect(result).toHaveLength(1);
       expect(result[0].name).toBe('아메리카노');
       expect(result[0].salesCount).toBe(50);
@@ -154,7 +135,7 @@ describe('GetTopSellersUseCase', () => {
         new Product(1, '아메리카노', 3000, 100, '음료', 50, 150000),
         new Product(2, '카페라떼', 4000, 80, '음료', 60, 240000),
       ];
-      const mockResponse: TopSellerResponseDto[] = [
+      const expectedResponse: TopSellerResponseDto[] = [
         {
           id: 1,
           name: '아메리카노',
@@ -172,9 +153,6 @@ describe('GetTopSellersUseCase', () => {
       ];
 
       mockProductsService.getTopSellers.mockResolvedValue(mockProducts);
-      mockProductPresenter.presentTopSeller
-        .mockReturnValueOnce(mockResponse[0])
-        .mockReturnValueOnce(mockResponse[1]);
 
       // when
       const result = await useCase.execute();

@@ -1,14 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { GetUserCouponsUseCase } from '../../../src/application/use-cases/coupons/get-user-coupons.use-case';
 import { CouponsServiceInterface, COUPONS_SERVICE } from '../../../src/application/interfaces/services/coupons-service.interface';
-import { CouponPresenterInterface, COUPON_PRESENTER } from '../../../src/application/interfaces/presenters/coupon-presenter.interface';
 import { Coupon } from '../../../src/domain/entities/coupon.entity';
 import { CouponResponseDto } from '../../../src/presentation/dto/couponsDTO/coupon-response.dto';
 
 describe('GetUserCouponsUseCase', () => {
   let useCase: GetUserCouponsUseCase;
   let mockCouponsService: jest.Mocked<CouponsServiceInterface>;
-  let mockCouponPresenter: jest.Mocked<CouponPresenterInterface>;
 
   beforeEach(async () => {
     const mockCouponsServiceProvider = {
@@ -18,24 +16,15 @@ describe('GetUserCouponsUseCase', () => {
       },
     };
 
-    const mockCouponPresenterProvider = {
-      provide: COUPON_PRESENTER,
-      useValue: {
-        presentCouponList: jest.fn(),
-      },
-    };
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         GetUserCouponsUseCase,
         mockCouponsServiceProvider,
-        mockCouponPresenterProvider,
       ],
     }).compile();
 
     useCase = module.get<GetUserCouponsUseCase>(GetUserCouponsUseCase);
     mockCouponsService = module.get(COUPONS_SERVICE);
-    mockCouponPresenter = module.get(COUPON_PRESENTER);
   });
 
   describe('execute', () => {
@@ -46,7 +35,7 @@ describe('GetUserCouponsUseCase', () => {
         new Coupon(1, userId, 'DISCOUNT_10PERCENT', 10, 0, new Date('2025-12-31'), false),
         new Coupon(2, userId, 'FIXED_1000', 0, 1000, new Date('2025-12-31'), false),
       ];
-      const mockResponse: CouponResponseDto[] = [
+      const expectedResponse: CouponResponseDto[] = [
         {
           couponId: 1,
           userId: 1,
@@ -66,15 +55,13 @@ describe('GetUserCouponsUseCase', () => {
       ];
 
       mockCouponsService.getUserCoupons.mockResolvedValue(mockCoupons);
-      mockCouponPresenter.presentCouponList.mockReturnValue(mockResponse);
 
       // when
       const result = await useCase.execute(userId);
 
       // then
       expect(mockCouponsService.getUserCoupons).toHaveBeenCalledWith(userId);
-      expect(mockCouponPresenter.presentCouponList).toHaveBeenCalledWith(mockCoupons);
-      expect(result).toEqual(mockResponse);
+      expect(result).toEqual(expectedResponse);
       expect(result).toHaveLength(2);
     });
 
@@ -82,18 +69,16 @@ describe('GetUserCouponsUseCase', () => {
       // given
       const userId = 999;
       const mockCoupons: Coupon[] = [];
-      const mockResponse: CouponResponseDto[] = [];
+      const expectedResponse: CouponResponseDto[] = [];
 
       mockCouponsService.getUserCoupons.mockResolvedValue(mockCoupons);
-      mockCouponPresenter.presentCouponList.mockReturnValue(mockResponse);
 
       // when
       const result = await useCase.execute(userId);
 
       // then
       expect(mockCouponsService.getUserCoupons).toHaveBeenCalledWith(userId);
-      expect(mockCouponPresenter.presentCouponList).toHaveBeenCalledWith(mockCoupons);
-      expect(result).toEqual(mockResponse);
+      expect(result).toEqual(expectedResponse);
       expect(result).toHaveLength(0);
     });
 

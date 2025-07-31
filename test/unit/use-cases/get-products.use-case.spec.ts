@@ -1,14 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { GetProductsUseCase } from '../../../src/application/use-cases/products/get-products.use-case';
 import { ProductsServiceInterface } from '../../../src/application/interfaces/services/products-service.interface';
-import { ProductPresenterInterface } from '../../../src/application/interfaces/presenters/product-presenter.interface';
 import { Product } from '../../../src/domain/entities/product.entity';
 import { ProductResponseDto } from '../../../src/presentation/dto/productsDTO/product-response.dto';
 
 describe('GetProductsUseCase', () => {
   let useCase: GetProductsUseCase;
   let mockProductsService: jest.Mocked<ProductsServiceInterface>;
-  let mockProductPresenter: jest.Mocked<ProductPresenterInterface>;
 
   beforeEach(async () => {
     const mockProductsServiceProvider = {
@@ -18,24 +16,15 @@ describe('GetProductsUseCase', () => {
       },
     };
 
-    const mockProductPresenterProvider = {
-      provide: 'PRODUCT_PRESENTER',
-      useValue: {
-        presentProductList: jest.fn(),
-      },
-    };
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         GetProductsUseCase,
         mockProductsServiceProvider,
-        mockProductPresenterProvider,
       ],
     }).compile();
 
     useCase = module.get<GetProductsUseCase>(GetProductsUseCase);
     mockProductsService = module.get('PRODUCTS_SERVICE');
-    mockProductPresenter = module.get('PRODUCT_PRESENTER');
   });
 
   describe('execute', () => {
@@ -45,37 +34,33 @@ describe('GetProductsUseCase', () => {
         new Product(1, 'Product 1', 10000, 50, 'Electronics', 10, 100000),
         new Product(2, 'Product 2', 15000, 30, 'Clothing', 5, 75000),
       ];
-      const mockResponseDtos = [
+      const expectedResponseDtos = [
         { id: 1, name: 'Product 1', price: 10000, stock: 50, category: 'Electronics' },
         { id: 2, name: 'Product 2', price: 15000, stock: 30, category: 'Clothing' },
       ];
 
       mockProductsService.getProducts.mockResolvedValue(mockProducts);
-      mockProductPresenter.presentProductList.mockReturnValue(mockResponseDtos);
 
       // Act
       const result = await useCase.execute();
 
       // Assert
       expect(mockProductsService.getProducts).toHaveBeenCalled();
-      expect(mockProductPresenter.presentProductList).toHaveBeenCalledWith(mockProducts);
-      expect(result).toBe(mockResponseDtos);
+      expect(result).toEqual(expectedResponseDtos);
     });
 
     it('빈 상품 목록도 처리해야 한다', async () => {
       // Arrange
       const mockProducts: Product[] = [];
-      const mockResponseDtos: ProductResponseDto[] = [];
+      const expectedResponseDtos: ProductResponseDto[] = [];
 
       mockProductsService.getProducts.mockResolvedValue(mockProducts);
-      mockProductPresenter.presentProductList.mockReturnValue(mockResponseDtos);
 
       // Act
       const result = await useCase.execute();
 
       // Assert
       expect(mockProductsService.getProducts).toHaveBeenCalled();
-      expect(mockProductPresenter.presentProductList).toHaveBeenCalledWith(mockProducts);
       expect(result).toEqual([]);
     });
 

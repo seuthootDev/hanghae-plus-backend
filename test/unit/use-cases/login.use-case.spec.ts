@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { LoginUseCase } from '../../../src/application/use-cases/auth/login.use-case';
 import { AuthServiceInterface, AUTH_SERVICE } from '../../../src/application/interfaces/services/auth-service.interface';
-import { AuthPresenterInterface, AUTH_PRESENTER } from '../../../src/application/interfaces/presenters/auth-presenter.interface';
 import { UserRepositoryInterface, USER_REPOSITORY } from '../../../src/application/interfaces/repositories/user-repository.interface';
 import { AuthValidationService } from '../../../src/domain/services/auth-validation.service';
 import { LoginDto } from '../../../src/presentation/dto/authDTO/login.dto';
@@ -12,7 +11,6 @@ import { User } from '../../../src/domain/entities/user.entity';
 describe('LoginUseCase', () => {
   let useCase: LoginUseCase;
   let mockAuthService: jest.Mocked<AuthServiceInterface>;
-  let mockAuthPresenter: jest.Mocked<AuthPresenterInterface>;
   let mockUserRepository: jest.Mocked<UserRepositoryInterface>;
   let mockAuthValidationService: jest.Mocked<AuthValidationService>;
 
@@ -22,13 +20,6 @@ describe('LoginUseCase', () => {
       useValue: {
         login: jest.fn(),
         verifyPassword: jest.fn(),
-      },
-    };
-
-    const mockAuthPresenterProvider = {
-      provide: AUTH_PRESENTER,
-      useValue: {
-        presentAuth: jest.fn(),
       },
     };
 
@@ -50,7 +41,6 @@ describe('LoginUseCase', () => {
       providers: [
         LoginUseCase,
         mockAuthServiceProvider,
-        mockAuthPresenterProvider,
         mockUserRepositoryProvider,
         mockAuthValidationServiceProvider,
       ],
@@ -58,7 +48,6 @@ describe('LoginUseCase', () => {
 
     useCase = module.get<LoginUseCase>(LoginUseCase);
     mockAuthService = module.get(AUTH_SERVICE);
-    mockAuthPresenter = module.get(AUTH_PRESENTER);
     mockUserRepository = module.get(USER_REPOSITORY);
     mockAuthValidationService = module.get(AuthValidationService);
   });
@@ -74,19 +63,18 @@ describe('LoginUseCase', () => {
       const mockUser = new User(1, '홍길동', 'test@example.com', 1000, 'hashed_password');
       const mockAuthResult = { token: 'test-token', refreshToken: 'test-refresh-token' };
 
-      const mockResponse: AuthResponseDto = {
+      const expectedResponse: AuthResponseDto = {
         userId: 1,
         email: 'test@example.com',
         name: '홍길동',
         token: 'test-token',
         refreshToken: 'test-refresh-token',
-        expiresAt: new Date(),
+        expiresAt: expect.any(Date),
       };
 
       mockUserRepository.findByEmail.mockResolvedValue(mockUser);
       mockAuthService.verifyPassword.mockResolvedValue(true);
       mockAuthService.login.mockResolvedValue(mockAuthResult);
-      mockAuthPresenter.presentAuth.mockReturnValue(mockResponse);
 
       // Act
       const result = await useCase.execute(loginDto);
@@ -102,12 +90,7 @@ describe('LoginUseCase', () => {
         userId: mockUser.id,
         email: mockUser.email
       });
-      expect(mockAuthPresenter.presentAuth).toHaveBeenCalledWith(
-        mockUser,
-        mockAuthResult.token,
-        mockAuthResult.refreshToken
-      );
-      expect(result).toEqual(mockResponse);
+      expect(result).toEqual(expectedResponse);
     });
 
     it('존재하지 않는 사용자로 로그인 시 에러를 발생시켜야 한다', async () => {
@@ -166,7 +149,6 @@ describe('LoginUseCase', () => {
         // 트랜잭션이 롤백되었으므로 비밀번호 검증과 로그인이 호출되지 않아야 함
         expect(mockAuthService.verifyPassword).not.toHaveBeenCalled();
         expect(mockAuthService.login).not.toHaveBeenCalled();
-        expect(mockAuthPresenter.presentAuth).not.toHaveBeenCalled();
       });
 
       it('비밀번호 검증 중 에러가 발생하면 트랜잭션이 롤백되어야 한다', async () => {
@@ -186,7 +168,6 @@ describe('LoginUseCase', () => {
         // 사용자 조회는 성공했지만 비밀번호 검증에서 실패하여 트랜잭션이 롤백되어야 함
         expect(mockUserRepository.findByEmail).toHaveBeenCalled();
         expect(mockAuthService.login).not.toHaveBeenCalled();
-        expect(mockAuthPresenter.presentAuth).not.toHaveBeenCalled();
       });
 
       it('인증 토큰 생성 중 에러가 발생하면 트랜잭션이 롤백되어야 한다', async () => {
@@ -199,49 +180,14 @@ describe('LoginUseCase', () => {
         const mockUser = new User(1, '홍길동', 'test@example.com', 1000, 'hashed_password');
         mockUserRepository.findByEmail.mockResolvedValue(mockUser);
         mockAuthService.verifyPassword.mockResolvedValue(true);
-        mockAuthService.login.mockRejectedValue(new Error('Token creation failed'));
+        mockAuthService.login.mockRejectedValue(new Error('Token generation failed'));
 
         // Act & Assert
-        await expect(useCase.execute(loginDto)).rejects.toThrow('Token creation failed');
+        await expect(useCase.execute(loginDto)).rejects.toThrow('Token generation failed');
         
         // 사용자 조회와 비밀번호 검증은 성공했지만 토큰 생성에서 실패하여 트랜잭션이 롤백되어야 함
         expect(mockUserRepository.findByEmail).toHaveBeenCalled();
         expect(mockAuthService.verifyPassword).toHaveBeenCalled();
-        expect(mockAuthPresenter.presentAuth).not.toHaveBeenCalled();
-      });
-
-      it('모든 단계가 성공하면 트랜잭션이 커밋되어야 한다', async () => {
-        // Arrange
-        const loginDto: LoginDto = {
-          email: 'test@example.com',
-          password: 'password123',
-        };
-
-        const mockUser = new User(1, '홍길동', 'test@example.com', 1000, 'hashed_password');
-        const mockAuthResult = { token: 'test-token', refreshToken: 'test-refresh-token' };
-        const mockResponse: AuthResponseDto = {
-          userId: 1,
-          email: 'test@example.com',
-          name: '홍길동',
-          token: 'test-token',
-          refreshToken: 'test-refresh-token',
-          expiresAt: new Date(),
-        };
-
-        mockUserRepository.findByEmail.mockResolvedValue(mockUser);
-        mockAuthService.verifyPassword.mockResolvedValue(true);
-        mockAuthService.login.mockResolvedValue(mockAuthResult);
-        mockAuthPresenter.presentAuth.mockReturnValue(mockResponse);
-
-        // Act
-        const result = await useCase.execute(loginDto);
-
-        // Assert - 모든 단계가 성공적으로 실행되어야 함
-        expect(mockUserRepository.findByEmail).toHaveBeenCalled();
-        expect(mockAuthService.verifyPassword).toHaveBeenCalled();
-        expect(mockAuthService.login).toHaveBeenCalled();
-        expect(mockAuthPresenter.presentAuth).toHaveBeenCalled();
-        expect(result).toEqual(mockResponse);
       });
     });
   });

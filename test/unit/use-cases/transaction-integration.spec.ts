@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { DataSource } from 'typeorm';
 import { RegisterUseCase } from '../../../src/application/use-cases/auth/register.use-case';
 import { AuthServiceInterface, AUTH_SERVICE } from '../../../src/application/interfaces/services/auth-service.interface';
-import { AuthPresenterInterface, AUTH_PRESENTER } from '../../../src/application/interfaces/presenters/auth-presenter.interface';
 import { UserRepositoryInterface, USER_REPOSITORY } from '../../../src/application/interfaces/repositories/user-repository.interface';
 import { AuthValidationService } from '../../../src/domain/services/auth-validation.service';
 import { RegisterDto } from '../../../src/presentation/dto/authDTO/register.dto';
@@ -12,7 +11,6 @@ import { User } from '../../../src/domain/entities/user.entity';
 describe('Transaction Integration Tests', () => {
   let registerUseCase: RegisterUseCase;
   let mockAuthService: jest.Mocked<AuthServiceInterface>;
-  let mockAuthPresenter: jest.Mocked<AuthPresenterInterface>;
   let mockUserRepository: jest.Mocked<UserRepositoryInterface>;
   let mockAuthValidationService: jest.Mocked<AuthValidationService>;
   let mockDataSource: jest.Mocked<DataSource>;
@@ -23,13 +21,6 @@ describe('Transaction Integration Tests', () => {
       useValue: {
         register: jest.fn(),
         hashPassword: jest.fn(),
-      },
-    };
-
-    const mockAuthPresenterProvider = {
-      provide: AUTH_PRESENTER,
-      useValue: {
-        presentAuth: jest.fn(),
       },
     };
 
@@ -59,7 +50,6 @@ describe('Transaction Integration Tests', () => {
       providers: [
         RegisterUseCase,
         mockAuthServiceProvider,
-        mockAuthPresenterProvider,
         mockUserRepositoryProvider,
         mockAuthValidationServiceProvider,
         mockDataSourceProvider,
@@ -68,7 +58,6 @@ describe('Transaction Integration Tests', () => {
 
     registerUseCase = module.get<RegisterUseCase>(RegisterUseCase);
     mockAuthService = module.get(AUTH_SERVICE);
-    mockAuthPresenter = module.get(AUTH_PRESENTER);
     mockUserRepository = module.get(USER_REPOSITORY);
     mockAuthValidationService = module.get(AuthValidationService);
     mockDataSource = module.get(DataSource);
