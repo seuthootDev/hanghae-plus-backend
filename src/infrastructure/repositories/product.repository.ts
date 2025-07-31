@@ -23,9 +23,7 @@ export class ProductRepository implements ProductRepositoryInterface {
       productEntity.name,
       productEntity.price,
       productEntity.stock,
-      productEntity.category,
-      productEntity.salesCount,
-      productEntity.totalRevenue
+      productEntity.category
     );
   }
 
@@ -37,26 +35,7 @@ export class ProductRepository implements ProductRepositoryInterface {
       entity.name,
       entity.price,
       entity.stock,
-      entity.category,
-      entity.salesCount,
-      entity.totalRevenue
-    ));
-  }
-
-  async findTopSellers(): Promise<Product[]> {
-    const topSellerEntities = await this.productRepository
-      .createQueryBuilder('product')
-      .where('product.salesCount > :salesCount', { salesCount: 50 })
-      .getMany();
-    
-    return topSellerEntities.map(entity => new Product(
-      entity.id,
-      entity.name,
-      entity.price,
-      entity.stock,
-      entity.category,
-      entity.salesCount,
-      entity.totalRevenue
+      entity.category
     ));
   }
 
@@ -66,9 +45,7 @@ export class ProductRepository implements ProductRepositoryInterface {
       name: product.name,
       price: product.price,
       stock: product.stock,
-      category: product.category,
-      salesCount: product.salesCount,
-      totalRevenue: product.totalRevenue
+      category: product.category
     });
     
     const savedEntity = await this.productRepository.save(productEntity);
@@ -78,9 +55,7 @@ export class ProductRepository implements ProductRepositoryInterface {
       savedEntity.name,
       savedEntity.price,
       savedEntity.stock,
-      savedEntity.category,
-      savedEntity.salesCount,
-      savedEntity.totalRevenue
+      savedEntity.category
     );
   }
 } 

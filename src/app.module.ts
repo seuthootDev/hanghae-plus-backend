@@ -41,11 +41,14 @@ import { ProductRepository } from './infrastructure/repositories/product.reposit
 import { OrderRepository } from './infrastructure/repositories/order.repository';
 import { CouponRepository } from './infrastructure/repositories/coupon.repository';
 import { PaymentRepository } from './infrastructure/repositories/payment.repository';
+import { ProductSalesAggregationRepository } from './infrastructure/repositories/product-sales-aggregation.repository';
+import { RedisService } from './infrastructure/services/redis.service';
 import { UserEntity } from './infrastructure/repositories/typeorm/user.entity';
 import { ProductEntity } from './infrastructure/repositories/typeorm/product.entity';
 import { OrderEntity } from './infrastructure/repositories/typeorm/order.entity';
 import { CouponEntity } from './infrastructure/repositories/typeorm/coupon.entity';
 import { PaymentEntity } from './infrastructure/repositories/typeorm/payment.entity';
+import { ProductSalesAggregationEntity } from './infrastructure/repositories/typeorm/product-sales-aggregation.entity';
 import { OrderValidationService } from './domain/services/order-validation.service';
 import { UserValidationService } from './domain/services/user-validation.service';
 import { PaymentValidationService } from './domain/services/payment-validation.service';
@@ -61,7 +64,8 @@ import { AuthValidationService } from './domain/services/auth-validation.service
       ProductEntity,
       OrderEntity,
       CouponEntity,
-      PaymentEntity
+      PaymentEntity,
+      ProductSalesAggregationEntity
     ])
   ],
   controllers: [
@@ -133,6 +137,13 @@ import { AuthValidationService } from './domain/services/auth-validation.service
       provide: PAYMENT_REPOSITORY,
       useClass: PaymentRepository,
     },
+    {
+      provide: 'PRODUCT_SALES_AGGREGATION_REPOSITORY',
+      useClass: ProductSalesAggregationRepository,
+    },
+    
+    // Redis 서비스
+    RedisService,
     
     // 도메인 서비스들
     OrderValidationService,

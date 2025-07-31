@@ -33,9 +33,4 @@ export class ProductsService implements ProductsServiceInterface {
       throw new InternalServerErrorException('서버 오류가 발생했습니다.');
     }
   }
-
-  async getTopSellers(): Promise<Product[]> {
-    const topSellers = await this.productRepository.findTopSellers();
-    return topSellers;
-  }
 } 

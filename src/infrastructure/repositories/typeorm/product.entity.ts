@@ -17,12 +17,6 @@ export class ProductEntity {
   @Column({ length: 50 })
   category: string;
 
-  @Column({ type: 'int', default: 0 })
-  salesCount: number;
-
-  @Column({ type: 'int', default: 0 })
-  totalRevenue: number;
-
   @CreateDateColumn()
   createdAt: Date;
 
