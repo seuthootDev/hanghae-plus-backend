@@ -1,9 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToOne } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToOne, Index } from 'typeorm';
 import { UserEntity } from './user.entity';
 import { CouponEntity } from './coupon.entity';
 import { PaymentEntity } from './payment.entity';
 
 @Entity('orders')
+@Index(['userId'])
+@Index(['status'])
 export class OrderEntity {
   @PrimaryGeneratedColumn()
   id: number;

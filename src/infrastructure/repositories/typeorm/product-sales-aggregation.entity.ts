@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, Index } from 'typeorm';
 
 @Entity('product_sales_aggregation')
+@Index(['productId'])
 export class ProductSalesAggregationEntity {
   @PrimaryGeneratedColumn()
   id: number;

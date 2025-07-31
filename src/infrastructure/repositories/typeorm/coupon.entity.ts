@@ -1,7 +1,9 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany, Index } from 'typeorm';
 import { OrderEntity } from './order.entity';
 
 @Entity('coupons')
+@Index(['userId'])
+@Index(['isUsed'])
 export class CouponEntity {
   @PrimaryGeneratedColumn()
   id: number;
