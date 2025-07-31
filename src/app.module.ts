@@ -52,18 +52,6 @@ import { PaymentValidationService } from './domain/services/payment-validation.s
 import { CouponValidationService } from './domain/services/coupon-validation.service';
 import { ProductValidationService } from './domain/services/product-validation.service';
 import { AuthValidationService } from './domain/services/auth-validation.service';
-import { UserPresenter } from './infrastructure/presenters/user.presenter';
-import { OrderPresenter } from './infrastructure/presenters/order.presenter';
-import { ProductPresenter } from './infrastructure/presenters/product.presenter';
-import { CouponPresenter } from './infrastructure/presenters/coupon.presenter';
-import { PaymentPresenter } from './infrastructure/presenters/payment.presenter';
-import { AuthPresenter } from './infrastructure/presenters/auth.presenter';
-import { USER_PRESENTER } from './application/interfaces/presenters/user-presenter.interface';
-import { ORDER_PRESENTER } from './application/interfaces/presenters/order-presenter.interface';
-import { PRODUCT_PRESENTER } from './application/interfaces/presenters/product-presenter.interface';
-import { COUPON_PRESENTER } from './application/interfaces/presenters/coupon-presenter.interface';
-import { PAYMENT_PRESENTER } from './application/interfaces/presenters/payment-presenter.interface';
-import { AUTH_PRESENTER } from './application/interfaces/presenters/auth-presenter.interface';
 
 @Module({
   imports: [
@@ -153,32 +141,6 @@ import { AUTH_PRESENTER } from './application/interfaces/presenters/auth-present
     CouponValidationService,
     ProductValidationService,
     AuthValidationService,
-    
-    // Presenter 인터페이스와 구현체 연결
-    {
-      provide: USER_PRESENTER,
-      useClass: UserPresenter,
-    },
-    {
-      provide: ORDER_PRESENTER,
-      useClass: OrderPresenter,
-    },
-    {
-      provide: PRODUCT_PRESENTER,
-      useClass: ProductPresenter,
-    },
-    {
-      provide: COUPON_PRESENTER,
-      useClass: CouponPresenter,
-    },
-    {
-      provide: PAYMENT_PRESENTER,
-      useClass: PaymentPresenter,
-    },
-    {
-      provide: AUTH_PRESENTER,
-      useClass: AuthPresenter,
-    },
     
     // 트랜잭션 인터셉터
     TransactionInterceptor,

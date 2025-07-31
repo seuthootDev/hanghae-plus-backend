@@ -2,7 +2,6 @@ import { Injectable, Inject, BadRequestException, NotFoundException } from '@nes
 import { ProcessPaymentDto } from '../../../presentation/dto/paymentsDTO/process-payment.dto';
 import { PaymentResponseDto } from '../../../presentation/dto/paymentsDTO/payment-response.dto';
 import { PaymentsServiceInterface, PAYMENTS_SERVICE } from '../../interfaces/services/payments-service.interface';
-import { PaymentPresenterInterface, PAYMENT_PRESENTER } from '../../interfaces/presenters/payment-presenter.interface';
 import { OrderRepositoryInterface, ORDER_REPOSITORY } from '../../interfaces/repositories/order-repository.interface';
 import { UserRepositoryInterface, USER_REPOSITORY } from '../../interfaces/repositories/user-repository.interface';
 import { ProductRepositoryInterface, PRODUCT_REPOSITORY } from '../../interfaces/repositories/product-repository.interface';
@@ -15,8 +14,6 @@ export class ProcessPaymentUseCase {
   constructor(
     @Inject(PAYMENTS_SERVICE)
     private readonly paymentsService: PaymentsServiceInterface,
-    @Inject(PAYMENT_PRESENTER)
-    private readonly paymentPresenter: PaymentPresenterInterface,
     @Inject(ORDER_REPOSITORY)
     private readonly orderRepository: OrderRepositoryInterface,
     @Inject(USER_REPOSITORY)
@@ -63,7 +60,16 @@ export class ProcessPaymentUseCase {
       order!.updateStatus('PAID');
       await this.orderRepository.save(order!);
       
-      return this.paymentPresenter.presentPayment(payment);
+      return {
+        paymentId: payment.id,
+        orderId: payment.orderId,
+        totalAmount: payment.totalAmount,
+        discountAmount: payment.discountAmount,
+        finalAmount: payment.finalAmount,
+        couponUsed: payment.couponUsed,
+        status: payment.status,
+        paidAt: payment.paidAt
+      };
     } catch (error) {
       // 결제 실패 시 재고 반환
       if (order) {

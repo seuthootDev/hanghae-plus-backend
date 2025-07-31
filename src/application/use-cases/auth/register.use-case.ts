@@ -2,7 +2,6 @@ import { Injectable, Inject, BadRequestException, ConflictException } from '@nes
 import { RegisterDto } from '../../../presentation/dto/authDTO/register.dto';
 import { AuthResponseDto } from '../../../presentation/dto/authDTO/auth-response.dto';
 import { AuthServiceInterface, AUTH_SERVICE } from '../../interfaces/services/auth-service.interface';
-import { AuthPresenterInterface, AUTH_PRESENTER } from '../../interfaces/presenters/auth-presenter.interface';
 import { UserRepositoryInterface, USER_REPOSITORY } from '../../interfaces/repositories/user-repository.interface';
 import { AuthValidationService } from '../../../domain/services/auth-validation.service';
 import { User } from '../../../domain/entities/user.entity';
@@ -13,8 +12,6 @@ export class RegisterUseCase {
   constructor(
     @Inject(AUTH_SERVICE)
     private readonly authService: AuthServiceInterface,
-    @Inject(AUTH_PRESENTER)
-    private readonly authPresenter: AuthPresenterInterface,
     @Inject(USER_REPOSITORY)
     private readonly userRepository: UserRepositoryInterface,
     private readonly authValidationService: AuthValidationService
@@ -50,12 +47,15 @@ export class RegisterUseCase {
         userId: savedUser.id
       });
       
-      // 6. 응답 생성 (다른 프레젠터들과 일관된 패턴)
-      return this.authPresenter.presentAuth(
-        savedUser,
-        authToken.token,
-        authToken.refreshToken
-      );
+      // 6. 응답 생성
+      return {
+        userId: savedUser.id,
+        email: savedUser.email,
+        name: savedUser.name,
+        token: authToken.token,
+        refreshToken: authToken.refreshToken,
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24시간 후 만료
+      };
     } catch (error) {
       // 도메인 예외를 HTTP 예외로 변환
       if (error.message.includes('이메일은 필수입니다')) {

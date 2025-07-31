@@ -2,7 +2,6 @@ import { Injectable, Inject, BadRequestException, UnauthorizedException, NotFoun
 import { LoginDto } from '../../../presentation/dto/authDTO/login.dto';
 import { AuthResponseDto } from '../../../presentation/dto/authDTO/auth-response.dto';
 import { AuthServiceInterface, AUTH_SERVICE } from '../../interfaces/services/auth-service.interface';
-import { AuthPresenterInterface, AUTH_PRESENTER } from '../../interfaces/presenters/auth-presenter.interface';
 import { UserRepositoryInterface, USER_REPOSITORY } from '../../interfaces/repositories/user-repository.interface';
 import { AuthValidationService } from '../../../domain/services/auth-validation.service';
 import { Transactional } from '../../../common/decorators/transactional.decorator';
@@ -12,8 +11,6 @@ export class LoginUseCase {
   constructor(
     @Inject(AUTH_SERVICE)
     private readonly authService: AuthServiceInterface,
-    @Inject(AUTH_PRESENTER)
-    private readonly authPresenter: AuthPresenterInterface,
     @Inject(USER_REPOSITORY)
     private readonly userRepository: UserRepositoryInterface,
     private readonly authValidationService: AuthValidationService
@@ -45,12 +42,15 @@ export class LoginUseCase {
         email: user.email
       });
       
-      // 5. 응답 생성 (다른 프레젠터들과 일관된 패턴)
-      return this.authPresenter.presentAuth(
-        user,
-        authToken.token,
-        authToken.refreshToken
-      );
+      // 5. 응답 생성
+      return {
+        userId: user.id,
+        email: user.email,
+        name: user.name,
+        token: authToken.token,
+        refreshToken: authToken.refreshToken,
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24시간 후 만료
+      };
     } catch (error) {
       // 도메인 예외를 HTTP 예외로 변환
       if (error.message.includes('이메일은 필수입니다')) {

@@ -2,7 +2,6 @@ import { Injectable, Inject, BadRequestException, NotFoundException } from '@nes
 import { CreateOrderDto } from '../../../presentation/dto/ordersDTO/create-order.dto';
 import { OrderResponseDto } from '../../../presentation/dto/ordersDTO/order-response.dto';
 import { OrdersServiceInterface, ORDERS_SERVICE } from '../../interfaces/services/orders-service.interface';
-import { OrderPresenterInterface, ORDER_PRESENTER } from '../../interfaces/presenters/order-presenter.interface';
 import { ProductRepositoryInterface, PRODUCT_REPOSITORY } from '../../interfaces/repositories/product-repository.interface';
 import { CouponRepositoryInterface, COUPON_REPOSITORY } from '../../interfaces/repositories/coupon-repository.interface';
 import { UserRepositoryInterface, USER_REPOSITORY } from '../../interfaces/repositories/user-repository.interface';
@@ -16,8 +15,6 @@ export class CreateOrderUseCase {
   constructor(
     @Inject(ORDERS_SERVICE)
     private readonly ordersService: OrdersServiceInterface,
-    @Inject(ORDER_PRESENTER)
-    private readonly orderPresenter: OrderPresenterInterface,
     @Inject(PRODUCT_REPOSITORY)
     private readonly productRepository: ProductRepositoryInterface,
     @Inject(COUPON_REPOSITORY)
@@ -105,7 +102,20 @@ export class CreateOrderUseCase {
         couponUsed
       });
       
-      return this.orderPresenter.presentOrder(order);
+      return {
+        orderId: order.id,
+        userId: order.userId,
+        items: orderItems.map(item => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          price: item.price
+        })),
+        totalAmount: order.totalAmount,
+        discountAmount: order.discountAmount,
+        finalAmount: order.finalAmount,
+        couponUsed: order.couponUsed,
+        status: order.status
+      };
     } catch (error) {
       // 도메인 예외를 HTTP 예외로 변환
       if (error.message.includes('주문 상품이 필요합니다')) {
