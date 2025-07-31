@@ -32,7 +32,7 @@ describe('Auth Integration Tests', () => {
     await module.close();
   });
 
-  describe('RegisterUseCase + AuthService + UserRepository Integration', () => {
+  describe('Register Integration', () => {
     it('Use Case가 Service와 Repository를 통해 실제 데이터베이스에 사용자를 등록해야 한다', async () => {
       // Arrange
       const registerDto = new RegisterDto();
@@ -73,7 +73,7 @@ describe('Auth Integration Tests', () => {
     });
   });
 
-  describe('LoginUseCase + AuthService + UserRepository Integration', () => {
+  describe('Login Integration', () => {
     it('Use Case가 Service와 Repository를 통해 실제 사용자로 로그인해야 한다', async () => {
       // Arrange
       const loginDto = new LoginDto();

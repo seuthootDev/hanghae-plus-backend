@@ -25,7 +25,7 @@ describe('Payments Integration Tests', () => {
     await module.close();
   });
 
-  describe('ProcessPaymentUseCase + PaymentsService + PaymentRepository Integration', () => {
+  describe('Payment Integration', () => {
     it('Service가 Repository를 통해 존재하지 않는 주문에 대한 결제 처리 시 에러를 반환해야 한다', async () => {
       // Arrange
       const processPaymentDto = new ProcessPaymentDto();

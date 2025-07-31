@@ -6,6 +6,7 @@ import { ProductEntity } from '../../src/infrastructure/repositories/typeorm/pro
 import { CouponEntity } from '../../src/infrastructure/repositories/typeorm/coupon.entity';
 import { OrderEntity } from '../../src/infrastructure/repositories/typeorm/order.entity';
 import { PaymentEntity } from '../../src/infrastructure/repositories/typeorm/payment.entity';
+import { ProductSalesAggregationEntity } from '../../src/infrastructure/repositories/typeorm/product-sales-aggregation.entity';
 import * as bcrypt from 'bcrypt';
 import { envConfig } from '../../src/config/env.config';
 
@@ -22,6 +23,8 @@ export class TestSeeder {
     private readonly orderRepository: Repository<OrderEntity>,
     @InjectRepository(PaymentEntity)
     private readonly paymentRepository: Repository<PaymentEntity>,
+    @InjectRepository(ProductSalesAggregationEntity)
+    private readonly aggregationRepository: Repository<ProductSalesAggregationEntity>,
   ) {}
 
   async seedTestData(): Promise<void> {
@@ -99,10 +102,25 @@ export class TestSeeder {
       const payment = this.paymentRepository.create(paymentData);
       await this.paymentRepository.save(payment);
     }
+
+    // 집계 테이블 데이터
+    const aggregations = [
+      { productId: 1, salesCount: 50, totalRevenue: 150000 },
+      { productId: 2, salesCount: 60, totalRevenue: 240000 },
+      { productId: 3, salesCount: 30, totalRevenue: 135000 },
+      { productId: 4, salesCount: 20, totalRevenue: 70000 },
+      { productId: 5, salesCount: 10, totalRevenue: 20000 },
+    ];
+
+    for (const aggregationData of aggregations) {
+      const aggregation = this.aggregationRepository.create(aggregationData);
+      await this.aggregationRepository.save(aggregation);
+    }
   }
 
   async clearTestData(): Promise<void> {
     // 외래키 제약조건을 고려하여 역순으로 삭제
+    await this.aggregationRepository.clear();
     await this.paymentRepository.clear();
     await this.orderRepository.clear();
     await this.couponRepository.clear();

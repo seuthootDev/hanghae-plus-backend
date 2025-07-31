@@ -25,7 +25,7 @@ describe('Orders Integration Tests', () => {
     await module.close();
   });
 
-  describe('CreateOrderUseCase + OrdersService + OrderRepository Integration', () => {
+  describe('CreateOrder Integration', () => {
     it('Use Case가 Service와 Repository를 통해 실제 데이터베이스에 주문을 생성해야 한다', async () => {
       // Arrange
       const createOrderDto = new CreateOrderDto();

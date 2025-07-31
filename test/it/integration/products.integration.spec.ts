@@ -27,7 +27,7 @@ describe('Products Integration Tests', () => {
     await module.close();
   });
 
-  describe('GetProductsUseCase + ProductsService + ProductRepository Integration', () => {
+  describe('GetProducts Integration', () => {
     it('Use Case가 Service와 Repository를 통해 실제 데이터베이스에서 상품을 조회해야 한다', async () => {
       // Act - Use Case가 Service와 Repository를 통해 실제 데이터베이스 조회
       const result = await getProductsUseCase.execute();
@@ -72,7 +72,7 @@ describe('Products Integration Tests', () => {
     });
   });
 
-  describe('GetTopSellersUseCase + ProductsService + ProductRepository Integration', () => {
+  describe('GetTopSellers', () => {
     it('Use Case가 Service와 Repository를 통해 실제 데이터베이스에서 인기 상품을 조회해야 한다', async () => {
       // Act - Use Case가 Service와 Repository를 통해 실제 데이터베이스 조회
       const result = await getTopSellersUseCase.execute();

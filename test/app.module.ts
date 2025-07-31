@@ -39,11 +39,14 @@ import { ProductRepository } from '../src/infrastructure/repositories/product.re
 import { OrderRepository } from '../src/infrastructure/repositories/order.repository';
 import { CouponRepository } from '../src/infrastructure/repositories/coupon.repository';
 import { PaymentRepository } from '../src/infrastructure/repositories/payment.repository';
+import { ProductSalesAggregationRepository } from '../src/infrastructure/repositories/product-sales-aggregation.repository';
+import { RedisService } from '../src/infrastructure/services/redis.service';
 import { UserEntity } from '../src/infrastructure/repositories/typeorm/user.entity';
 import { ProductEntity } from '../src/infrastructure/repositories/typeorm/product.entity';
 import { OrderEntity } from '../src/infrastructure/repositories/typeorm/order.entity';
 import { CouponEntity } from '../src/infrastructure/repositories/typeorm/coupon.entity';
 import { PaymentEntity } from '../src/infrastructure/repositories/typeorm/payment.entity';
+import { ProductSalesAggregationEntity } from '../src/infrastructure/repositories/typeorm/product-sales-aggregation.entity';
 import { OrderValidationService } from '../src/domain/services/order-validation.service';
 import { UserValidationService } from '../src/domain/services/user-validation.service';
 import { PaymentValidationService } from '../src/domain/services/payment-validation.service';
@@ -57,7 +60,7 @@ import { TestSeeder } from './database/test-seeder';
     TypeOrmModule.forRoot({
       type: 'sqlite',
       database: ':memory:',
-      entities: [UserEntity, ProductEntity, OrderEntity, CouponEntity, PaymentEntity],
+      entities: [UserEntity, ProductEntity, OrderEntity, CouponEntity, PaymentEntity, ProductSalesAggregationEntity],
       synchronize: true,
       logging: false,
       dropSchema: true,
@@ -68,7 +71,8 @@ import { TestSeeder } from './database/test-seeder';
       ProductEntity,
       OrderEntity,
       CouponEntity,
-      PaymentEntity
+      PaymentEntity,
+      ProductSalesAggregationEntity
     ])
   ],
   controllers: [
@@ -140,6 +144,13 @@ import { TestSeeder } from './database/test-seeder';
       provide: PAYMENT_REPOSITORY,
       useClass: PaymentRepository,
     },
+    {
+      provide: 'PRODUCT_SALES_AGGREGATION_REPOSITORY',
+      useClass: ProductSalesAggregationRepository,
+    },
+    
+    // Redis 서비스
+    RedisService,
     
     // 도메인 서비스들
     OrderValidationService,

@@ -28,7 +28,7 @@ describe('Coupons Integration Tests', () => {
     await module.close();
   });
 
-  describe('IssueCouponUseCase + CouponsService + CouponRepository Integration', () => {
+  describe('IssueCoupon Integration', () => {
     it('Use Case가 Service와 Repository를 통해 실제 데이터베이스에 쿠폰을 발급해야 한다', async () => {
       // Arrange
       const issueCouponDto = new IssueCouponDto();
@@ -114,7 +114,7 @@ describe('Coupons Integration Tests', () => {
     });
   });
 
-  describe('GetUserCouponsUseCase + CouponsService + CouponRepository Integration', () => {
+  describe('GetUserCoupons Integration', () => {
     it('Use Case가 Service와 Repository를 통해 실제 데이터베이스에서 사용자 쿠폰을 조회해야 한다', async () => {
       // Act - Use Case가 Service와 Repository를 통해 실제 데이터베이스 조회
       const result = await getUserCouponsUseCase.execute(1);

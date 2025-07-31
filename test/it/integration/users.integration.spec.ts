@@ -28,7 +28,7 @@ describe('Users Integration Tests', () => {
     await module.close();
   });
 
-  describe('ChargePointsUseCase + UsersService + UserRepository Integration', () => {
+  describe('ChargePoints Integration', () => {
     it('Use Case가 Service와 Repository를 통해 실제 데이터베이스에 포인트를 충전해야 한다', async () => {
       // Arrange
       const chargePointsDto = new ChargePointsDto();
@@ -88,7 +88,7 @@ describe('Users Integration Tests', () => {
     });
   });
 
-  describe('GetUserPointsUseCase + UsersService + UserRepository Integration', () => {
+  describe('GetUserPoints Integration', () => {
     it('Use Case가 Service와 Repository를 통해 실제 데이터베이스에서 사용자 포인트를 조회해야 한다', async () => {
       // Act - Use Case가 Service와 Repository를 통해 실제 데이터베이스 조회
       const result = await getUserPointsUseCase.execute(1);
