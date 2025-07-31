@@ -1,42 +1,36 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { GetProductsUseCase } from '../../../src/application/use-cases/products/get-products.use-case';
-import { ProductsServiceInterface } from '../../../src/application/interfaces/services/products-service.interface';
+import { ProductsServiceInterface, PRODUCTS_SERVICE } from '../../../src/application/interfaces/services/products-service.interface';
 import { Product } from '../../../src/domain/entities/product.entity';
-import { ProductResponseDto } from '../../../src/presentation/dto/productsDTO/product-response.dto';
 
 describe('GetProductsUseCase', () => {
   let useCase: GetProductsUseCase;
   let mockProductsService: jest.Mocked<ProductsServiceInterface>;
 
   beforeEach(async () => {
-    const mockProductsServiceProvider = {
-      provide: 'PRODUCTS_SERVICE',
-      useValue: {
-        getProducts: jest.fn(),
-      },
+    mockProductsService = {
+      getProducts: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         GetProductsUseCase,
-        mockProductsServiceProvider,
+        {
+          provide: PRODUCTS_SERVICE,
+          useValue: mockProductsService,
+        },
       ],
     }).compile();
 
     useCase = module.get<GetProductsUseCase>(GetProductsUseCase);
-    mockProductsService = module.get('PRODUCTS_SERVICE');
   });
 
   describe('execute', () => {
-    it('상품 목록 조회가 성공적으로 처리되어야 한다', async () => {
+    it('상품 목록을 성공적으로 반환해야 한다', async () => {
       // Arrange
       const mockProducts = [
-        new Product(1, 'Product 1', 10000, 50, 'Electronics', 10, 100000),
-        new Product(2, 'Product 2', 15000, 30, 'Clothing', 5, 75000),
-      ];
-      const expectedResponseDtos = [
-        { id: 1, name: 'Product 1', price: 10000, stock: 50, category: 'Electronics' },
-        { id: 2, name: 'Product 2', price: 15000, stock: 30, category: 'Clothing' },
+        new Product(1, 'Product 1', 10000, 50, 'Electronics'),
+        new Product(2, 'Product 2', 15000, 30, 'Clothing'),
       ];
 
       mockProductsService.getProducts.mockResolvedValue(mockProducts);
@@ -45,34 +39,40 @@ describe('GetProductsUseCase', () => {
       const result = await useCase.execute();
 
       // Assert
-      expect(mockProductsService.getProducts).toHaveBeenCalled();
-      expect(result).toEqual(expectedResponseDtos);
+      expect(result).toHaveLength(2);
+      expect(result[0].id).toBe(1);
+      expect(result[0].name).toBe('Product 1');
+      expect(result[0].price).toBe(10000);
+      expect(result[0].stock).toBe(50);
+      expect(result[0].category).toBe('Electronics');
+      expect(result[1].id).toBe(2);
+      expect(result[1].name).toBe('Product 2');
+      expect(result[1].price).toBe(15000);
+      expect(result[1].stock).toBe(30);
+      expect(result[1].category).toBe('Clothing');
+      expect(mockProductsService.getProducts).toHaveBeenCalledTimes(1);
     });
 
-    it('빈 상품 목록도 처리해야 한다', async () => {
+    it('빈 상품 목록을 반환해야 한다', async () => {
       // Arrange
-      const mockProducts: Product[] = [];
-      const expectedResponseDtos: ProductResponseDto[] = [];
-
-      mockProductsService.getProducts.mockResolvedValue(mockProducts);
+      mockProductsService.getProducts.mockResolvedValue([]);
 
       // Act
       const result = await useCase.execute();
 
       // Assert
-      expect(mockProductsService.getProducts).toHaveBeenCalled();
-      expect(result).toEqual([]);
+      expect(result).toHaveLength(0);
+      expect(mockProductsService.getProducts).toHaveBeenCalledTimes(1);
     });
 
-    it('서비스에서 에러가 발생하면 에러를 전파해야 한다', async () => {
+    it('서비스에서 오류가 발생하면 예외를 던져야 한다', async () => {
       // Arrange
-      const mockError = new Error('상품 목록을 가져올 수 없습니다.');
-      mockProductsService.getProducts.mockRejectedValue(mockError);
+      const errorMessage = '상품 조회 중 오류가 발생했습니다';
+      mockProductsService.getProducts.mockRejectedValue(new Error(errorMessage));
 
       // Act & Assert
-      await expect(useCase.execute()).rejects.toThrow(
-        '상품 목록을 가져올 수 없습니다.'
-      );
+      await expect(useCase.execute()).rejects.toThrow(errorMessage);
+      expect(mockProductsService.getProducts).toHaveBeenCalledTimes(1);
     });
   });
 }); 
