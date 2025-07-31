@@ -1,61 +1,75 @@
 ```mermaid
 erDiagram
-    USER ||--o{ POINT : owns
     USER ||--o{ COUPON : "has"
     USER ||--o{ ORDER : "places"
-    ORDER ||--|{ ORDER_ITEM : "contains"
-    PRODUCT ||--o{ ORDER_ITEM : "ordered in"
+    PRODUCT ||--o{ PRODUCT_SALES_AGGREGATION : "aggregated in"
     ORDER }|..|{ PAYMENT : "paid by"
     ORDER }|..|{ COUPON : "uses"
 
     USER {
-      int userId PK "유저 아이디"
-      string name
+      int id PK "유저 아이디"
+      string email "이메일 (unique)"
+      string name "이름"
+      int points "포인트"
+      string password "비밀번호"
+      datetime createdAt "생성일시"
+      datetime updatedAt "수정일시"
     }
-    POINT {
-      int userId "유저 아이디 (애플리케이션 레벨 검증)"
-      int amount "포인트"
-    }
+    
     PRODUCT {
-      int productId PK
-      string name
-      int price
+      int id PK "상품 아이디"
+      string name "상품명"
+      int price "가격"
       int stock "재고"
-      string category
+      string category "카테고리"
+      datetime createdAt "생성일시"
+      datetime updatedAt "수정일시"
     }
+    
+    PRODUCT_SALES_AGGREGATION {
+      int id PK "집계 아이디"
+      int productId "상품 아이디"
+      int salesCount "판매 수량"
+      int totalRevenue "총 매출"
+      datetime lastUpdated "마지막 업데이트"
+    }
+    
     COUPON {
-      int couponId PK
-      int userId "유저 아이디 (애플리케이션 레벨 검증)"
-      string couponType
+      int id PK "쿠폰 아이디"
+      int userId "유저 아이디"
+      string couponType "쿠폰 타입"
       int discountRate "할인율"
-      date expiryDate
-      boolean isUsed
+      int discountAmount "할인 금액"
+      datetime expiryDate "만료일"
+      boolean isUsed "사용 여부"
+      datetime createdAt "생성일시"
+      datetime updatedAt "수정일시"
     }
+    
     ORDER {
-      int orderId PK
-      int userId "유저 아이디 (애플리케이션 레벨 검증)"
-      int couponId "사용한 쿠폰 (nullable, 애플리케이션 레벨 검증)"
-      date orderDate
-      string status
-      int totalAmount
-      int discountAmount
-      int finalAmount
+      int id PK "주문 아이디"
+      int userId "유저 아이디"
+      json items "주문 상품 목록"
+      int totalAmount "총 금액"
+      int discountAmount "할인 금액"
+      int finalAmount "최종 금액"
+      int couponId "사용한 쿠폰 (nullable)"
+      boolean couponUsed "쿠폰 사용 여부"
+      string status "주문 상태"
+      datetime createdAt "생성일시"
+      datetime updatedAt "수정일시"
     }
-    ORDER_ITEM {
-      int orderItemId PK
-      int orderId "주문 아이디 (애플리케이션 레벨 검증)"
-      int productId "상품 아이디 (애플리케이션 레벨 검증)"
-      int quantity
-      int price
-      int subtotal
-    }
+    
     PAYMENT {
-      int paymentId PK
-      int orderId "주문 아이디 (애플리케이션 레벨 검증)"
-      int totalAmount
-      int discountAmount
-      int finalAmount
-      boolean couponUsed
-      string status
-      date paidAt
+      int id PK "결제 아이디"
+      int orderId "주문 아이디"
+      int userId "유저 아이디"
+      int totalAmount "총 금액"
+      int discountAmount "할인 금액"
+      int finalAmount "최종 금액"
+      boolean couponUsed "쿠폰 사용 여부"
+      string status "결제 상태"
+      datetime paidAt "결제일시 (nullable)"
+      datetime createdAt "생성일시"
+      datetime updatedAt "수정일시"
     }
