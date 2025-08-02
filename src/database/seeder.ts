@@ -2,6 +2,8 @@ import { DataSource } from 'typeorm';
 import { UserEntity } from '../infrastructure/repositories/typeorm/user.entity';
 import { ProductEntity } from '../infrastructure/repositories/typeorm/product.entity';
 import { CouponEntity } from '../infrastructure/repositories/typeorm/coupon.entity';
+import * as bcrypt from 'bcrypt';
+import { envConfig } from '../config/env.config';
 
 export class DatabaseSeeder {
   constructor(private dataSource: DataSource) {}
@@ -12,8 +14,8 @@ export class DatabaseSeeder {
     // 테이블이 생성될 때까지 기다립니다
     await this.waitForTables();
 
-    // 사용자 시딩
-    await this.seedUsers();
+    // 관리자 계정 시딩
+    await this.seedAdminUser();
     
     // 상품 시딩
     await this.seedProducts();
@@ -45,23 +47,26 @@ export class DatabaseSeeder {
     throw new Error('테이블 생성 시간 초과');
   }
 
-  private async seedUsers() {
+  private async seedAdminUser() {
     const userRepository = this.dataSource.getRepository(UserEntity);
     
-    const users = [
-      { name: 'admin', email: 'admin@example.com', points: 100000 },
-      { name: '김철수', email: 'kim@example.com', points: 15000 },
-      { name: '이영희', email: 'lee@example.com', points: 25000 },
-      { name: '박민수', email: 'park@example.com', points: 8000 },
-    ];
+    // 관리자 계정만 시딩 (일반 사용자는 회원가입 API로 생성)
+    const hashedPassword = await bcrypt.hash(envConfig.admin.password, envConfig.bcrypt.saltRounds);
+    
+    const adminUser = { 
+      name: envConfig.admin.name, 
+      email: envConfig.admin.email, 
+      password: hashedPassword,
+      points: 100000 
+    };
 
-    for (const userData of users) {
-      const existingUser = await userRepository.findOne({ where: { email: userData.email } });
-      if (!existingUser) {
-        const user = userRepository.create(userData);
-        await userRepository.save(user);
-        console.log(`👤 사용자 생성: ${userData.name}`);
-      }
+    const existingAdmin = await userRepository.findOne({ where: { email: adminUser.email } });
+    if (!existingAdmin) {
+      const user = userRepository.create(adminUser);
+      await userRepository.save(user);
+      console.log(`👤 관리자 계정 생성: ${adminUser.name}`);
+    } else {
+      console.log(`👤 관리자 계정이 이미 존재합니다: ${adminUser.name}`);
     }
   }
 
@@ -82,6 +87,8 @@ export class DatabaseSeeder {
         const product = productRepository.create(productData);
         await productRepository.save(product);
         console.log(`🛍️ 상품 생성: ${productData.name}`);
+      } else {
+        console.log(`🛍️ 상품이 이미 존재합니다: ${productData.name}`);
       }
     }
   }
@@ -89,6 +96,7 @@ export class DatabaseSeeder {
   private async seedCoupons() {
     const couponRepository = this.dataSource.getRepository(CouponEntity);
     
+    // 기본 쿠폰 정책 (관리자가 사용자에게 발급할 수 있는 쿠폰들)
     const coupons = [
       { userId: 1, couponType: 'DISCOUNT_10PERCENT', discountRate: 10, discountAmount: 0, expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), isUsed: false },
       { userId: 1, couponType: 'FIXED_1000', discountRate: 0, discountAmount: 1000, expiryDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), isUsed: true },
@@ -106,6 +114,8 @@ export class DatabaseSeeder {
         const coupon = couponRepository.create(couponData);
         await couponRepository.save(coupon);
         console.log(`🎫 쿠폰 생성: ${couponData.couponType} (사용자 ${couponData.userId})`);
+      } else {
+        console.log(`🎫 쿠폰이 이미 존재합니다: ${couponData.couponType} (사용자 ${couponData.userId})`);
       }
     }
   }

@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToOne, JoinColumn } from 'typeorm';
+import { OrderEntity } from './order.entity';
 
 @Entity('payments')
 export class PaymentEntity {
@@ -34,4 +35,8 @@ export class PaymentEntity {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @OneToOne(() => OrderEntity, order => order.payment)
+  @JoinColumn({ name: 'orderId' })
+  order: OrderEntity;
 } 

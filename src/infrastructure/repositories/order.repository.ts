@@ -25,6 +25,7 @@ export class OrderRepository implements OrderRepositoryInterface {
       orderEntity.totalAmount,
       orderEntity.discountAmount,
       orderEntity.finalAmount,
+      orderEntity.couponId,
       orderEntity.couponUsed,
       orderEntity.status
     );
@@ -43,6 +44,7 @@ export class OrderRepository implements OrderRepositoryInterface {
       orderEntity.totalAmount = order.totalAmount;
       orderEntity.discountAmount = order.discountAmount;
       orderEntity.finalAmount = order.finalAmount;
+      orderEntity.couponId = order.couponId;
       orderEntity.couponUsed = order.couponUsed;
       orderEntity.status = order.status;
     } else {
@@ -53,6 +55,7 @@ export class OrderRepository implements OrderRepositoryInterface {
         totalAmount: order.totalAmount,
         discountAmount: order.discountAmount,
         finalAmount: order.finalAmount,
+        couponId: order.couponId,
         couponUsed: order.couponUsed,
         status: order.status
       });
@@ -67,6 +70,7 @@ export class OrderRepository implements OrderRepositoryInterface {
       savedEntity.totalAmount,
       savedEntity.discountAmount,
       savedEntity.finalAmount,
+      savedEntity.couponId,
       savedEntity.couponUsed,
       savedEntity.status
     );
@@ -82,6 +86,7 @@ export class OrderRepository implements OrderRepositoryInterface {
       entity.totalAmount,
       entity.discountAmount,
       entity.finalAmount,
+      entity.couponId,
       entity.couponUsed,
       entity.status
     ));

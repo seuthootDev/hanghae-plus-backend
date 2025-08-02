@@ -1,6 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToOne, Index } from 'typeorm';
+import { UserEntity } from './user.entity';
+import { CouponEntity } from './coupon.entity';
+import { PaymentEntity } from './payment.entity';
 
 @Entity('orders')
+@Index(['userId'])
+@Index(['status'])
 export class OrderEntity {
   @PrimaryGeneratedColumn()
   id: number;
@@ -20,6 +25,9 @@ export class OrderEntity {
   @Column({ type: 'int' })
   finalAmount: number;
 
+  @Column({ type: 'int', nullable: true })
+  couponId: number;
+
   @Column({ type: 'boolean', default: false })
   couponUsed: boolean;
 
@@ -31,4 +39,15 @@ export class OrderEntity {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @ManyToOne(() => UserEntity, user => user.orders)
+  @JoinColumn({ name: 'userId' })
+  user: UserEntity;
+
+  @ManyToOne(() => CouponEntity, coupon => coupon.orders, { nullable: true })
+  @JoinColumn({ name: 'couponId' })
+  coupon: CouponEntity;
+
+  @OneToOne(() => PaymentEntity, payment => payment.order)
+  payment: PaymentEntity;
 } 

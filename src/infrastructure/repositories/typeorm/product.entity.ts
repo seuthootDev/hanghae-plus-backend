@@ -1,6 +1,7 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, Index } from 'typeorm';
 
 @Entity('products')
+@Index(['category'])
 export class ProductEntity {
   @PrimaryGeneratedColumn()
   id: number;
@@ -16,12 +17,6 @@ export class ProductEntity {
 
   @Column({ length: 50 })
   category: string;
-
-  @Column({ type: 'int', default: 0 })
-  salesCount: number;
-
-  @Column({ type: 'int', default: 0 })
-  totalRevenue: number;
 
   @CreateDateColumn()
   createdAt: Date;

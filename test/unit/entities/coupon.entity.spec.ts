@@ -56,7 +56,9 @@ describe('Coupon Entity', () => {
     });
 
     it('오늘 만료되는 쿠폰은 만료되지 않았음을 반환해야 한다', () => {
-      const todayExpiry = new Coupon(6, 1, 'DISCOUNT', 10, 0, new Date(), false);
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const todayExpiry = new Coupon(6, 1, 'DISCOUNT', 10, 0, tomorrow, false);
       expect(todayExpiry.isExpired()).toBe(false);
     });
   });

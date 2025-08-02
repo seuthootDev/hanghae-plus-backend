@@ -1,14 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { GetUserPointsUseCase } from '../../../src/application/use-cases/users/get-user-points.use-case';
 import { UsersServiceInterface } from '../../../src/application/interfaces/services/users-service.interface';
-import { UserPresenterInterface } from '../../../src/application/interfaces/presenters/user-presenter.interface';
 import { User } from '../../../src/domain/entities/user.entity';
 import { PointsResponseDto } from '../../../src/presentation/dto/usersDTO/points-response.dto';
 
 describe('GetUserPointsUseCase', () => {
   let useCase: GetUserPointsUseCase;
   let mockUsersService: jest.Mocked<UsersServiceInterface>;
-  let mockUserPresenter: jest.Mocked<UserPresenterInterface>;
 
   beforeEach(async () => {
     const mockUsersServiceProvider = {
@@ -18,24 +16,15 @@ describe('GetUserPointsUseCase', () => {
       },
     };
 
-    const mockUserPresenterProvider = {
-      provide: 'USER_PRESENTER',
-      useValue: {
-        presentUserPoints: jest.fn(),
-      },
-    };
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         GetUserPointsUseCase,
         mockUsersServiceProvider,
-        mockUserPresenterProvider,
       ],
     }).compile();
 
     useCase = module.get<GetUserPointsUseCase>(GetUserPointsUseCase);
     mockUsersService = module.get('USERS_SERVICE');
-    mockUserPresenter = module.get('USER_PRESENTER');
   });
 
   describe('execute', () => {
@@ -43,40 +32,38 @@ describe('GetUserPointsUseCase', () => {
       // Arrange
       const userId = 1;
       const mockUser = new User(userId, 'Test User', 'test@example.com', 5000);
-      const mockResponseDto = new PointsResponseDto();
-      mockResponseDto.userId = userId;
-      mockResponseDto.balance = 5000;
+      const expectedResponseDto: PointsResponseDto = {
+        userId: userId,
+        balance: 5000,
+      };
 
       mockUsersService.getUserPoints.mockResolvedValue(mockUser);
-      mockUserPresenter.presentUserPoints.mockReturnValue(mockResponseDto);
 
       // Act
       const result = await useCase.execute(userId);
 
       // Assert
       expect(mockUsersService.getUserPoints).toHaveBeenCalledWith(userId);
-      expect(mockUserPresenter.presentUserPoints).toHaveBeenCalledWith(mockUser);
-      expect(result).toBe(mockResponseDto);
+      expect(result).toEqual(expectedResponseDto);
     });
 
     it('존재하지 않는 사용자도 처리해야 한다', async () => {
       // Arrange
       const userId = 999;
       const mockUser = new User(userId, 'Non-existent User', 'nonexistent@example.com', 0);
-      const mockResponseDto = new PointsResponseDto();
-      mockResponseDto.userId = userId;
-      mockResponseDto.balance = 0;
+      const expectedResponseDto: PointsResponseDto = {
+        userId: userId,
+        balance: 0,
+      };
 
       mockUsersService.getUserPoints.mockResolvedValue(mockUser);
-      mockUserPresenter.presentUserPoints.mockReturnValue(mockResponseDto);
 
       // Act
       const result = await useCase.execute(userId);
 
       // Assert
       expect(mockUsersService.getUserPoints).toHaveBeenCalledWith(userId);
-      expect(mockUserPresenter.presentUserPoints).toHaveBeenCalledWith(mockUser);
-      expect(result).toBe(mockResponseDto);
+      expect(result).toEqual(expectedResponseDto);
     });
 
     it('서비스에서 에러가 발생하면 에러를 전파해야 한다', async () => {
