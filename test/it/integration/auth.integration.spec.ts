@@ -33,14 +33,14 @@ describe('Auth Integration Tests', () => {
   });
 
   describe('Register Integration', () => {
-    it('Use Case가 Service와 Repository를 통해 실제 데이터베이스에 사용자를 등록해야 한다', async () => {
+    it('Use Case가 Domain Service를 통해 실제 데이터베이스에 사용자를 등록해야 한다', async () => {
       // Arrange
       const registerDto = new RegisterDto();
       registerDto.email = 'integration-test@example.com';
       registerDto.password = 'password123';
       registerDto.name = '통합테스트사용자';
 
-      // Act - Use Case가 Service와 Repository를 통해 실제 데이터베이스에 저장
+      // Act - Use Case가 Domain Service를 통해 실제 데이터베이스에 저장
       const result = await registerUseCase.execute(registerDto);
 
       // Assert - Use Case 결과 검증
@@ -61,26 +61,26 @@ describe('Auth Integration Tests', () => {
       expect(loginResult).toHaveProperty('email', 'integration-test@example.com');
     });
 
-    it('Service가 Repository를 통해 중복 이메일 검증을 수행해야 한다', async () => {
+    it('Domain Service가 Repository를 통해 중복 이메일 검증을 수행해야 한다', async () => {
       // Arrange
       const registerDto = new RegisterDto();
       registerDto.email = 'test1@example.com'; // 이미 존재하는 이메일
       registerDto.password = 'password123';
       registerDto.name = '중복사용자';
 
-      // Act & Assert - Service가 Repository를 통해 중복 검증을 수행
+      // Act & Assert - Domain Service가 Repository를 통해 중복 검증을 수행
       await expect(registerUseCase.execute(registerDto)).rejects.toThrow();
     });
   });
 
   describe('Login Integration', () => {
-    it('Use Case가 Service와 Repository를 통해 실제 사용자로 로그인해야 한다', async () => {
+    it('Use Case가 Domain Service를 통해 실제 사용자로 로그인해야 한다', async () => {
       // Arrange
       const loginDto = new LoginDto();
       loginDto.email = 'test1@example.com';
       loginDto.password = 'password123';
 
-      // Act - Use Case가 Service와 Repository를 통해 실제 사용자 검증
+      // Act - Use Case가 Domain Service를 통해 실제 사용자 검증
       const result = await loginUseCase.execute(loginDto);
 
       // Assert - Use Case 결과 검증
@@ -92,29 +92,29 @@ describe('Auth Integration Tests', () => {
       expect(result).toHaveProperty('expiresAt');
     });
 
-    it('Service가 Repository를 통해 잘못된 비밀번호를 검증해야 한다', async () => {
+    it('Domain Service가 Repository를 통해 잘못된 비밀번호를 검증해야 한다', async () => {
       // Arrange
       const loginDto = new LoginDto();
       loginDto.email = 'test1@example.com';
       loginDto.password = 'wrongpassword';
 
-      // Act & Assert - Service가 Repository를 통해 비밀번호 검증
+      // Act & Assert - Domain Service가 Repository를 통해 비밀번호 검증
       await expect(loginUseCase.execute(loginDto)).rejects.toThrow();
     });
 
-    it('Service가 Repository를 통해 존재하지 않는 사용자를 검증해야 한다', async () => {
+    it('Domain Service가 Repository를 통해 존재하지 않는 사용자를 검증해야 한다', async () => {
       // Arrange
       const loginDto = new LoginDto();
       loginDto.email = 'nonexistent@example.com';
       loginDto.password = 'password123';
 
-      // Act & Assert - Service가 Repository를 통해 사용자 존재 여부 검증
+      // Act & Assert - Domain Service가 Repository를 통해 사용자 존재 여부 검증
       await expect(loginUseCase.execute(loginDto)).rejects.toThrow();
     });
   });
 
   describe('ValidateTokenUseCase + AuthService Integration', () => {
-    it('Use Case가 Service를 통해 토큰을 검증해야 한다', async () => {
+    it('Use Case가 Domain Service를 통해 토큰을 검증해야 한다', async () => {
       // Arrange
       const loginDto = new LoginDto();
       loginDto.email = 'test1@example.com';
@@ -123,7 +123,7 @@ describe('Auth Integration Tests', () => {
       const loginResult = await loginUseCase.execute(loginDto);
       const token = loginResult.token;
 
-      // Act - Use Case가 Service를 통해 토큰 검증
+      // Act - Use Case가 Domain Service를 통해 토큰 검증
       const result = await validateTokenUseCase.execute(token);
 
       // Assert - Use Case 결과 검증 (User 엔티티 반환)
@@ -133,11 +133,11 @@ describe('Auth Integration Tests', () => {
       expect(result).toHaveProperty('points');
     });
 
-    it('Service가 유효하지 않은 토큰을 검증해야 한다', async () => {
+    it('Domain Service가 유효하지 않은 토큰을 검증해야 한다', async () => {
       // Arrange
       const invalidToken = 'invalid.token.here';
 
-      // Act & Assert - Service가 토큰 검증
+      // Act & Assert - Domain Service가 토큰 검증
       await expect(validateTokenUseCase.execute(invalidToken)).rejects.toThrow();
     });
   });

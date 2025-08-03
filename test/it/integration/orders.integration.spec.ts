@@ -26,7 +26,7 @@ describe('Orders Integration Tests', () => {
   });
 
   describe('CreateOrder Integration', () => {
-    it('Use Case가 Service와 Repository를 통해 실제 데이터베이스에 주문을 생성해야 한다', async () => {
+    it('Use Case가 Domain Service들을 통해 실제 데이터베이스에 주문을 생성해야 한다', async () => {
       // Arrange
       const createOrderDto = new CreateOrderDto();
       createOrderDto.userId = 1;
@@ -38,7 +38,7 @@ describe('Orders Integration Tests', () => {
       ];
       createOrderDto.couponId = 1;
 
-      // Act - Use Case가 Service와 Repository를 통해 실제 데이터베이스에 저장
+      // Act - Use Case가 Domain Service들을 통해 실제 데이터베이스에 저장
       const result = await createOrderUseCase.execute(createOrderDto);
 
       // Assert - Use Case 결과 검증
@@ -67,7 +67,7 @@ describe('Orders Integration Tests', () => {
       expect(duplicateResult.orderId).not.toBe(result.orderId); // 다른 주문이 생성되어야 함
     });
 
-    it('Service가 Repository를 통해 존재하지 않는 사용자에 대한 주문 생성 시 에러를 반환해야 한다', async () => {
+    it('Domain Service가 Repository를 통해 존재하지 않는 사용자에 대한 주문 생성 시 에러를 반환해야 한다', async () => {
       // Arrange
       const createOrderDto = new CreateOrderDto();
       createOrderDto.userId = 999; // 존재하지 않는 사용자
@@ -78,11 +78,11 @@ describe('Orders Integration Tests', () => {
         } as OrderItemDto
       ];
 
-      // Act & Assert - Service가 Repository를 통해 사용자 존재 여부 검증
+      // Act & Assert - Domain Service가 Repository를 통해 사용자 존재 여부 검증
       await expect(createOrderUseCase.execute(createOrderDto)).rejects.toThrow();
     });
 
-    it('Service가 Repository를 통해 존재하지 않는 상품에 대한 주문 생성 시 에러를 반환해야 한다', async () => {
+    it('Domain Service가 Repository를 통해 존재하지 않는 상품에 대한 주문 생성 시 에러를 반환해야 한다', async () => {
       // Arrange
       const createOrderDto = new CreateOrderDto();
       createOrderDto.userId = 1;
@@ -93,11 +93,11 @@ describe('Orders Integration Tests', () => {
         } as OrderItemDto
       ];
 
-      // Act & Assert - Service가 Repository를 통해 상품 존재 여부 검증
+      // Act & Assert - Domain Service가 Repository를 통해 상품 존재 여부 검증
       await expect(createOrderUseCase.execute(createOrderDto)).rejects.toThrow();
     });
 
-    it('Service가 Repository를 통해 재고가 부족한 상품에 대한 주문 생성 시 에러를 반환해야 한다', async () => {
+    it('Domain Service가 Repository를 통해 재고가 부족한 상품에 대한 주문 생성 시 에러를 반환해야 한다', async () => {
       // Arrange
       const createOrderDto = new CreateOrderDto();
       createOrderDto.userId = 1;
@@ -108,11 +108,11 @@ describe('Orders Integration Tests', () => {
         } as OrderItemDto
       ];
 
-      // Act & Assert - Service가 Repository를 통해 재고 검증
+      // Act & Assert - Domain Service가 Repository를 통해 재고 검증
       await expect(createOrderUseCase.execute(createOrderDto)).rejects.toThrow();
     });
 
-    it('Service가 Repository를 통해 쿠폰을 적용한 주문을 생성해야 한다', async () => {
+    it('Domain Service가 Repository를 통해 쿠폰을 적용한 주문을 생성해야 한다', async () => {
       // Arrange
       const createOrderDto = new CreateOrderDto();
       createOrderDto.userId = 1;
@@ -124,7 +124,7 @@ describe('Orders Integration Tests', () => {
       ];
       createOrderDto.couponId = 1; // 쿠폰 적용
 
-      // Act - Use Case가 Service와 Repository를 통해 쿠폰이 적용된 주문 생성
+      // Act - Use Case가 Domain Service들을 통해 쿠폰이 적용된 주문 생성
       const result = await createOrderUseCase.execute(createOrderDto);
 
       // Assert - Use Case 결과 검증

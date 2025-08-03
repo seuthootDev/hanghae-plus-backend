@@ -29,12 +29,12 @@ describe('Users Integration Tests', () => {
   });
 
   describe('ChargePoints Integration', () => {
-    it('Use Case가 Service와 Repository를 통해 실제 데이터베이스에 포인트를 충전해야 한다', async () => {
+    it('Use Case가 Domain Service를 통해 실제 데이터베이스에 포인트를 충전해야 한다', async () => {
       // Arrange
       const chargePointsDto = new ChargePointsDto();
       chargePointsDto.amount = 5000;
 
-      // Act - Use Case가 Service와 Repository를 통해 실제 데이터베이스에 저장
+      // Act - Use Case가 Domain Service를 통해 실제 데이터베이스에 저장
       const result = await chargePointsUseCase.execute(1, chargePointsDto);
 
       // Assert - Use Case 결과 검증
@@ -47,25 +47,25 @@ describe('Users Integration Tests', () => {
       expect(pointsResult.balance).toBe(result.balance);
     });
 
-    it('Service가 Repository를 통해 존재하지 않는 사용자에 대한 포인트 충전 시 에러를 반환해야 한다', async () => {
+    it('Domain Service가 Repository를 통해 존재하지 않는 사용자에 대한 포인트 충전 시 에러를 반환해야 한다', async () => {
       // Arrange
       const chargePointsDto = new ChargePointsDto();
       chargePointsDto.amount = 5000;
 
-      // Act & Assert - Service가 Repository를 통해 사용자 존재 여부 검증
+      // Act & Assert - Domain Service가 Repository를 통해 사용자 존재 여부 검증
       await expect(chargePointsUseCase.execute(999, chargePointsDto)).rejects.toThrow();
     });
 
-    it('Service가 Repository를 통해 음수 금액으로 포인트 충전 시 에러를 반환해야 한다', async () => {
+    it('Domain Service가 Repository를 통해 음수 금액으로 포인트 충전 시 에러를 반환해야 한다', async () => {
       // Arrange
       const chargePointsDto = new ChargePointsDto();
       chargePointsDto.amount = -1000; // 음수 금액
 
-      // Act & Assert - Service가 Repository를 통해 금액 검증
+      // Act & Assert - Domain Service가 Repository를 통해 금액 검증
       await expect(chargePointsUseCase.execute(1, chargePointsDto)).rejects.toThrow();
     });
 
-    it('Service가 Repository를 통해 여러 번 포인트를 충전할 때 누적되어야 한다', async () => {
+    it('Domain Service가 Repository를 통해 여러 번 포인트를 충전할 때 누적되어야 한다', async () => {
       // Arrange
       const firstChargeDto = new ChargePointsDto();
       firstChargeDto.amount = 3000;
@@ -73,7 +73,7 @@ describe('Users Integration Tests', () => {
       const secondChargeDto = new ChargePointsDto();
       secondChargeDto.amount = 2000;
 
-      // Act - Use Case가 Service와 Repository를 통해 연속 충전
+      // Act - Use Case가 Domain Service를 통해 연속 충전
       const firstResult = await chargePointsUseCase.execute(2, firstChargeDto);
       const secondResult = await chargePointsUseCase.execute(2, secondChargeDto);
 
@@ -89,8 +89,8 @@ describe('Users Integration Tests', () => {
   });
 
   describe('GetUserPoints Integration', () => {
-    it('Use Case가 Service와 Repository를 통해 실제 데이터베이스에서 사용자 포인트를 조회해야 한다', async () => {
-      // Act - Use Case가 Service와 Repository를 통해 실제 데이터베이스 조회
+    it('Use Case가 Domain Service를 통해 실제 데이터베이스에서 사용자 포인트를 조회해야 한다', async () => {
+      // Act - Use Case가 Domain Service를 통해 실제 데이터베이스 조회
       const result = await getUserPointsUseCase.execute(1);
 
       // Assert - Use Case 결과 검증
@@ -99,13 +99,13 @@ describe('Users Integration Tests', () => {
       expect(result.balance).toBeGreaterThanOrEqual(0);
     });
 
-    it('Service가 Repository를 통해 존재하지 않는 사용자의 포인트 조회 시 에러를 반환해야 한다', async () => {
-      // Act & Assert - Service가 Repository를 통해 사용자 존재 여부 검증
+    it('Domain Service가 Repository를 통해 존재하지 않는 사용자의 포인트 조회 시 에러를 반환해야 한다', async () => {
+      // Act & Assert - Domain Service가 Repository를 통해 사용자 존재 여부 검증
       await expect(getUserPointsUseCase.execute(999)).rejects.toThrow();
     });
 
-    it('Service가 Repository를 통해 여러 사용자의 포인트를 조회해야 한다', async () => {
-      // Act - Use Case가 Service와 Repository를 통해 여러 사용자 조회
+    it('Domain Service가 Repository를 통해 여러 사용자의 포인트를 조회해야 한다', async () => {
+      // Act - Use Case가 Domain Service를 통해 여러 사용자 조회
       const user1Points = await getUserPointsUseCase.execute(1);
       const user2Points = await getUserPointsUseCase.execute(2);
 

@@ -28,8 +28,8 @@ describe('Products Integration Tests', () => {
   });
 
   describe('GetProducts Integration', () => {
-    it('Use Case가 Service와 Repository를 통해 실제 데이터베이스에서 상품을 조회해야 한다', async () => {
-      // Act - Use Case가 Service와 Repository를 통해 실제 데이터베이스 조회
+    it('Use Case가 Domain Service를 통해 실제 데이터베이스에서 상품을 조회해야 한다', async () => {
+      // Act - Use Case가 Domain Service를 통해 실제 데이터베이스 조회
       const result = await getProductsUseCase.execute();
 
       // Assert - Use Case 결과 검증
@@ -55,8 +55,8 @@ describe('Products Integration Tests', () => {
       });
     });
 
-    it('Service가 Repository를 통해 특정 상품들을 조회해야 한다', async () => {
-      // Act - Use Case가 Service와 Repository를 통해 조회
+    it('Domain Service가 Repository를 통해 특정 상품들을 조회해야 한다', async () => {
+      // Act - Use Case가 Domain Service를 통해 조회
       const result = await getProductsUseCase.execute();
 
       // Assert - Use Case 결과 검증
@@ -73,8 +73,8 @@ describe('Products Integration Tests', () => {
   });
 
   describe('GetTopSellers', () => {
-    it('Use Case가 Service와 Repository를 통해 실제 데이터베이스에서 인기 상품을 조회해야 한다', async () => {
-      // Act - Use Case가 Service와 Repository를 통해 실제 데이터베이스 조회
+    it('Use Case가 Domain Service를 통해 실제 데이터베이스에서 인기 상품을 조회해야 한다', async () => {
+      // Act - Use Case가 Domain Service를 통해 실제 데이터베이스 조회
       const result = await getTopSellersUseCase.execute();
 
       // Assert - Use Case 결과 검증
@@ -96,8 +96,8 @@ describe('Products Integration Tests', () => {
       });
     });
 
-    it('Service가 Repository를 통해 인기 상품을 조회해야 한다', async () => {
-      // Act - Use Case가 Service와 Repository를 통해 조회
+    it('Domain Service가 Repository를 통해 인기 상품을 조회해야 한다', async () => {
+      // Act - Use Case가 Domain Service를 통해 조회
       const result = await getTopSellersUseCase.execute();
 
       // Assert - 인기 상품 조회 검증

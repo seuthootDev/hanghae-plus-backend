@@ -10,6 +10,10 @@ describe('GetProductsUseCase', () => {
   beforeEach(async () => {
     mockProductsService = {
       getProducts: jest.fn(),
+      getTopSellers: jest.fn(),
+      validateAndReserveProducts: jest.fn(),
+      findById: jest.fn(),
+      save: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
