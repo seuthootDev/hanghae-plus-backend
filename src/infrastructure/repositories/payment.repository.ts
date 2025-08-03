@@ -77,22 +77,35 @@ export class PaymentRepository implements PaymentRepositoryInterface {
     );
   }
 
-  async findByOrderId(orderId: number): Promise<Payment | null> {
-    const paymentEntity = await this.paymentRepository.findOne({ where: { orderId } });
-    if (!paymentEntity) {
-      return null;
-    }
+  async findByOrderId(orderId: number): Promise<Payment[]> {
+    const paymentEntities = await this.paymentRepository.find({ where: { orderId } });
     
-    return new Payment(
-      paymentEntity.id,
-      paymentEntity.orderId,
-      paymentEntity.userId,
-      paymentEntity.totalAmount,
-      paymentEntity.discountAmount,
-      paymentEntity.finalAmount,
-      paymentEntity.couponUsed,
-      paymentEntity.status,
-      paymentEntity.paidAt
-    );
+    return paymentEntities.map(entity => new Payment(
+      entity.id,
+      entity.orderId,
+      entity.userId,
+      entity.totalAmount,
+      entity.discountAmount,
+      entity.finalAmount,
+      entity.couponUsed,
+      entity.status,
+      entity.paidAt
+    ));
+  }
+
+  async findByUserId(userId: number): Promise<Payment[]> {
+    const paymentEntities = await this.paymentRepository.find({ where: { userId } });
+    
+    return paymentEntities.map(entity => new Payment(
+      entity.id,
+      entity.orderId,
+      entity.userId,
+      entity.totalAmount,
+      entity.discountAmount,
+      entity.finalAmount,
+      entity.couponUsed,
+      entity.status,
+      entity.paidAt
+    ));
   }
 } 
