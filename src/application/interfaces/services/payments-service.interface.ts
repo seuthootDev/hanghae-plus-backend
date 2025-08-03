@@ -15,4 +15,6 @@ export interface PaymentsServiceInterface {
   }): Promise<Payment>;
   findById(paymentId: number): Promise<Payment | null>;
   save(payment: Payment): Promise<Payment>;
+  findByOrderId(orderId: number): Promise<Payment[]>;
+  findByUserId(userId: number): Promise<Payment[]>;
 } 

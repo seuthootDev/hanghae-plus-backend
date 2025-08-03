@@ -16,4 +16,6 @@ export interface OrdersServiceInterface {
   }): Promise<Order>;
   findById(orderId: number): Promise<Order | null>;
   save(order: Order): Promise<Order>;
+  updateOrderStatus(orderId: number, status: string): Promise<Order>;
+  findByUserId(userId: number): Promise<Order[]>;
 } 
