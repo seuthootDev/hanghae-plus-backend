@@ -2,9 +2,9 @@ import { Injectable, Inject, BadRequestException, NotFoundException } from '@nes
 import { CreateOrderDto } from '../../../presentation/dto/ordersDTO/create-order.dto';
 import { OrderResponseDto } from '../../../presentation/dto/ordersDTO/order-response.dto';
 import { OrdersServiceInterface, ORDERS_SERVICE } from '../../interfaces/services/orders-service.interface';
-import { ProductRepositoryInterface, PRODUCT_REPOSITORY } from '../../interfaces/repositories/product-repository.interface';
-import { UserRepositoryInterface, USER_REPOSITORY } from '../../interfaces/repositories/user-repository.interface';
-import { CouponRepositoryInterface, COUPON_REPOSITORY } from '../../interfaces/repositories/coupon-repository.interface';
+import { ProductsServiceInterface, PRODUCTS_SERVICE } from '../../interfaces/services/products-service.interface';
+import { UsersServiceInterface, USERS_SERVICE } from '../../interfaces/services/users-service.interface';
+import { CouponsServiceInterface, COUPONS_SERVICE } from '../../interfaces/services/coupons-service.interface';
 import { OrderValidationService } from '../../../domain/services/order-validation.service';
 import { UserValidationService } from '../../../domain/services/user-validation.service';
 import { Order, OrderItem } from '../../../domain/entities/order.entity';
@@ -17,12 +17,12 @@ export class CreateOrderUseCase {
   constructor(
     @Inject(ORDERS_SERVICE)
     private readonly ordersService: OrdersServiceInterface,
-    @Inject(PRODUCT_REPOSITORY)
-    private readonly productRepository: ProductRepositoryInterface,
-    @Inject(USER_REPOSITORY)
-    private readonly userRepository: UserRepositoryInterface,
-    @Inject(COUPON_REPOSITORY)
-    private readonly couponRepository: CouponRepositoryInterface,
+    @Inject(PRODUCTS_SERVICE)
+    private readonly productsService: ProductsServiceInterface,
+    @Inject(USERS_SERVICE)
+    private readonly usersService: UsersServiceInterface,
+    @Inject(COUPONS_SERVICE)
+    private readonly couponsService: CouponsServiceInterface,
     private readonly orderValidationService: OrderValidationService,
     private readonly userValidationService: UserValidationService,
     private readonly redisService: RedisService,
@@ -33,56 +33,24 @@ export class CreateOrderUseCase {
   @Transactional()
   async execute(createOrderDto: CreateOrderDto): Promise<OrderResponseDto> {
     const { userId, items, couponId } = createOrderDto;
-    const products: any[] = [];
     
     try {
       // 1. 주문 상품 검증
       this.orderValidationService.validateOrderItems(items);
       
-      // 2. 상품 조회 및 검증
-      const orderItems: OrderItem[] = [];
-      let totalAmount = 0;
-      
-      for (const item of items) {
-        const product = await this.productRepository.findById(item.productId);
-        if (!product) {
-          throw new NotFoundException('상품을 찾을 수 없습니다.');
-        }
-        
-        products.push(product);
-        
-        // 상품 검증
-        this.orderValidationService.validateProduct(product, item.quantity);
-        
-        // 재고 차감
-        product.decreaseStock(item.quantity);
-        await this.productRepository.save(product);
-        
-        orderItems.push({
-          productId: item.productId,
-          quantity: item.quantity,
-          price: product.price
-        });
-        
-        totalAmount += product.price * item.quantity;
+      // 2. 상품 조회, 검증 및 재고 차감 (ProductsService 사용)
+      const productResult = await this.productsService.validateAndReserveProducts(items);
+      if (!productResult) {
+        throw new Error('상품 검증 및 재고 차감에 실패했습니다.');
       }
+      const { products, orderItems, totalAmount } = productResult;
       
-      // 3. 사용자 조회 및 검증
-      const user = await this.userRepository.findById(userId);
-      this.userValidationService.validateUserExists(user);
+      // 3. 사용자 조회 및 검증 (UsersService 사용)
+      const user = await this.usersService.validateUser(userId);
       
-      // 4. 쿠폰 조회 및 할인 계산
-      let discountAmount = 0;
-      let couponUsed = false;
-      let coupon: any = null;
-      
-      if (couponId) {
-        coupon = await this.couponRepository.findById(couponId);
-        if (coupon && coupon.isValid()) {
-          discountAmount = coupon.calculateDiscount(totalAmount);
-          couponUsed = true;
-        }
-      }
+      // 4. 쿠폰 검증 및 할인 계산 (CouponsService 사용)
+      const couponResult = await this.couponsService.validateAndCalculateDiscount(couponId, totalAmount);
+      const { coupon, discountAmount, couponUsed } = couponResult;
       
       const finalAmount = totalAmount - discountAmount;
       
@@ -96,7 +64,7 @@ export class CreateOrderUseCase {
         finalAmount
       );
       
-      // 6. 주문 생성
+      // 6. 주문 생성 (OrdersService 사용)
       const order = await this.ordersService.createOrder({
         userId,
         orderItems,
@@ -122,10 +90,11 @@ export class CreateOrderUseCase {
       };
     } catch (error) {
       // 결제 실패 시 재고 반환
-      for (const product of products) {
+      for (const item of items) {
+        const product = await this.productsService.findById(item.productId);
         if (product) {
-          product.increaseStock(items.find(item => item.productId === product.id)?.quantity || 0);
-          await this.productRepository.save(product);
+          product.increaseStock(item.quantity);
+          await this.productsService.save(product);
         }
       }
       throw error;
