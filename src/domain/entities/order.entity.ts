@@ -17,7 +17,8 @@ export class Order {
     private _finalAmount: number,
     private _couponId: number | null = null,
     private _couponUsed: boolean = false,
-    private _status: string = 'PENDING'
+    private _status: string = 'PENDING',
+    private _version: number = 0
   ) {}
 
   // Getter 메서드들
@@ -68,5 +69,14 @@ export class Order {
 
   isValid(): boolean {
     return this._items.length > 0 && this._finalAmount > 0;
+  }
+
+  // 버전 관련 메서드
+  get version(): number {
+    return this._version;
+  }
+
+  incrementVersion(): void {
+    this._version++;
   }
 } 

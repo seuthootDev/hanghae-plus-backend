@@ -4,7 +4,8 @@ export class User {
     public readonly name: string,
     public readonly email: string,
     private _points: number = 0,
-    private _password: string = ''
+    private _password: string = '',
+    private _version: number = 0
   ) {}
 
   // 인증 관련 비즈니스 로직
@@ -40,5 +41,14 @@ export class User {
 
   hasEnoughPoints(amount: number): boolean {
     return this._points >= amount;
+  }
+
+  // 버전 관련 메서드
+  get version(): number {
+    return this._version;
+  }
+
+  incrementVersion(): void {
+    this._version++;
   }
 } 
