@@ -71,6 +71,57 @@ describe('Auth Integration Tests', () => {
       // Act & Assert - Domain Service가 Repository를 통해 중복 검증을 수행
       await expect(registerUseCase.execute(registerDto)).rejects.toThrow();
     });
+
+    describe('회원가입 동시성 제어 테스트', () => {
+      it('동시 회원가입 시 낙관적 락이 작동해야 한다', async () => {
+        // Arrange - 서로 다른 이메일로 동시 가입
+        const promises = Array(5).fill(null).map((_, index) => {
+          const registerDto = new RegisterDto();
+          registerDto.email = `concurrent-test-${index}@example.com`;
+          registerDto.password = 'password123';
+          registerDto.name = `동시성테스트사용자${index}`;
+          
+          return registerUseCase.execute(registerDto);
+        });
+
+        // Act - 동시 요청 시뮬레이션
+        const results = await Promise.all(promises);
+
+        // Assert - 모든 요청이 성공해야 함 (낙관적 락으로 충돌 없이 처리)
+        expect(results).toHaveLength(5);
+        results.forEach((result, index) => {
+          expect(result).toHaveProperty('userId');
+          expect(result).toHaveProperty('email', `concurrent-test-${index}@example.com`);
+        });
+
+        console.log('✅ 동시 회원가입 테스트 성공:', results.length, '개 요청 모두 성공');
+      }, 30000);
+
+      it('중복 이메일로 동시 가입 시 낙관적 락이 작동해야 한다', async () => {
+        // Arrange
+        const registerDto = new RegisterDto();
+        registerDto.email = 'duplicate-test@example.com';
+        registerDto.password = 'password123';
+        registerDto.name = '중복테스트사용자';
+
+        // Act - 먼저 하나 가입
+        const firstResult = await registerUseCase.execute(registerDto);
+        expect(firstResult).toHaveProperty('userId');
+
+        // 동시에 같은 이메일로 가입 시도
+        const promises = Array(3).fill(null).map(() => 
+          registerUseCase.execute(registerDto).catch(error => error)
+        );
+
+        const results = await Promise.all(promises);
+
+        // Assert - 첫 번째는 성공, 나머지는 실패해야 함
+        const failedResults = results.filter(result => result instanceof Error);
+        expect(failedResults.length).toBe(3);
+
+        console.log('✅ 중복 이메일 동시 가입 테스트 성공: 1개 성공, 3개 실패');
+      }, 30000);
+    });
   });
 
   describe('Login Integration', () => {
