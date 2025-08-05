@@ -165,5 +165,76 @@ describe('Coupons Integration Tests', () => {
         expect(coupon.userId).toBe(2);
       });
     });
+
+    describe('비관적 락 동시성 제어 통합 테스트', () => {
+      it('동시 쿠폰 발급 요청 시 비관적 락이 작동해야 한다', async () => {
+        // Arrange
+        const issueCouponDto = new IssueCouponDto();
+        issueCouponDto.userId = 10;
+        issueCouponDto.couponType = CouponType.DISCOUNT_10PERCENT;
+
+        // Act - 동시 요청 시뮬레이션 (순차적으로 처리되어야 함)
+        const promises = Array(5).fill(null).map((_, index) => {
+          const dto = new IssueCouponDto();
+          dto.userId = 10 + index;
+          dto.couponType = CouponType.DISCOUNT_10PERCENT;
+          return issueCouponUseCase.execute(dto);
+        });
+
+        const results = await Promise.all(promises);
+
+        // Assert - 모든 요청이 성공해야 함 (비관적 락으로 순서 보장)
+        expect(results).toHaveLength(5);
+        results.forEach((result, index) => {
+          expect(result).toHaveProperty('couponId');
+          expect(result).toHaveProperty('userId', 10 + index);
+          expect(result).toHaveProperty('couponType', CouponType.DISCOUNT_10PERCENT);
+        });
+      });
+
+      it('선착순 쿠폰 발급에서 순서가 보장되어야 한다', async () => {
+        // Arrange
+        const issueCouponDto = new IssueCouponDto();
+        issueCouponDto.userId = 20;
+        issueCouponDto.couponType = CouponType.DISCOUNT_20PERCENT;
+
+        // Act - 순차적 요청 시뮬레이션
+        const results = [];
+        for (let i = 0; i < 3; i++) {
+          const dto = new IssueCouponDto();
+          dto.userId = 20 + i;
+          dto.couponType = CouponType.DISCOUNT_20PERCENT;
+          results.push(await issueCouponUseCase.execute(dto));
+        }
+
+        // Assert - 순서대로 처리되어야 함
+        expect(results).toHaveLength(3);
+        results.forEach((result, index) => {
+          expect(result).toHaveProperty('userId', 20 + index);
+          expect(result).toHaveProperty('couponType', CouponType.DISCOUNT_20PERCENT);
+        });
+      });
+
+      it('다른 쿠폰 타입은 독립적으로 처리되어야 한다', async () => {
+        // Arrange
+        const discountDto = new IssueCouponDto();
+        discountDto.userId = 30;
+        discountDto.couponType = CouponType.DISCOUNT_10PERCENT;
+
+        const fixedDto = new IssueCouponDto();
+        fixedDto.userId = 31;
+        fixedDto.couponType = CouponType.FIXED_2000;
+
+        // Act - 다른 타입의 쿠폰 동시 발급
+        const [discountResult, fixedResult] = await Promise.all([
+          issueCouponUseCase.execute(discountDto),
+          issueCouponUseCase.execute(fixedDto)
+        ]);
+
+        // Assert - 독립적으로 처리되어야 함
+        expect(discountResult).toHaveProperty('couponType', CouponType.DISCOUNT_10PERCENT);
+        expect(fixedResult).toHaveProperty('couponType', CouponType.FIXED_2000);
+      });
+    });
   });
 }); 

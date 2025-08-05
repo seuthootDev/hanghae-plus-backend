@@ -137,5 +137,28 @@ describe('ChargePointsUseCase', () => {
         expect(result).toEqual(expectedResponseDto);
       });
     });
+
+    describe('데코레이터 적용 테스트', () => {
+      it('@OptimisticLock 데코레이터가 적용되어야 한다', () => {
+        // Arrange & Act
+        const method = useCase.execute;
+        const metadata = Reflect.getMetadata('optimistic_lock', method);
+
+        // Assert
+        expect(metadata).toBeDefined();
+        expect(metadata.key).toBe('user:${args[0]}');
+        expect(metadata.maxRetries).toBe(3);
+        expect(metadata.retryDelay).toBe(100);
+      });
+
+      it('@Transactional 데코레이터가 적용되어야 한다', () => {
+        // Arrange & Act
+        const method = useCase.execute;
+        const metadata = Reflect.getMetadata('transactional', method);
+
+        // Assert
+        expect(metadata).toBe(true);
+      });
+    });
   });
 }); 

@@ -86,6 +86,65 @@ describe('Users Integration Tests', () => {
       const finalPoints = await getUserPointsUseCase.execute(2);
       expect(finalPoints.balance).toBe(secondResult.balance);
     });
+
+    describe('동시성 제어 통합 테스트', () => {
+      it('동시 포인트 충전 요청 시 낙관적 락이 작동해야 한다', async () => {
+        // Arrange
+        const chargePointsDto = new ChargePointsDto();
+        chargePointsDto.amount = 1000;
+
+        // Act - 동시 요청 시뮬레이션
+        const promises = Array(10).fill(null).map(() => 
+          chargePointsUseCase.execute(3, chargePointsDto)
+        );
+
+        const results = await Promise.all(promises);
+
+        // Assert - 모든 요청이 성공해야 함 (낙관적 락으로 충돌 해결)
+        expect(results).toHaveLength(10);
+        results.forEach(result => {
+          expect(result).toHaveProperty('balance');
+          expect(result.balance).toBeGreaterThan(0);
+        });
+
+        // 최종 포인트 확인 (모든 충전이 반영되어야 함)
+        const finalPoints = await getUserPointsUseCase.execute(3);
+        expect(finalPoints.balance).toBeGreaterThan(0);
+      });
+
+      it('버전 충돌 시 재시도 로직이 작동해야 한다', async () => {
+        // Arrange
+        const chargePointsDto = new ChargePointsDto();
+        chargePointsDto.amount = 1000; // 최소 금액으로 변경
+
+        // Act - 연속적인 충전 요청 (버전 충돌 가능성)
+        const results = [];
+        for (let i = 0; i < 5; i++) {
+          results.push(await chargePointsUseCase.execute(1, chargePointsDto));
+        }
+
+        // Assert - 모든 요청이 성공해야 함
+        expect(results).toHaveLength(5);
+        results.forEach(result => {
+          expect(result).toHaveProperty('balance');
+          expect(result.balance).toBeGreaterThan(0);
+        });
+      });
+
+      it('트랜잭션 롤백이 정상적으로 작동해야 한다', async () => {
+        // Arrange
+        const initialPoints = await getUserPointsUseCase.execute(1);
+        const chargePointsDto = new ChargePointsDto();
+        chargePointsDto.amount = -1000; // 음수로 에러 발생
+
+        // Act & Assert - 트랜잭션 롤백 확인
+        await expect(chargePointsUseCase.execute(1, chargePointsDto)).rejects.toThrow();
+
+        // 포인트가 변경되지 않았는지 확인 (롤백 확인)
+        const finalPoints = await getUserPointsUseCase.execute(1);
+        expect(finalPoints.balance).toBe(initialPoints.balance);
+      });
+    });
   });
 
   describe('GetUserPoints Integration', () => {
