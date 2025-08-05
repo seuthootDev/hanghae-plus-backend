@@ -11,6 +11,7 @@ import { Order, OrderItem } from '../../../domain/entities/order.entity';
 import { RedisService } from '../../../infrastructure/services/redis.service';
 import { ProductSalesAggregationRepositoryInterface } from '../../interfaces/repositories/product-sales-aggregation-repository.interface';
 import { Transactional } from '../../../common/decorators/transactional.decorator';
+import { OptimisticLock } from '../../../common/decorators/optimistic-lock.decorator';
 
 @Injectable()
 export class CreateOrderUseCase {
@@ -31,6 +32,16 @@ export class CreateOrderUseCase {
   ) {}
 
   @Transactional()
+  @OptimisticLock({
+    key: (args) => {
+      const { userId, items } = args[0];
+      const itemKeys = items.map(item => `${item.productId}:${item.quantity}`).join(',');
+      return `order:create:${userId}:${itemKeys}`;
+    },
+    maxRetries: 3,
+    retryDelay: 100,
+    errorMessage: '주문 생성 중입니다. 잠시 후 다시 시도해주세요.'
+  })
   async execute(createOrderDto: CreateOrderDto): Promise<OrderResponseDto> {
     const { userId, items, couponId } = createOrderDto;
     

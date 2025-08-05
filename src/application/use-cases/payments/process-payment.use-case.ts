@@ -8,6 +8,7 @@ import { ProductsServiceInterface, PRODUCTS_SERVICE } from '../../interfaces/ser
 import { PaymentValidationService } from '../../../domain/services/payment-validation.service';
 import { UserValidationService } from '../../../domain/services/user-validation.service';
 import { Transactional } from '../../../common/decorators/transactional.decorator';
+import { OptimisticLock } from '../../../common/decorators/optimistic-lock.decorator';
 
 @Injectable()
 export class ProcessPaymentUseCase {
@@ -25,6 +26,12 @@ export class ProcessPaymentUseCase {
   ) {}
 
   @Transactional()
+  @OptimisticLock({
+    key: 'payment:process:${args[0].orderId}',
+    maxRetries: 3,
+    retryDelay: 100,
+    errorMessage: '결제 처리 중입니다. 잠시 후 다시 시도해주세요.'
+  })
   async execute(processPaymentDto: ProcessPaymentDto): Promise<PaymentResponseDto> {
     const { orderId } = processPaymentDto;
     let order: any = null;
