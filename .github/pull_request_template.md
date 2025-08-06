@@ -36,6 +36,7 @@
 ### STEP09 - Concurrency (2개)
 - [✔️] 애플리케이션 내에서 발생 가능한 **동시성 문제를 식별**했는가?
 - [✔️] 보고서에 DB를 활용한 **동시성 문제 해결 방안**이 포함되어 있는가?
+- [`15f5265`](https://github.com/seuthootDev/hanghae-plus-backend/commit/15f52656b3481c4d2fd47c0fe9f005642d9221e3) 
 
 ---
 
