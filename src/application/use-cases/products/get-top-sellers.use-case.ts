@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { TopSellerResponseDto } from '../../../presentation/dto/productsDTO/top-seller-response.dto';
 import { ProductsServiceInterface, PRODUCTS_SERVICE } from '../../interfaces/services/products-service.interface';
-import { RedisService } from '../../../infrastructure/services/redis.service';
+import { RedisServiceInterface, REDIS_SERVICE } from '../../interfaces/services/redis-service.interface';
 import { ProductSalesAggregationRepositoryInterface } from '../../interfaces/repositories/product-sales-aggregation-repository.interface';
 
 @Injectable()
@@ -9,7 +9,8 @@ export class GetTopSellersUseCase {
   constructor(
     @Inject(PRODUCTS_SERVICE)
     private readonly productsService: ProductsServiceInterface,
-    private readonly redisService: RedisService,
+    @Inject(REDIS_SERVICE)
+    private readonly redisService: RedisServiceInterface,
     @Inject('PRODUCT_SALES_AGGREGATION_REPOSITORY')
     private readonly aggregationRepository: ProductSalesAggregationRepositoryInterface
   ) {}

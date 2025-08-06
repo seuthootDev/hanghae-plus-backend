@@ -1,4 +1,4 @@
-import { Injectable, Inject, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { CreateOrderDto } from '../../../presentation/dto/ordersDTO/create-order.dto';
 import { OrderResponseDto } from '../../../presentation/dto/ordersDTO/order-response.dto';
 import { OrdersServiceInterface, ORDERS_SERVICE } from '../../interfaces/services/orders-service.interface';
@@ -8,10 +8,11 @@ import { CouponsServiceInterface, COUPONS_SERVICE } from '../../interfaces/servi
 import { OrderValidationService } from '../../../domain/services/order-validation.service';
 import { UserValidationService } from '../../../domain/services/user-validation.service';
 import { Order, OrderItem } from '../../../domain/entities/order.entity';
-import { RedisService } from '../../../infrastructure/services/redis.service';
+import { RedisServiceInterface, REDIS_SERVICE } from '../../interfaces/services/redis-service.interface';
 import { ProductSalesAggregationRepositoryInterface } from '../../interfaces/repositories/product-sales-aggregation-repository.interface';
 import { Transactional } from '../../../common/decorators/transactional.decorator';
 import { OptimisticLock } from '../../../common/decorators/optimistic-lock.decorator';
+import { RedisDistributedLockServiceInterface, REDIS_DISTRIBUTED_LOCK_SERVICE } from '../../interfaces/services/redis-distributed-lock-service.interface';
 
 @Injectable()
 export class CreateOrderUseCase {
@@ -26,9 +27,12 @@ export class CreateOrderUseCase {
     private readonly couponsService: CouponsServiceInterface,
     private readonly orderValidationService: OrderValidationService,
     private readonly userValidationService: UserValidationService,
-    private readonly redisService: RedisService,
+    @Inject(REDIS_SERVICE)
+    private readonly redisService: RedisServiceInterface,
     @Inject('PRODUCT_SALES_AGGREGATION_REPOSITORY')
-    private readonly aggregationRepository: ProductSalesAggregationRepositoryInterface
+    private readonly aggregationRepository: ProductSalesAggregationRepositoryInterface,
+    @Inject(REDIS_DISTRIBUTED_LOCK_SERVICE)
+    private readonly redisDistributedLockService: RedisDistributedLockServiceInterface
   ) {}
 
   @Transactional()
@@ -43,9 +47,23 @@ export class CreateOrderUseCase {
     errorMessage: '주문 생성 중입니다. 잠시 후 다시 시도해주세요.'
   })
   async execute(createOrderDto: CreateOrderDto): Promise<OrderResponseDto> {
-    const { userId, items, couponId } = createOrderDto;
+    // Redis 분산 락으로 추가 보호 (보조적)
+    const redisLockKey = `redis:order:create:${createOrderDto.userId}:${createOrderDto.items.map(item => `${item.productId}:${item.quantity}`).join(',')}`;
     
+    const lockAcquired = await this.redisDistributedLockService.acquireLock(redisLockKey, {
+      ttl: 5000, // 보조적이므로 짧은 TTL
+      retryCount: 2, // 재시도 횟수 증가
+      retryDelay: 10 // 짧은 대기 시간
+    });
+
+    // Redis 락 실패해도 계속 진행 (보조적이므로)
+    if (!lockAcquired) {
+      console.log(`Redis 락 획득 실패: ${redisLockKey}, 하지만 계속 진행`);
+    }
+
     try {
+      const { userId, items, couponId } = createOrderDto;
+      
       // 1. 주문 상품 검증
       this.orderValidationService.validateOrderItems(items);
       
@@ -101,7 +119,7 @@ export class CreateOrderUseCase {
       };
     } catch (error) {
       // 결제 실패 시 재고 반환
-      for (const item of items) {
+      for (const item of createOrderDto.items) {
         const product = await this.productsService.findById(item.productId);
         if (product) {
           product.increaseStock(item.quantity);
@@ -109,6 +127,11 @@ export class CreateOrderUseCase {
         }
       }
       throw error;
+    } finally {
+      // Redis 락이 있었으면 해제
+      if (lockAcquired) {
+        await this.redisDistributedLockService.releaseLock(redisLockKey);
+      }
     }
   }
 
