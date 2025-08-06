@@ -1,61 +1,71 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { GetTopSellersUseCase } from '../../../src/application/use-cases/products/get-top-sellers.use-case';
 import { ProductsServiceInterface, PRODUCTS_SERVICE } from '../../../src/application/interfaces/services/products-service.interface';
-import { RedisService } from '../../../src/infrastructure/services/redis.service';
+import { RedisServiceInterface, REDIS_SERVICE } from '../../../src/application/interfaces/services/redis-service.interface';
 import { ProductSalesAggregationRepositoryInterface } from '../../../src/application/interfaces/repositories/product-sales-aggregation-repository.interface';
+import { TopSellerResponseDto } from '../../../src/presentation/dto/productsDTO/top-seller-response.dto';
 import { Product } from '../../../src/domain/entities/product.entity';
 import { ProductSalesAggregation } from '../../../src/domain/entities/product-sales-aggregation.entity';
 
 describe('GetTopSellersUseCase', () => {
   let useCase: GetTopSellersUseCase;
   let mockProductsService: jest.Mocked<ProductsServiceInterface>;
-  let mockRedisService: Partial<RedisService>;
+  let mockRedisService: jest.Mocked<RedisServiceInterface>;
   let mockAggregationRepository: jest.Mocked<ProductSalesAggregationRepositoryInterface>;
 
   beforeEach(async () => {
-    mockProductsService = {
-      getProducts: jest.fn(),
-      getTopSellers: jest.fn(),
-      validateAndReserveProducts: jest.fn(),
-      findById: jest.fn(),
-      save: jest.fn(),
+    const mockProductsServiceProvider = {
+      provide: PRODUCTS_SERVICE,
+      useValue: {
+        getProducts: jest.fn(),
+        getTopSellers: jest.fn(),
+        validateAndReserveProducts: jest.fn(),
+        findById: jest.fn(),
+        save: jest.fn(),
+      },
     };
 
-    mockRedisService = {
-      getTopSellersCache: jest.fn(),
-      setTopSellersCache: jest.fn(),
-      incrementProductSales: jest.fn(),
-      getProductSales: jest.fn(),
-      getAllProductSales: jest.fn(),
-      onModuleDestroy: jest.fn(),
+    const mockRedisServiceProvider = {
+      provide: REDIS_SERVICE,
+      useValue: {
+        set: jest.fn(),
+        eval: jest.fn(),
+        pttl: jest.fn(),
+        exists: jest.fn(),
+        keys: jest.fn(),
+        del: jest.fn(),
+        getTopSellersCache: jest.fn(),
+        setTopSellersCache: jest.fn(),
+        incrementProductSales: jest.fn(),
+        getProductSales: jest.fn(),
+        getAllProductSales: jest.fn(),
+        onModuleDestroy: jest.fn(),
+      },
     };
 
-    mockAggregationRepository = {
-      findByProductId: jest.fn(),
-      findTopSellers: jest.fn(),
-      save: jest.fn(),
-      updateSales: jest.fn(),
+    const mockAggregationRepositoryProvider = {
+      provide: 'PRODUCT_SALES_AGGREGATION_REPOSITORY',
+      useValue: {
+        findByProductId: jest.fn(),
+        findTopSellers: jest.fn(),
+        save: jest.fn(),
+        updateSales: jest.fn(),
+      },
     };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         GetTopSellersUseCase,
-        {
-          provide: PRODUCTS_SERVICE,
-          useValue: mockProductsService,
-        },
-        {
-          provide: RedisService,
-          useValue: mockRedisService,
-        },
-        {
-          provide: 'PRODUCT_SALES_AGGREGATION_REPOSITORY',
-          useValue: mockAggregationRepository,
-        },
+        mockProductsServiceProvider,
+        mockRedisServiceProvider,
+        mockAggregationRepositoryProvider,
       ],
     }).compile();
 
     useCase = module.get<GetTopSellersUseCase>(GetTopSellersUseCase);
+    mockProductsService = module.get(PRODUCTS_SERVICE);
+    mockRedisService = module.get(REDIS_SERVICE);
+    mockAggregationRepository = module.get('PRODUCT_SALES_AGGREGATION_REPOSITORY');
   });
 
   describe('execute', () => {
