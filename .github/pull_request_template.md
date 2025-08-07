@@ -1,5 +1,5 @@
 ## :pushpin: PR 제목 규칙
-[STEP09] 정승훈 - e-commerce
+[STEP10] 정승훈 - e-commerce
 
 ---
 ### 동시성 처리가 필요하다고 느낀 서비스
