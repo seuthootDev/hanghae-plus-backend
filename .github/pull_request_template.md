@@ -41,16 +41,20 @@
 ---
 
 ### STEP10 - Finalize (1개)
-- [ ] **동시성 문제를 드러낼 수 있는 통합 테스트**를 작성했는가?
+- [✔️] **동시성 문제를 드러낼 수 있는 통합 테스트**를 작성했는가?
+- [`5e45758`](https://github.com/seuthootDev/hanghae-plus-backend/commit/5e457589862041efdffa75351e2fb989b006fb87)
+- [`89a906b`](https://github.com/seuthootDev/hanghae-plus-backend/commit/89a906b25202378cfc4e7ccad5acd422ecef1b96)
+- [`63b1509`](https://github.com/seuthootDev/hanghae-plus-backend/commit/63b15098f1121380ce1a97d4e422a5bfbfde52ef)
+- [`488eed7`](https://github.com/seuthootDev/hanghae-plus-backend/commit/488eed7fb510d7808bb7c6a1d726e1db6e323646)
 
 ---
 
 ## ✍️ 간단 회고 (3줄 이내)
-- **잘한 점**: 
-- **어려웠던 점**: 
-- **다음 시도**: 
+- **잘한 점**: 락을 어디서 걸어야 하는지에 대한 고민
+- **어려웠던 점**: 분산락,트랜젝션락,db락이 충돌이 없도록 하는 것이 어려웠음
+- **다음 시도**:  조건부 비관적 락 사용용
 
-# 피드백 받고 싶은 사항 (STEP09)
+# 피드백 받고 싶은 사항
 
 ### 동시성 제어 전락
 - 동시성 제어 전략을 수립할 때, 확장성에 우선순위를 두었습니다.  
