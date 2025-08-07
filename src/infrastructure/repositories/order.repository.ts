@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Order, OrderItem } from '../../domain/entities/order.entity';
 import { OrderRepositoryInterface } from '../../application/interfaces/repositories/order-repository.interface';
 import { OrderEntity } from './typeorm/order.entity';
+import { DbOptimisticLock } from '../../common/decorators/db-optimistic-lock.decorator';
 
 @Injectable()
 export class OrderRepository implements OrderRepositoryInterface {
@@ -12,6 +13,15 @@ export class OrderRepository implements OrderRepositoryInterface {
     private readonly orderRepository: Repository<OrderEntity>
   ) {}
 
+  @DbOptimisticLock({
+    table: 'orders',
+    column: 'id',
+    value: (args: any[]) => args[0].toString(),
+    versionColumn: 'version',
+    maxRetries: 3,
+    retryDelay: 100,
+    errorMessage: '주문 정보가 다른 사용자에 의해 수정되었습니다. 다시 시도해주세요.'
+  })
   async findById(id: number): Promise<Order | null> {
     const orderEntity = await this.orderRepository.findOne({ where: { id } });
     if (!orderEntity) {
@@ -31,6 +41,15 @@ export class OrderRepository implements OrderRepositoryInterface {
     );
   }
 
+  @DbOptimisticLock({
+    table: 'orders',
+    column: 'id',
+    value: (args: any[]) => args[0].id?.toString() || '0',
+    versionColumn: 'version',
+    maxRetries: 3,
+    retryDelay: 100,
+    errorMessage: '주문 정보가 다른 사용자에 의해 수정되었습니다. 다시 시도해주세요.'
+  })
   async save(order: Order): Promise<Order> {
     let orderEntity: OrderEntity;
     

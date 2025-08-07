@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Payment } from '../../domain/entities/payment.entity';
 import { PaymentRepositoryInterface } from '../../application/interfaces/repositories/payment-repository.interface';
 import { PaymentEntity } from './typeorm/payment.entity';
+import { DbOptimisticLock } from '../../common/decorators/db-optimistic-lock.decorator';
 
 @Injectable()
 export class PaymentRepository implements PaymentRepositoryInterface {
@@ -12,6 +13,15 @@ export class PaymentRepository implements PaymentRepositoryInterface {
     private readonly paymentRepository: Repository<PaymentEntity>
   ) {}
 
+  @DbOptimisticLock({
+    table: 'payments',
+    column: 'id',
+    value: (args: any[]) => args[0].toString(),
+    versionColumn: 'version',
+    maxRetries: 3,
+    retryDelay: 100,
+    errorMessage: '결제 정보가 다른 사용자에 의해 수정되었습니다. 다시 시도해주세요.'
+  })
   async findById(id: number): Promise<Payment | null> {
     const paymentEntity = await this.paymentRepository.findOne({ where: { id } });
     if (!paymentEntity) {
@@ -31,6 +41,15 @@ export class PaymentRepository implements PaymentRepositoryInterface {
     );
   }
 
+  @DbOptimisticLock({
+    table: 'payments',
+    column: 'id',
+    value: (args: any[]) => args[0].id?.toString() || '0',
+    versionColumn: 'version',
+    maxRetries: 3,
+    retryDelay: 100,
+    errorMessage: '결제 정보가 다른 사용자에 의해 수정되었습니다. 다시 시도해주세요.'
+  })
   async save(payment: Payment): Promise<Payment> {
     let paymentEntity: PaymentEntity;
     

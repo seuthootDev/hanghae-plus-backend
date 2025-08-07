@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Coupon } from '../../domain/entities/coupon.entity';
 import { CouponRepositoryInterface } from '../../application/interfaces/repositories/coupon-repository.interface';
 import { CouponEntity } from './typeorm/coupon.entity';
+import { DbPessimisticLock } from '../../common/decorators/db-pessimistic-lock.decorator';
 
 @Injectable()
 export class CouponRepository implements CouponRepositoryInterface {
@@ -29,6 +30,13 @@ export class CouponRepository implements CouponRepositoryInterface {
     );
   }
 
+  @DbPessimisticLock({
+    table: 'coupons',
+    column: 'id',
+    value: (args: any[]) => args[0].id?.toString() || '0',
+    lockMode: 'FOR UPDATE',
+    errorMessage: '쿠폰 발급이 다른 사용자에 의해 진행 중입니다. 잠시 후 다시 시도해주세요.'
+  })
   async save(coupon: Coupon): Promise<Coupon> {
     let couponEntity: CouponEntity;
     
