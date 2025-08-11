@@ -26,31 +26,31 @@ describe('Payments Integration Tests', () => {
   });
 
   describe('Payment Integration', () => {
-    it('Service가 Repository를 통해 존재하지 않는 주문에 대한 결제 처리 시 에러를 반환해야 한다', async () => {
+    it('Domain Service가 Repository를 통해 존재하지 않는 주문에 대한 결제 처리 시 에러를 반환해야 한다', async () => {
       // Arrange
       const processPaymentDto = new ProcessPaymentDto();
       processPaymentDto.orderId = 999; // 존재하지 않는 주문
 
-      // Act & Assert - Service가 Repository를 통해 주문 존재 여부 검증
+      // Act & Assert - Domain Service가 Repository를 통해 주문 존재 여부 검증
       await expect(processPaymentUseCase.execute(processPaymentDto)).rejects.toThrow();
     });
 
-    it('Service가 Repository를 통해 포인트가 부족한 사용자의 결제 처리 시 에러를 반환해야 한다', async () => {
+    it('Domain Service가 Repository를 통해 포인트가 부족한 사용자의 결제 처리 시 에러를 반환해야 한다', async () => {
       // Arrange - 포인트가 부족한 사용자의 주문 (orderId 3이 포인트 부족 사용자라고 가정)
       const processPaymentDto = new ProcessPaymentDto();
       processPaymentDto.orderId = 3;
 
-      // Act & Assert - Service가 Repository를 통해 포인트 검증
+      // Act & Assert - Domain Service가 Repository를 통해 포인트 검증
       await expect(processPaymentUseCase.execute(processPaymentDto)).rejects.toThrow();
     });
 
-    it('Service가 Repository를 통해 유효한 주문에 대한 결제를 처리해야 한다', async () => {
+    it('Domain Service가 Repository를 통해 유효한 주문에 대한 결제를 처리해야 한다', async () => {
       // Arrange - 실제 존재하는 주문 ID 사용 (테스트 데이터에 따라 조정)
       const processPaymentDto = new ProcessPaymentDto();
       processPaymentDto.orderId = 1;
 
       try {
-        // Act - Use Case가 Service와 Repository를 통해 결제 처리
+        // Act - Use Case가 Domain Service들을 통해 결제 처리
         const result = await processPaymentUseCase.execute(processPaymentDto);
 
         // Assert - Use Case 결과 검증

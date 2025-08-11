@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToOne, Index } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToOne, Index, VersionColumn } from 'typeorm';
 import { UserEntity } from './user.entity';
 import { CouponEntity } from './coupon.entity';
 import { PaymentEntity } from './payment.entity';
@@ -50,4 +50,7 @@ export class OrderEntity {
 
   @OneToOne(() => PaymentEntity, payment => payment.order)
   payment: PaymentEntity;
+
+  @VersionColumn()
+  version: number;
 } 

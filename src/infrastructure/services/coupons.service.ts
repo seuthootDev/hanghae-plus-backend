@@ -70,4 +70,38 @@ export class CouponsService implements CouponsServiceInterface {
     const coupons = await this.couponRepository.findByUserId(userId);
     return coupons;
   }
+
+  // 주문에서 사용할 메서드들
+  async validateAndCalculateDiscount(couponId: number | null, totalAmount: number): Promise<{
+    coupon: Coupon | null;
+    discountAmount: number;
+    couponUsed: boolean;
+  }> {
+    if (!couponId) {
+      return { coupon: null, discountAmount: 0, couponUsed: false };
+    }
+
+    const coupon = await this.couponRepository.findById(couponId);
+    if (!coupon) {
+      return { coupon: null, discountAmount: 0, couponUsed: false };
+    }
+
+    // 쿠폰 유효성 검증
+    this.couponValidationService.validateCouponUsage(coupon);
+
+    if (coupon.isValid()) {
+      const discountAmount = coupon.calculateDiscount(totalAmount);
+      return { coupon, discountAmount, couponUsed: true };
+    }
+
+    return { coupon: null, discountAmount: 0, couponUsed: false };
+  }
+
+  async findById(couponId: number): Promise<Coupon | null> {
+    return this.couponRepository.findById(couponId);
+  }
+
+  async save(coupon: Coupon): Promise<Coupon> {
+    return this.couponRepository.save(coupon);
+  }
 } 

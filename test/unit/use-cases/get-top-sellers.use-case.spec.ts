@@ -15,6 +15,10 @@ describe('GetTopSellersUseCase', () => {
   beforeEach(async () => {
     mockProductsService = {
       getProducts: jest.fn(),
+      getTopSellers: jest.fn(),
+      validateAndReserveProducts: jest.fn(),
+      findById: jest.fn(),
+      save: jest.fn(),
     };
 
     mockRedisService = {

@@ -2,46 +2,55 @@ import { Injectable, Inject, BadRequestException, NotFoundException } from '@nes
 import { ProcessPaymentDto } from '../../../presentation/dto/paymentsDTO/process-payment.dto';
 import { PaymentResponseDto } from '../../../presentation/dto/paymentsDTO/payment-response.dto';
 import { PaymentsServiceInterface, PAYMENTS_SERVICE } from '../../interfaces/services/payments-service.interface';
-import { OrderRepositoryInterface, ORDER_REPOSITORY } from '../../interfaces/repositories/order-repository.interface';
-import { UserRepositoryInterface, USER_REPOSITORY } from '../../interfaces/repositories/user-repository.interface';
-import { ProductRepositoryInterface, PRODUCT_REPOSITORY } from '../../interfaces/repositories/product-repository.interface';
+import { OrdersServiceInterface, ORDERS_SERVICE } from '../../interfaces/services/orders-service.interface';
+import { UsersServiceInterface, USERS_SERVICE } from '../../interfaces/services/users-service.interface';
+import { ProductsServiceInterface, PRODUCTS_SERVICE } from '../../interfaces/services/products-service.interface';
 import { PaymentValidationService } from '../../../domain/services/payment-validation.service';
 import { UserValidationService } from '../../../domain/services/user-validation.service';
 import { Transactional } from '../../../common/decorators/transactional.decorator';
+import { OptimisticLock } from '../../../common/decorators/optimistic-lock.decorator';
 
 @Injectable()
 export class ProcessPaymentUseCase {
   constructor(
     @Inject(PAYMENTS_SERVICE)
     private readonly paymentsService: PaymentsServiceInterface,
-    @Inject(ORDER_REPOSITORY)
-    private readonly orderRepository: OrderRepositoryInterface,
-    @Inject(USER_REPOSITORY)
-    private readonly userRepository: UserRepositoryInterface,
-    @Inject(PRODUCT_REPOSITORY)
-    private readonly productRepository: ProductRepositoryInterface,
+    @Inject(ORDERS_SERVICE)
+    private readonly ordersService: OrdersServiceInterface,
+    @Inject(USERS_SERVICE)
+    private readonly usersService: UsersServiceInterface,
+    @Inject(PRODUCTS_SERVICE)
+    private readonly productsService: ProductsServiceInterface,
     private readonly paymentValidationService: PaymentValidationService,
     private readonly userValidationService: UserValidationService
   ) {}
 
   @Transactional()
+  @OptimisticLock({
+    key: 'payment:process:${args[0].orderId}',
+    maxRetries: 3,
+    retryDelay: 100,
+    errorMessage: '결제 처리 중입니다. 잠시 후 다시 시도해주세요.'
+  })
   async execute(processPaymentDto: ProcessPaymentDto): Promise<PaymentResponseDto> {
     const { orderId } = processPaymentDto;
     let order: any = null;
     
     try {
-      // 1. 주문 조회 및 검증
-      order = await this.orderRepository.findById(orderId);
+      // 1. 주문 조회 및 검증 (OrdersService 사용)
+      order = await this.ordersService.findById(orderId);
+      if (!order) {
+        throw new Error('주문을 찾을 수 없습니다.');
+      }
       this.paymentValidationService.validateOrderExists(order);
       
-      // 2. 사용자 조회 및 검증
-      const user = await this.userRepository.findById(order!.userId);
-      this.paymentValidationService.validateUserExists(user);
+      // 2. 사용자 조회 및 검증 (UsersService 사용)
+      const user = await this.usersService.validateUser(order!.userId);
       
       // 3. 결제 가능 여부 검증
       this.paymentValidationService.validatePaymentPossible(order!, user!);
       
-      // 4. 결제 생성 (간소화된 서비스 사용)
+      // 4. 결제 생성 (PaymentsService 사용)
       const payment = await this.paymentsService.processPayment({
         orderId: order!.id,
         userId: order!.userId,
@@ -51,14 +60,11 @@ export class ProcessPaymentUseCase {
         couponUsed: order!.couponUsed
       });
       
-      // 5. 사용자 포인트 차감
-      this.userValidationService.validateUsePoints(user!, order!.finalAmount);
-      user!.usePoints(order!.finalAmount);
-      await this.userRepository.save(user!);
+      // 5. 사용자 포인트 차감 (UsersService 사용)
+      await this.usersService.usePoints(order!.userId, order!.finalAmount);
       
-      // 6. 주문 상태 업데이트
-      order!.updateStatus('PAID');
-      await this.orderRepository.save(order!);
+      // 6. 주문 상태 업데이트 (OrdersService 사용)
+      await this.ordersService.updateOrderStatus(order!.id, 'PAID');
       
       return {
         paymentId: payment.id,
@@ -75,10 +81,10 @@ export class ProcessPaymentUseCase {
       if (order) {
         try {
           for (const item of order.items) {
-            const product = await this.productRepository.findById(item.productId);
+            const product = await this.productsService.findById(item.productId);
             if (product) {
               product.increaseStock(item.quantity);
-              await this.productRepository.save(product);
+              await this.productsService.save(product);
             }
           }
         } catch (stockError) {

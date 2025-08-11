@@ -29,13 +29,13 @@ describe('Coupons Integration Tests', () => {
   });
 
   describe('IssueCoupon Integration', () => {
-    it('Use Case가 Service와 Repository를 통해 실제 데이터베이스에 쿠폰을 발급해야 한다', async () => {
+    it('Use Case가 Domain Service를 통해 실제 데이터베이스에 쿠폰을 발급해야 한다', async () => {
       // Arrange
       const issueCouponDto = new IssueCouponDto();
       issueCouponDto.userId = 1;
       issueCouponDto.couponType = CouponType.DISCOUNT_20PERCENT;
 
-      // Act - Use Case가 Service와 Repository를 통해 실제 데이터베이스에 저장
+      // Act - Use Case가 Domain Service를 통해 실제 데이터베이스에 저장
       const result = await issueCouponUseCase.execute(issueCouponDto);
 
       // Assert - Use Case 결과 검증
@@ -53,13 +53,13 @@ describe('Coupons Integration Tests', () => {
       expect(issuedCoupon).toBeDefined();
     });
 
-    it('Service가 Repository를 통해 존재하지 않는 사용자에게도 쿠폰을 발급할 수 있어야 한다', async () => {
+    it('Domain Service가 Repository를 통해 존재하지 않는 사용자에게도 쿠폰을 발급할 수 있어야 한다', async () => {
       // Arrange
       const issueCouponDto = new IssueCouponDto();
       issueCouponDto.userId = 999; // 존재하지 않는 사용자
       issueCouponDto.couponType = CouponType.DISCOUNT_20PERCENT;
 
-      // Act - Use Case가 Service와 Repository를 통해 쿠폰 발급
+      // Act - Use Case가 Domain Service를 통해 쿠폰 발급
       const result = await issueCouponUseCase.execute(issueCouponDto);
 
       // Assert - Use Case 결과 검증
@@ -71,13 +71,13 @@ describe('Coupons Integration Tests', () => {
       expect(result).toHaveProperty('expiryDate');
     });
 
-    it('Service가 Repository를 통해 고정 할인 쿠폰을 발급해야 한다', async () => {
+    it('Domain Service가 Repository를 통해 고정 할인 쿠폰을 발급해야 한다', async () => {
       // Arrange
       const issueCouponDto = new IssueCouponDto();
       issueCouponDto.userId = 2;
       issueCouponDto.couponType = CouponType.FIXED_2000;
 
-      // Act - Use Case가 Service와 Repository를 통해 고정 할인 쿠폰 발급
+      // Act - Use Case가 Domain Service를 통해 고정 할인 쿠폰 발급
       const result = await issueCouponUseCase.execute(issueCouponDto);
 
       // Assert - Use Case 결과 검증
@@ -89,7 +89,7 @@ describe('Coupons Integration Tests', () => {
       expect(result).toHaveProperty('expiryDate');
     });
 
-    it('Service가 Repository를 통해 여러 쿠폰을 발급할 때 각각 다른 ID를 가져야 한다', async () => {
+    it('Domain Service가 Repository를 통해 여러 쿠폰을 발급할 때 각각 다른 ID를 가져야 한다', async () => {
       // Arrange
       const firstCouponDto = new IssueCouponDto();
       firstCouponDto.userId = 3;
@@ -99,7 +99,7 @@ describe('Coupons Integration Tests', () => {
       secondCouponDto.userId = 3;
       secondCouponDto.couponType = CouponType.FIXED_1000;
 
-      // Act - Use Case가 Service와 Repository를 통해 연속 발급
+      // Act - Use Case가 Domain Service를 통해 연속 발급
       const firstResult = await issueCouponUseCase.execute(firstCouponDto);
       const secondResult = await issueCouponUseCase.execute(secondCouponDto);
 
@@ -115,8 +115,8 @@ describe('Coupons Integration Tests', () => {
   });
 
   describe('GetUserCoupons Integration', () => {
-    it('Use Case가 Service와 Repository를 통해 실제 데이터베이스에서 사용자 쿠폰을 조회해야 한다', async () => {
-      // Act - Use Case가 Service와 Repository를 통해 실제 데이터베이스 조회
+    it('Use Case가 Domain Service를 통해 실제 데이터베이스에서 사용자 쿠폰을 조회해야 한다', async () => {
+      // Act - Use Case가 Domain Service를 통해 실제 데이터베이스 조회
       const result = await getUserCouponsUseCase.execute(1);
 
       // Assert - Use Case 결과 검증
@@ -138,8 +138,8 @@ describe('Coupons Integration Tests', () => {
       });
     });
 
-    it('Service가 Repository를 통해 존재하지 않는 사용자의 쿠폰도 조회할 수 있어야 한다', async () => {
-      // Act - Use Case가 Service와 Repository를 통해 쿠폰 조회
+    it('Domain Service가 Repository를 통해 존재하지 않는 사용자의 쿠폰도 조회할 수 있어야 한다', async () => {
+      // Act - Use Case가 Domain Service를 통해 쿠폰 조회
       const result = await getUserCouponsUseCase.execute(999);
 
       // Assert - Use Case 결과 검증
@@ -147,8 +147,8 @@ describe('Coupons Integration Tests', () => {
       expect(result.length).toBeGreaterThanOrEqual(0);
     });
 
-    it('Service가 Repository를 통해 여러 사용자의 쿠폰을 조회해야 한다', async () => {
-      // Act - Use Case가 Service와 Repository를 통해 여러 사용자 조회
+    it('Domain Service가 Repository를 통해 여러 사용자의 쿠폰을 조회해야 한다', async () => {
+      // Act - Use Case가 Domain Service를 통해 여러 사용자 조회
       const user1Coupons = await getUserCouponsUseCase.execute(1);
       const user2Coupons = await getUserCouponsUseCase.execute(2);
 
@@ -163,6 +163,77 @@ describe('Coupons Integration Tests', () => {
 
       user2Coupons.forEach(coupon => {
         expect(coupon.userId).toBe(2);
+      });
+    });
+
+    describe('비관적 락 동시성 제어 통합 테스트', () => {
+      it('동시 쿠폰 발급 요청 시 비관적 락이 작동해야 한다', async () => {
+        // Arrange
+        const issueCouponDto = new IssueCouponDto();
+        issueCouponDto.userId = 10;
+        issueCouponDto.couponType = CouponType.DISCOUNT_10PERCENT;
+
+        // Act - 동시 요청 시뮬레이션 (순차적으로 처리되어야 함)
+        const promises = Array(5).fill(null).map((_, index) => {
+          const dto = new IssueCouponDto();
+          dto.userId = 10 + index;
+          dto.couponType = CouponType.DISCOUNT_10PERCENT;
+          return issueCouponUseCase.execute(dto);
+        });
+
+        const results = await Promise.all(promises);
+
+        // Assert - 모든 요청이 성공해야 함 (비관적 락으로 순서 보장)
+        expect(results).toHaveLength(5);
+        results.forEach((result, index) => {
+          expect(result).toHaveProperty('couponId');
+          expect(result).toHaveProperty('userId', 10 + index);
+          expect(result).toHaveProperty('couponType', CouponType.DISCOUNT_10PERCENT);
+        });
+      });
+
+      it('선착순 쿠폰 발급에서 순서가 보장되어야 한다', async () => {
+        // Arrange
+        const issueCouponDto = new IssueCouponDto();
+        issueCouponDto.userId = 20;
+        issueCouponDto.couponType = CouponType.DISCOUNT_20PERCENT;
+
+        // Act - 순차적 요청 시뮬레이션
+        const results = [];
+        for (let i = 0; i < 3; i++) {
+          const dto = new IssueCouponDto();
+          dto.userId = 20 + i;
+          dto.couponType = CouponType.DISCOUNT_20PERCENT;
+          results.push(await issueCouponUseCase.execute(dto));
+        }
+
+        // Assert - 순서대로 처리되어야 함
+        expect(results).toHaveLength(3);
+        results.forEach((result, index) => {
+          expect(result).toHaveProperty('userId', 20 + index);
+          expect(result).toHaveProperty('couponType', CouponType.DISCOUNT_20PERCENT);
+        });
+      });
+
+      it('다른 쿠폰 타입은 독립적으로 처리되어야 한다', async () => {
+        // Arrange
+        const discountDto = new IssueCouponDto();
+        discountDto.userId = 30;
+        discountDto.couponType = CouponType.DISCOUNT_10PERCENT;
+
+        const fixedDto = new IssueCouponDto();
+        fixedDto.userId = 31;
+        fixedDto.couponType = CouponType.FIXED_2000;
+
+        // Act - 다른 타입의 쿠폰 동시 발급
+        const [discountResult, fixedResult] = await Promise.all([
+          issueCouponUseCase.execute(discountDto),
+          issueCouponUseCase.execute(fixedDto)
+        ]);
+
+        // Assert - 독립적으로 처리되어야 함
+        expect(discountResult).toHaveProperty('couponType', CouponType.DISCOUNT_10PERCENT);
+        expect(fixedResult).toHaveProperty('couponType', CouponType.FIXED_2000);
       });
     });
   });

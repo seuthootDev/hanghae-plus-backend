@@ -6,6 +6,7 @@ import { UserRepositoryInterface, USER_REPOSITORY } from '../../interfaces/repos
 import { AuthValidationService } from '../../../domain/services/auth-validation.service';
 import { User } from '../../../domain/entities/user.entity';
 import { Transactional } from '../../../common/decorators/transactional.decorator';
+import { OptimisticLock } from '../../../common/decorators/optimistic-lock.decorator';
 
 @Injectable()
 export class RegisterUseCase {
@@ -18,6 +19,12 @@ export class RegisterUseCase {
   ) {}
 
   @Transactional()
+  @OptimisticLock({
+    key: 'register:${args[0].email}',
+    maxRetries: 3,
+    retryDelay: 100,
+    errorMessage: '회원가입 중입니다. 잠시 후 다시 시도해주세요.'
+  })
   async execute(registerDto: RegisterDto): Promise<AuthResponseDto> {
     const { email, password, name } = registerDto;
     

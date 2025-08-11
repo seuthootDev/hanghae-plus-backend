@@ -97,5 +97,18 @@ describe('IssueCouponUseCase', () => {
         '쿠폰 발급에 실패했습니다.'
       );
     });
+
+    describe('데코레이터 적용 테스트', () => {
+      it('@PessimisticLock 데코레이터가 적용되어야 한다', () => {
+        // Arrange & Act
+        const method = useCase.execute;
+        const metadata = Reflect.getMetadata('pessimistic_lock', method);
+
+        // Assert
+        expect(metadata).toBeDefined();
+        expect(metadata.key).toBe('coupon:issue:${args[0].couponType}');
+        expect(metadata.timeout).toBe(5000);
+      });
+    });
   });
 }); 

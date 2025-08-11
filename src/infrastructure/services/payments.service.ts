@@ -67,4 +67,14 @@ export class PaymentsService implements PaymentsServiceInterface {
   async save(payment: Payment): Promise<Payment> {
     return this.paymentRepository.save(payment);
   }
+
+  // 결제 조회 (주문별)
+  async findByOrderId(orderId: number): Promise<Payment[]> {
+    return this.paymentRepository.findByOrderId(orderId);
+  }
+
+  // 결제 조회 (사용자별)
+  async findByUserId(userId: number): Promise<Payment[]> {
+    return this.paymentRepository.findByUserId(userId);
+  }
 } 

@@ -63,4 +63,28 @@ export class UsersService implements UsersServiceInterface {
       throw new InternalServerErrorException('서버 오류가 발생했습니다.');
     }
   }
+
+  // 주문에서 사용할 메서드들
+  async validateUser(userId: number): Promise<User> {
+    const user = await this.userRepository.findById(userId);
+    this.userValidationService.validateUserExists(user);
+    return user!;
+  }
+
+  async usePoints(userId: number, amount: number): Promise<User> {
+    const user = await this.userRepository.findById(userId);
+    this.userValidationService.validateUserExists(user);
+    this.userValidationService.validateUsePoints(user!, amount);
+    
+    user!.usePoints(amount);
+    return await this.userRepository.save(user!);
+  }
+
+  async findById(userId: number): Promise<User | null> {
+    return this.userRepository.findById(userId);
+  }
+
+  async save(user: User): Promise<User> {
+    return this.userRepository.save(user);
+  }
 } 

@@ -58,4 +58,21 @@ export class ProductRepository implements ProductRepositoryInterface {
       savedEntity.category
     );
   }
+
+  async findTopSellers(): Promise<Product[]> {
+    const productEntities = await this.productRepository.find({
+      order: {
+        id: 'DESC'
+      },
+      take: 10
+    });
+    
+    return productEntities.map(entity => new Product(
+      entity.id,
+      entity.name,
+      entity.price,
+      entity.stock,
+      entity.category
+    ));
+  }
 } 

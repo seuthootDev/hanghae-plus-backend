@@ -4,7 +4,8 @@ export class Product {
     public readonly name: string,
     public readonly price: number,
     private _stock: number,
-    public readonly category: string
+    public readonly category: string,
+    private _version: number = 0
   ) {}
 
   // Getter 메서드들
@@ -29,5 +30,14 @@ export class Product {
 
   increaseStock(quantity: number): void {
     this._stock += quantity;
+  }
+
+  // 버전 관련 메서드
+  get version(): number {
+    return this._version;
+  }
+
+  incrementVersion(): void {
+    this._version++;
   }
 } 

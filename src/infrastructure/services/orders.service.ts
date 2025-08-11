@@ -62,4 +62,20 @@ export class OrdersService implements OrdersServiceInterface {
   async save(order: Order): Promise<Order> {
     return this.orderRepository.save(order);
   }
+
+  // 주문 상태 업데이트
+  async updateOrderStatus(orderId: number, status: string): Promise<Order> {
+    const order = await this.orderRepository.findById(orderId);
+    if (!order) {
+      throw new NotFoundException('주문을 찾을 수 없습니다.');
+    }
+
+    order.updateStatus(status);
+    return await this.orderRepository.save(order);
+  }
+
+  // 주문 조회 (사용자별)
+  async findByUserId(userId: number): Promise<Order[]> {
+    return this.orderRepository.findByUserId(userId);
+  }
 } 

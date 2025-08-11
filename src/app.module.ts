@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { DatabaseModule } from './database/database.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TransactionInterceptor } from './common/interceptors/transaction.interceptor';
+import { OptimisticLockInterceptor } from './common/interceptors/optimistic-lock.interceptor';
+import { PessimisticLockInterceptor } from './common/interceptors/pessimistic-lock.interceptor';
 import { UsersController } from './presentation/controllers/users.controller';
 import { ProductsController } from './presentation/controllers/products.controller';
 import { OrdersController } from './presentation/controllers/orders.controller';
@@ -155,6 +157,8 @@ import { AuthValidationService } from './domain/services/auth-validation.service
     
     // 트랜잭션 인터셉터
     TransactionInterceptor,
+    OptimisticLockInterceptor,
+    PessimisticLockInterceptor,
   ],
 })
 export class AppModule {}

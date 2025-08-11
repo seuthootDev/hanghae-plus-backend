@@ -8,7 +8,8 @@ export class Payment {
     private _finalAmount: number,
     private _couponUsed: boolean,
     private _status: string,
-    private _paidAt: Date
+    private _paidAt: Date,
+    private _version: number = 0
   ) {}
 
   // Getter 메서드들
@@ -57,5 +58,14 @@ export class Payment {
 
   isValid(): boolean {
     return this._finalAmount > 0 && this._finalAmount <= this._totalAmount;
+  }
+
+  // 버전 관련 메서드
+  get version(): number {
+    return this._version;
+  }
+
+  incrementVersion(): void {
+    this._version++;
   }
 } 

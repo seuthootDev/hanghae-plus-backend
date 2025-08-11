@@ -101,6 +101,29 @@ describe('RegisterUseCase', () => {
       expect(result).toEqual(expectedResponse);
     });
 
+    describe('데코레이터 적용 테스트', () => {
+      it('@OptimisticLock 데코레이터가 적용되어야 한다', () => {
+        // Arrange & Act
+        const method = useCase.execute;
+        const metadata = Reflect.getMetadata('optimistic_lock', method);
+
+        // Assert
+        expect(metadata).toBeDefined();
+        expect(metadata.key).toBe('register:${args[0].email}');
+        expect(metadata.maxRetries).toBe(3);
+        expect(metadata.retryDelay).toBe(100);
+      });
+
+      it('@Transactional 데코레이터가 적용되어야 한다', () => {
+        // Arrange & Act
+        const method = useCase.execute;
+        const metadata = Reflect.getMetadata('transactional', method);
+
+        // Assert
+        expect(metadata).toBe(true);
+      });
+    });
+
     it('이미 사용 중인 이메일이면 에러를 발생시켜야 한다', async () => {
       // Arrange
       const registerDto: RegisterDto = {
