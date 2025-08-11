@@ -12,7 +12,8 @@ import { Product } from '../../../src/domain/entities/product.entity';
 import { User } from '../../../src/domain/entities/user.entity';
 import { Coupon } from '../../../src/domain/entities/coupon.entity';
 import { Order } from '../../../src/domain/entities/order.entity';
-import { RedisService } from '../../../src/infrastructure/services/redis.service';
+import { RedisServiceInterface, REDIS_SERVICE } from '../../../src/application/interfaces/services/redis-service.interface';
+import { RedisDistributedLockServiceInterface, REDIS_DISTRIBUTED_LOCK_SERVICE } from '../../../src/application/interfaces/services/redis-distributed-lock-service.interface';
 import { ProductSalesAggregationRepositoryInterface } from '../../../src/application/interfaces/repositories/product-sales-aggregation-repository.interface';
 import { TRANSACTIONAL_KEY } from '../../../src/common/decorators/transactional.decorator';
 
@@ -24,7 +25,8 @@ describe('CreateOrderUseCase', () => {
   let mockCouponsService: jest.Mocked<CouponsServiceInterface>;
   let mockOrderValidationService: jest.Mocked<OrderValidationService>;
   let mockUserValidationService: jest.Mocked<UserValidationService>;
-  let mockRedisService: Partial<RedisService>;
+  let mockRedisService: jest.Mocked<RedisServiceInterface>;
+  let mockRedisDistributedLockService: jest.Mocked<RedisDistributedLockServiceInterface>;
   let mockAggregationRepository: jest.Mocked<ProductSalesAggregationRepositoryInterface>;
 
   beforeEach(async () => {
@@ -90,12 +92,27 @@ describe('CreateOrderUseCase', () => {
     };
 
     mockRedisService = {
+      set: jest.fn(),
+      eval: jest.fn(),
+      pttl: jest.fn(),
+      exists: jest.fn(),
+      keys: jest.fn(),
+      del: jest.fn(),
       getTopSellersCache: jest.fn(),
       setTopSellersCache: jest.fn(),
       incrementProductSales: jest.fn(),
       getProductSales: jest.fn(),
       getAllProductSales: jest.fn(),
       onModuleDestroy: jest.fn(),
+    };
+
+    mockRedisDistributedLockService = {
+      acquireLock: jest.fn(),
+      releaseLock: jest.fn(),
+      getLockTTL: jest.fn(),
+      isLocked: jest.fn(),
+      getLockKeys: jest.fn(),
+      clearAllLocks: jest.fn(),
     };
 
     mockAggregationRepository = {
@@ -115,8 +132,12 @@ describe('CreateOrderUseCase', () => {
         mockOrderValidationServiceProvider,
         mockUserValidationServiceProvider,
         {
-          provide: RedisService,
+          provide: REDIS_SERVICE,
           useValue: mockRedisService,
+        },
+        {
+          provide: REDIS_DISTRIBUTED_LOCK_SERVICE,
+          useValue: mockRedisDistributedLockService,
         },
         {
           provide: 'PRODUCT_SALES_AGGREGATION_REPOSITORY',
@@ -132,6 +153,8 @@ describe('CreateOrderUseCase', () => {
     mockCouponsService = module.get('COUPONS_SERVICE');
     mockOrderValidationService = module.get(OrderValidationService);
     mockUserValidationService = module.get(UserValidationService);
+    mockRedisService = module.get(REDIS_SERVICE);
+    mockRedisDistributedLockService = module.get(REDIS_DISTRIBUTED_LOCK_SERVICE);
   });
 
   describe('execute', () => {

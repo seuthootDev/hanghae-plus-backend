@@ -91,3 +91,10 @@ hanghae-plus-backend/
 └── .github/                        # GitHub 관련 파일들
     └── pull_request_template.md    # PR 템플릿
 ```
+
+
+### 테스트 실행
+```
+npm run test:unit
+npm run test:integration   
+```

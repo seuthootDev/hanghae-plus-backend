@@ -41,6 +41,9 @@ import { CouponRepository } from '../src/infrastructure/repositories/coupon.repo
 import { PaymentRepository } from '../src/infrastructure/repositories/payment.repository';
 import { ProductSalesAggregationRepository } from '../src/infrastructure/repositories/product-sales-aggregation.repository';
 import { RedisService } from '../src/infrastructure/services/redis.service';
+import { RedisDistributedLockService } from '../src/infrastructure/services/redis-distributed-lock.service';
+import { REDIS_SERVICE } from '../src/application/interfaces/services/redis-service.interface';
+import { REDIS_DISTRIBUTED_LOCK_SERVICE } from '../src/application/interfaces/services/redis-distributed-lock-service.interface';
 import { UserEntity } from '../src/infrastructure/repositories/typeorm/user.entity';
 import { ProductEntity } from '../src/infrastructure/repositories/typeorm/product.entity';
 import { OrderEntity } from '../src/infrastructure/repositories/typeorm/order.entity';
@@ -150,7 +153,14 @@ import { TestSeeder } from './database/test-seeder';
     },
     
     // Redis 서비스
-    RedisService,
+    {
+      provide: REDIS_SERVICE,
+      useClass: RedisService,
+    },
+    {
+      provide: REDIS_DISTRIBUTED_LOCK_SERVICE,
+      useClass: RedisDistributedLockService,
+    },
     
     // 도메인 서비스들
     OrderValidationService,

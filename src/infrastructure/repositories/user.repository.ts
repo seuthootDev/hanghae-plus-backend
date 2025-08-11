@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { User } from '../../domain/entities/user.entity';
 import { UserRepositoryInterface } from '../../application/interfaces/repositories/user-repository.interface';
 import { UserEntity } from './typeorm/user.entity';
+import { DbOptimisticLock } from '../../common/decorators/db-optimistic-lock.decorator';
 
 @Injectable()
 export class UserRepository implements UserRepositoryInterface {
@@ -42,6 +43,15 @@ export class UserRepository implements UserRepositoryInterface {
     );
   }
 
+  @DbOptimisticLock({
+    table: 'users',
+    column: 'id',
+    value: (args: any[]) => args[0].id?.toString() || '0',
+    versionColumn: 'version',
+    maxRetries: 3,
+    retryDelay: 100,
+    errorMessage: '사용자 정보가 다른 사용자에 의해 수정되었습니다. 다시 시도해주세요.'
+  })
   async save(user: User): Promise<User> {
     let userEntity: UserEntity;
     
@@ -73,21 +83,4 @@ export class UserRepository implements UserRepositoryInterface {
     );
   }
 
-  async updatePoints(userId: number, points: number): Promise<User> {
-    const userEntity = await this.userRepository.findOne({ where: { id: userId } });
-    if (!userEntity) {
-      throw new Error('사용자를 찾을 수 없습니다.');
-    }
-    
-    userEntity.points = points;
-    const savedEntity = await this.userRepository.save(userEntity);
-    
-    return new User(
-      savedEntity.id,
-      savedEntity.name,
-      savedEntity.email,
-      savedEntity.points,
-      savedEntity.password
-    );
-  }
 } 

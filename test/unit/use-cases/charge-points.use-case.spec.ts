@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ChargePointsUseCase } from '../../../src/application/use-cases/users/charge-points.use-case';
 import { UsersServiceInterface } from '../../../src/application/interfaces/services/users-service.interface';
+import { RedisDistributedLockServiceInterface, REDIS_DISTRIBUTED_LOCK_SERVICE } from '../../../src/application/interfaces/services/redis-distributed-lock-service.interface';
 import { User } from '../../../src/domain/entities/user.entity';
 import { ChargePointsDto } from '../../../src/presentation/dto/usersDTO/charge-points.dto';
 import { PointsResponseDto } from '../../../src/presentation/dto/usersDTO/points-response.dto';
@@ -8,6 +9,7 @@ import { PointsResponseDto } from '../../../src/presentation/dto/usersDTO/points
 describe('ChargePointsUseCase', () => {
   let useCase: ChargePointsUseCase;
   let mockUsersService: jest.Mocked<UsersServiceInterface>;
+  let mockRedisDistributedLockService: jest.Mocked<RedisDistributedLockServiceInterface>;
 
   beforeEach(async () => {
     const mockUsersServiceProvider = {
@@ -17,15 +19,29 @@ describe('ChargePointsUseCase', () => {
       },
     };
 
+    const mockRedisDistributedLockServiceProvider = {
+      provide: REDIS_DISTRIBUTED_LOCK_SERVICE,
+      useValue: {
+        acquireLock: jest.fn(),
+        releaseLock: jest.fn(),
+        getLockTTL: jest.fn(),
+        isLocked: jest.fn(),
+        getLockKeys: jest.fn(),
+        clearAllLocks: jest.fn(),
+      },
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ChargePointsUseCase,
         mockUsersServiceProvider,
+        mockRedisDistributedLockServiceProvider,
       ],
     }).compile();
 
     useCase = module.get<ChargePointsUseCase>(ChargePointsUseCase);
     mockUsersService = module.get('USERS_SERVICE');
+    mockRedisDistributedLockService = module.get(REDIS_DISTRIBUTED_LOCK_SERVICE);
   });
 
   describe('execute', () => {
@@ -43,6 +59,8 @@ describe('ChargePointsUseCase', () => {
       };
 
       mockUsersService.chargePoints.mockResolvedValue(mockUser);
+      mockRedisDistributedLockService.acquireLock.mockResolvedValue(true);
+      mockRedisDistributedLockService.releaseLock.mockResolvedValue(true);
 
       // Act
       const result = await useCase.execute(userId, chargePointsDto);

@@ -4,6 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { TransactionInterceptor } from './common/interceptors/transaction.interceptor';
 import { OptimisticLockInterceptor } from './common/interceptors/optimistic-lock.interceptor';
 import { PessimisticLockInterceptor } from './common/interceptors/pessimistic-lock.interceptor';
+import { DbPessimisticLockInterceptor } from './common/interceptors/db-pessimistic-lock.interceptor';
+import { DbOptimisticLockInterceptor } from './common/interceptors/db-optimistic-lock.interceptor';
 import { UsersController } from './presentation/controllers/users.controller';
 import { ProductsController } from './presentation/controllers/products.controller';
 import { OrdersController } from './presentation/controllers/orders.controller';
@@ -45,6 +47,10 @@ import { CouponRepository } from './infrastructure/repositories/coupon.repositor
 import { PaymentRepository } from './infrastructure/repositories/payment.repository';
 import { ProductSalesAggregationRepository } from './infrastructure/repositories/product-sales-aggregation.repository';
 import { RedisService } from './infrastructure/services/redis.service';
+import { RedisDistributedLockService } from './infrastructure/services/redis-distributed-lock.service';
+import { RedisPessimisticLockInterceptor } from './common/interceptors/redis-pessimistic-lock.interceptor';
+import { RedisServiceInterface, REDIS_SERVICE } from './application/interfaces/services/redis-service.interface';
+import { RedisDistributedLockServiceInterface, REDIS_DISTRIBUTED_LOCK_SERVICE } from './application/interfaces/services/redis-distributed-lock-service.interface';
 import { UserEntity } from './infrastructure/repositories/typeorm/user.entity';
 import { ProductEntity } from './infrastructure/repositories/typeorm/product.entity';
 import { OrderEntity } from './infrastructure/repositories/typeorm/order.entity';
@@ -145,7 +151,14 @@ import { AuthValidationService } from './domain/services/auth-validation.service
     },
     
     // Redis 서비스
-    RedisService,
+    {
+      provide: REDIS_SERVICE,
+      useClass: RedisService,
+    },
+    {
+      provide: REDIS_DISTRIBUTED_LOCK_SERVICE,
+      useClass: RedisDistributedLockService,
+    },
     
     // 도메인 서비스들
     OrderValidationService,
@@ -159,6 +172,9 @@ import { AuthValidationService } from './domain/services/auth-validation.service
     TransactionInterceptor,
     OptimisticLockInterceptor,
     PessimisticLockInterceptor,
+    RedisPessimisticLockInterceptor,
+    DbPessimisticLockInterceptor,
+    DbOptimisticLockInterceptor,
   ],
 })
 export class AppModule {}
