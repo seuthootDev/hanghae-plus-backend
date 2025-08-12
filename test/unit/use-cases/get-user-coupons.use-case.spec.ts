@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { GetUserCouponsUseCase } from '../../../src/application/use-cases/coupons/get-user-coupons.use-case';
-import { CouponsServiceInterface, COUPONS_SERVICE } from '../../../src/application/interfaces/services/coupons-service.interface';
+import { CouponsServiceInterface, COUPONS_SERVICE } from '../../../src/application/interfaces/services/coupon-service.interface';
 import { Coupon } from '../../../src/domain/entities/coupon.entity';
 import { CouponResponseDto } from '../../../src/presentation/dto/couponsDTO/coupon-response.dto';
 

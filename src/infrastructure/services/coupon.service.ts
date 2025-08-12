@@ -1,7 +1,6 @@
 import { Injectable, BadRequestException, Inject, InternalServerErrorException } from '@nestjs/common';
 import { IssueCouponDto } from '../../presentation/dto/couponsDTO/issue-coupon.dto';
-import { CouponResponseDto } from '../../presentation/dto/couponsDTO/coupon-response.dto';
-import { CouponsServiceInterface } from '../../application/interfaces/services/coupons-service.interface';
+import { CouponsServiceInterface } from '../../application/interfaces/services/coupon-service.interface';
 import { CouponRepositoryInterface, COUPON_REPOSITORY } from '../../application/interfaces/repositories/coupon-repository.interface';
 import { Coupon } from '../../domain/entities/coupon.entity';
 import { CouponValidationService } from '../../domain/services/coupon-validation.service';

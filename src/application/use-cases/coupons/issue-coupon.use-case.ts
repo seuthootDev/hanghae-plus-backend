@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { IssueCouponDto } from '../../../presentation/dto/couponsDTO/issue-coupon.dto';
 import { CouponResponseDto } from '../../../presentation/dto/couponsDTO/coupon-response.dto';
-import { CouponsServiceInterface, COUPONS_SERVICE } from '../../interfaces/services/coupons-service.interface';
+import { CouponsServiceInterface, COUPONS_SERVICE } from '../../interfaces/services/coupon-service.interface';
 import { PessimisticLock } from '../../../common/decorators/pessimistic-lock.decorator';
 import { RedisDistributedLockServiceInterface, REDIS_DISTRIBUTED_LOCK_SERVICE } from '../../interfaces/services/redis-distributed-lock-service.interface';
 

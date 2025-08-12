@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { GetUserPointsUseCase } from '../../../src/application/use-cases/users/get-user-points.use-case';
-import { UsersServiceInterface } from '../../../src/application/interfaces/services/users-service.interface';
+import { UsersServiceInterface } from '../../../src/application/interfaces/services/user-service.interface';
 import { User } from '../../../src/domain/entities/user.entity';
 import { PointsResponseDto } from '../../../src/presentation/dto/usersDTO/points-response.dto';
 

@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProcessPaymentUseCase } from '../../../src/application/use-cases/payments/process-payment.use-case';
-import { PaymentsServiceInterface, PAYMENTS_SERVICE } from '../../../src/application/interfaces/services/payments-service.interface';
-import { OrdersServiceInterface, ORDERS_SERVICE } from '../../../src/application/interfaces/services/orders-service.interface';
-import { UsersServiceInterface, USERS_SERVICE } from '../../../src/application/interfaces/services/users-service.interface';
-import { ProductsServiceInterface, PRODUCTS_SERVICE } from '../../../src/application/interfaces/services/products-service.interface';
+import { PaymentsServiceInterface, PAYMENTS_SERVICE } from '../../../src/application/interfaces/services/payment-service.interface';
+import { OrdersServiceInterface, ORDERS_SERVICE } from '../../../src/application/interfaces/services/order-service.interface';
+import { UsersServiceInterface, USERS_SERVICE } from '../../../src/application/interfaces/services/user-service.interface';
+import { ProductsServiceInterface, PRODUCTS_SERVICE } from '../../../src/application/interfaces/services/product-service.interface';
 import { PaymentValidationService } from '../../../src/domain/services/payment-validation.service';
 import { UserValidationService } from '../../../src/domain/services/user-validation.service';
 import { Order } from '../../../src/domain/entities/order.entity';

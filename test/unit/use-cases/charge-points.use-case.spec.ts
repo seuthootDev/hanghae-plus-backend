@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ChargePointsUseCase } from '../../../src/application/use-cases/users/charge-points.use-case';
-import { UsersServiceInterface } from '../../../src/application/interfaces/services/users-service.interface';
+import { UsersServiceInterface } from '../../../src/application/interfaces/services/user-service.interface';
 import { RedisDistributedLockServiceInterface, REDIS_DISTRIBUTED_LOCK_SERVICE } from '../../../src/application/interfaces/services/redis-distributed-lock-service.interface';
 import { User } from '../../../src/domain/entities/user.entity';
 import { ChargePointsDto } from '../../../src/presentation/dto/usersDTO/charge-points.dto';

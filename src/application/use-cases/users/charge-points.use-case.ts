@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { ChargePointsDto } from '../../../presentation/dto/usersDTO/charge-points.dto';
 import { PointsResponseDto } from '../../../presentation/dto/usersDTO/points-response.dto';
-import { UsersServiceInterface, USERS_SERVICE } from '../../interfaces/services/users-service.interface';
+import { UsersServiceInterface, USERS_SERVICE } from '../../interfaces/services/user-service.interface';
 import { Transactional } from '../../../common/decorators/transactional.decorator';
 import { OptimisticLock } from '../../../common/decorators/optimistic-lock.decorator';
 import { RedisDistributedLockServiceInterface, REDIS_DISTRIBUTED_LOCK_SERVICE } from '../../interfaces/services/redis-distributed-lock-service.interface';

@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { TopSellerResponseDto } from '../../../presentation/dto/productsDTO/top-seller-response.dto';
-import { ProductsServiceInterface, PRODUCTS_SERVICE } from '../../interfaces/services/products-service.interface';
+import { ProductsServiceInterface, PRODUCTS_SERVICE } from '../../interfaces/services/product-service.interface';
 import { RedisServiceInterface, REDIS_SERVICE } from '../../interfaces/services/redis-service.interface';
 import { ProductSalesAggregationRepositoryInterface } from '../../interfaces/repositories/product-sales-aggregation-repository.interface';
 

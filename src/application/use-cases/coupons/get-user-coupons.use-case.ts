@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { CouponResponseDto } from '../../../presentation/dto/couponsDTO/coupon-response.dto';
-import { CouponsServiceInterface, COUPONS_SERVICE } from '../../interfaces/services/coupons-service.interface';
+import { CouponsServiceInterface, COUPONS_SERVICE } from '../../interfaces/services/coupon-service.interface';
 
 @Injectable()
 export class GetUserCouponsUseCase {

@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CouponsService } from '../../../src/infrastructure/services/coupons.service';
+import { CouponsService } from '../../../src/infrastructure/services/coupon.service';
 import { CouponRepositoryInterface, COUPON_REPOSITORY } from '../../../src/application/interfaces/repositories/coupon-repository.interface';
 import { CouponValidationService } from '../../../src/domain/services/coupon-validation.service';
 import { Coupon } from '../../../src/domain/entities/coupon.entity';

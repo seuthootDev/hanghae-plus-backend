@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ProductsService } from '../../../src/infrastructure/services/products.service';
+import { ProductsService } from '../../../src/infrastructure/services/product.service';
 import { ProductRepositoryInterface, PRODUCT_REPOSITORY } from '../../../src/application/interfaces/repositories/product-repository.interface';
 import { ProductValidationService } from '../../../src/domain/services/product-validation.service';
 import { Product } from '../../../src/domain/entities/product.entity';

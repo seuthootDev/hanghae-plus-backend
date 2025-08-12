@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { ProductResponseDto } from '../../../presentation/dto/productsDTO/product-response.dto';
-import { ProductsServiceInterface, PRODUCTS_SERVICE } from '../../interfaces/services/products-service.interface';
+import { ProductsServiceInterface, PRODUCTS_SERVICE } from '../../interfaces/services/product-service.interface';
 
 @Injectable()
 export class GetProductsUseCase {

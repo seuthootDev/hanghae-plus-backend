@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { GetProductsUseCase } from '../../../src/application/use-cases/products/get-products.use-case';
-import { ProductsServiceInterface, PRODUCTS_SERVICE } from '../../../src/application/interfaces/services/products-service.interface';
+import { ProductsServiceInterface, PRODUCTS_SERVICE } from '../../../src/application/interfaces/services/product-service.interface';
 import { Product } from '../../../src/domain/entities/product.entity';
 
 describe('GetProductsUseCase', () => {

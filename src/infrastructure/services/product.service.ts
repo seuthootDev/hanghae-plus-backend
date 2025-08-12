@@ -1,7 +1,5 @@
 import { Injectable, Inject, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { ProductResponseDto } from '../../presentation/dto/productsDTO/product-response.dto';
-import { TopSellerResponseDto } from '../../presentation/dto/productsDTO/top-seller-response.dto';
-import { ProductsServiceInterface } from '../../application/interfaces/services/products-service.interface';
+import { ProductsServiceInterface } from '../../application/interfaces/services/product-service.interface';
 import { ProductRepositoryInterface, PRODUCT_REPOSITORY } from '../../application/interfaces/repositories/product-repository.interface';
 import { ProductValidationService } from '../../domain/services/product-validation.service';
 import { Product } from '../../domain/entities/product.entity';

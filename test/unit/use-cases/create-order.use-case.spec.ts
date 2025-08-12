@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CreateOrderUseCase } from '../../../src/application/use-cases/orders/create-order.use-case';
-import { OrdersServiceInterface, ORDERS_SERVICE } from '../../../src/application/interfaces/services/orders-service.interface';
-import { ProductsServiceInterface, PRODUCTS_SERVICE } from '../../../src/application/interfaces/services/products-service.interface';
-import { UsersServiceInterface, USERS_SERVICE } from '../../../src/application/interfaces/services/users-service.interface';
-import { CouponsServiceInterface, COUPONS_SERVICE } from '../../../src/application/interfaces/services/coupons-service.interface';
+import { OrdersServiceInterface, ORDERS_SERVICE } from '../../../src/application/interfaces/services/order-service.interface';
+import { ProductsServiceInterface, PRODUCTS_SERVICE } from '../../../src/application/interfaces/services/product-service.interface';
+import { UsersServiceInterface, USERS_SERVICE } from '../../../src/application/interfaces/services/user-service.interface';
+import { CouponsServiceInterface, COUPONS_SERVICE } from '../../../src/application/interfaces/services/coupon-service.interface';
 import { OrderValidationService } from '../../../src/domain/services/order-validation.service';
 import { UserValidationService } from '../../../src/domain/services/user-validation.service';
 import { CreateOrderDto } from '../../../src/presentation/dto/ordersDTO/create-order.dto';

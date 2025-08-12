@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PaymentsService } from '../../../src/infrastructure/services/payments.service';
+import { PaymentsService } from '../../../src/infrastructure/services/payment.service';
 import { PaymentRepositoryInterface, PAYMENT_REPOSITORY } from '../../../src/application/interfaces/repositories/payment-repository.interface';
 import { Payment } from '../../../src/domain/entities/payment.entity';
 

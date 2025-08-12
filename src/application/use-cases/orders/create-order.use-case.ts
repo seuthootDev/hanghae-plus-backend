@@ -1,10 +1,10 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { CreateOrderDto } from '../../../presentation/dto/ordersDTO/create-order.dto';
 import { OrderResponseDto } from '../../../presentation/dto/ordersDTO/order-response.dto';
-import { OrdersServiceInterface, ORDERS_SERVICE } from '../../interfaces/services/orders-service.interface';
-import { ProductsServiceInterface, PRODUCTS_SERVICE } from '../../interfaces/services/products-service.interface';
-import { UsersServiceInterface, USERS_SERVICE } from '../../interfaces/services/users-service.interface';
-import { CouponsServiceInterface, COUPONS_SERVICE } from '../../interfaces/services/coupons-service.interface';
+import { OrdersServiceInterface, ORDERS_SERVICE } from '../../interfaces/services/order-service.interface';
+import { ProductsServiceInterface, PRODUCTS_SERVICE } from '../../interfaces/services/product-service.interface';
+import { UsersServiceInterface, USERS_SERVICE } from '../../interfaces/services/user-service.interface';
+import { CouponsServiceInterface, COUPONS_SERVICE } from '../../interfaces/services/coupon-service.interface';
 import { OrderValidationService } from '../../../domain/services/order-validation.service';
 import { UserValidationService } from '../../../domain/services/user-validation.service';
 import { Order, OrderItem } from '../../../domain/entities/order.entity';

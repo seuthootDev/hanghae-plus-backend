@@ -1,7 +1,6 @@
 import { Injectable, BadRequestException, Inject, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { ChargePointsDto } from '../../presentation/dto/usersDTO/charge-points.dto';
-import { PointsResponseDto } from '../../presentation/dto/usersDTO/points-response.dto';
-import { UsersServiceInterface } from '../../application/interfaces/services/users-service.interface';
+import { UsersServiceInterface } from '../../application/interfaces/services/user-service.interface';
 import { UserRepositoryInterface, USER_REPOSITORY } from '../../application/interfaces/repositories/user-repository.interface';
 import { UserValidationService } from '../../domain/services/user-validation.service';
 import { User } from '../../domain/entities/user.entity';

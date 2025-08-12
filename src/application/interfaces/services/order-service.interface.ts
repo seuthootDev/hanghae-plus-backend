@@ -1,5 +1,3 @@
-import { CreateOrderDto } from '../../../presentation/dto/ordersDTO/create-order.dto';
-import { OrderResponseDto } from '../../../presentation/dto/ordersDTO/order-response.dto';
 import { Order, OrderItem } from '../../../domain/entities/order.entity';
 
 export const ORDERS_SERVICE = 'ORDERS_SERVICE';
