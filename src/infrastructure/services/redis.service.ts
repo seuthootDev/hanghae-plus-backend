@@ -9,8 +9,9 @@ export class RedisService implements RedisServiceInterface {
 
   constructor() {
     // 테스트 환경에서는 Redis 연결을 시도하지 않음
-    if (process.env.NODE_ENV === 'test') {
+    if (process.env.NODE_ENV === 'test' && !process.env.REDIS_HOST) {
       this.redis = null;
+      console.log('🔧 Redis 서비스: 메모리 기반 모킹 모드로 동작');
       return;
     }
     
@@ -19,6 +20,8 @@ export class RedisService implements RedisServiceInterface {
       port: parseInt(process.env.REDIS_PORT || '6379'),
       password: process.env.REDIS_PASSWORD,
     });
+    
+    console.log(`🔗 Redis 서비스: 실제 Redis 연결 - ${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`);
   }
 
   // Redis 분산 락을 위한 메서드들

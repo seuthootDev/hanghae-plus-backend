@@ -18,6 +18,8 @@ export class RedisDistributedLockService implements RedisDistributedLockServiceI
   async acquireLock(key: string, options: LockOptions = {}): Promise<boolean> {
     const { ttl = 5000, retryCount = 3, retryDelay = 100 } = options;
     
+    console.log(`🔒 Redis 분산락 획득 시도: ${key} (TTL: ${ttl}ms, 재시도: ${retryCount}회)`);
+    
     for (let i = 0; i < retryCount; i++) {
       try {
         // Redis SET 명령어로 락 획득 시도
@@ -25,8 +27,11 @@ export class RedisDistributedLockService implements RedisDistributedLockServiceI
         const result = await this.redisService.set(key, 'locked', 'PX', ttl, 'NX');
         
         if (result === 'OK') {
+          console.log(`✅ Redis 분산락 획득 성공: ${key}`);
           return true; // 락 획득 성공
         }
+        
+        console.log(`⏳ Redis 분산락 획득 실패 (시도 ${i + 1}/${retryCount}): ${key} - 이미 락이 존재함`);
         
         // 락 획득 실패 시 대기
         if (i < retryCount - 1) {
@@ -41,6 +46,7 @@ export class RedisDistributedLockService implements RedisDistributedLockServiceI
       }
     }
     
+    console.log(`❌ Redis 분산락 획득 최종 실패: ${key}`);
     return false; // 모든 재시도 실패
   }
 
