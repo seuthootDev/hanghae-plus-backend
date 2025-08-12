@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersController } from '../src/presentation/controllers/users.controller';
 import { ProductsController } from '../src/presentation/controllers/products.controller';
@@ -57,6 +58,9 @@ import { CouponValidationService } from '../src/domain/services/coupon-validatio
 import { ProductValidationService } from '../src/domain/services/product-validation.service';
 import { AuthValidationService } from '../src/domain/services/auth-validation.service';
 import { TestSeeder } from './database/test-seeder';
+import { OptimisticLockInterceptor } from '../src/common/interceptors/optimistic-lock.interceptor';
+import { PessimisticLockInterceptor } from '../src/common/interceptors/pessimistic-lock.interceptor';
+import { TransactionInterceptor } from '../src/common/interceptors/transaction.interceptor';
 
 @Module({
   imports: [
@@ -172,6 +176,12 @@ import { TestSeeder } from './database/test-seeder';
     
     // TestSeeder 추가
     TestSeeder,
+    
+    // 인터셉터들 추가
+    OptimisticLockInterceptor,
+    PessimisticLockInterceptor,
+    TransactionInterceptor,
+    
   ],
 })
 export class TestAppModule {} 

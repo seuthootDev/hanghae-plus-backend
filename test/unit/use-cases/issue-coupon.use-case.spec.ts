@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { IssueCouponUseCase } from '../../../src/application/use-cases/coupons/issue-coupon.use-case';
 import { CouponsServiceInterface, COUPONS_SERVICE } from '../../../src/application/interfaces/services/coupon-service.interface';
-import { RedisDistributedLockServiceInterface, REDIS_DISTRIBUTED_LOCK_SERVICE } from '../../../src/application/interfaces/services/redis-distributed-lock-service.interface';
 import { IssueCouponDto, CouponType } from '../../../src/presentation/dto/couponsDTO/issue-coupon.dto';
 import { CouponResponseDto } from '../../../src/presentation/dto/couponsDTO/coupon-response.dto';
 import { Coupon } from '../../../src/domain/entities/coupon.entity';
@@ -9,7 +8,6 @@ import { Coupon } from '../../../src/domain/entities/coupon.entity';
 describe('IssueCouponUseCase', () => {
   let useCase: IssueCouponUseCase;
   let mockCouponsService: jest.Mocked<CouponsServiceInterface>;
-  let mockRedisDistributedLockService: jest.Mocked<RedisDistributedLockServiceInterface>;
 
   beforeEach(async () => {
     const mockCouponsServiceProvider = {
@@ -19,29 +17,15 @@ describe('IssueCouponUseCase', () => {
       },
     };
 
-    const mockRedisDistributedLockServiceProvider = {
-      provide: REDIS_DISTRIBUTED_LOCK_SERVICE,
-      useValue: {
-        acquireLock: jest.fn(),
-        releaseLock: jest.fn(),
-        getLockTTL: jest.fn(),
-        isLocked: jest.fn(),
-        getLockKeys: jest.fn(),
-        clearAllLocks: jest.fn(),
-      },
-    };
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         IssueCouponUseCase,
         mockCouponsServiceProvider,
-        mockRedisDistributedLockServiceProvider,
       ],
     }).compile();
 
     useCase = module.get<IssueCouponUseCase>(IssueCouponUseCase);
     mockCouponsService = module.get(COUPONS_SERVICE);
-    mockRedisDistributedLockService = module.get(REDIS_DISTRIBUTED_LOCK_SERVICE);
   });
 
   describe('execute', () => {
@@ -63,8 +47,6 @@ describe('IssueCouponUseCase', () => {
       };
 
       mockCouponsService.issueCoupon.mockResolvedValue(mockCoupon);
-      mockRedisDistributedLockService.acquireLock.mockResolvedValue(true);
-      mockRedisDistributedLockService.releaseLock.mockResolvedValue(true);
 
       // Act
       const result = await useCase.execute(issueCouponDto);
@@ -92,8 +74,6 @@ describe('IssueCouponUseCase', () => {
       };
 
       mockCouponsService.issueCoupon.mockResolvedValue(mockCoupon);
-      mockRedisDistributedLockService.acquireLock.mockResolvedValue(true);
-      mockRedisDistributedLockService.releaseLock.mockResolvedValue(true);
 
       // Act
       const result = await useCase.execute(issueCouponDto);
@@ -111,8 +91,6 @@ describe('IssueCouponUseCase', () => {
 
       const mockError = new Error('쿠폰 발급에 실패했습니다.');
       mockCouponsService.issueCoupon.mockRejectedValue(mockError);
-      mockRedisDistributedLockService.acquireLock.mockResolvedValue(true);
-      mockRedisDistributedLockService.releaseLock.mockResolvedValue(true);
 
       // Act & Assert
       await expect(useCase.execute(issueCouponDto)).rejects.toThrow(
