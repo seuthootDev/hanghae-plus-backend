@@ -48,7 +48,6 @@ import { PaymentRepository } from './infrastructure/repositories/payment.reposit
 import { ProductSalesAggregationRepository } from './infrastructure/repositories/product-sales-aggregation.repository';
 import { RedisService } from './infrastructure/services/redis.service';
 import { RedisDistributedLockService } from './infrastructure/services/redis-distributed-lock.service';
-import { RedisPessimisticLockInterceptor } from './common/interceptors/redis-pessimistic-lock.interceptor';
 import { RedisServiceInterface, REDIS_SERVICE } from './application/interfaces/services/redis-service.interface';
 import { RedisDistributedLockServiceInterface, REDIS_DISTRIBUTED_LOCK_SERVICE } from './application/interfaces/services/redis-distributed-lock-service.interface';
 import { UserEntity } from './infrastructure/repositories/typeorm/user.entity';
@@ -172,7 +171,6 @@ import { AuthValidationService } from './domain/services/auth-validation.service
     TransactionInterceptor,
     OptimisticLockInterceptor,
     PessimisticLockInterceptor,
-    RedisPessimisticLockInterceptor,
     DbPessimisticLockInterceptor,
     DbOptimisticLockInterceptor,
   ],
