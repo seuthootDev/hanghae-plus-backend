@@ -12,7 +12,7 @@ export class IssueCouponUseCase {
   ) {}
 
   @PessimisticLock({
-    key: 'coupon:issue:${args[0].couponType}',
+    key: 'coupon:issue:user:${args[0].userId}', // 사용자별 락으로 변경
     timeout: 5000,
     errorMessage: '쿠폰 발급 중입니다. 잠시 후 다시 시도해주세요.'
   })
