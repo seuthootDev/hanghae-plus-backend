@@ -7,6 +7,10 @@ export interface RedisServiceInterface {
   keys(pattern: string): Promise<string[]>;
   del(...keys: string[]): Promise<number>;
 
+  // Redis 원자적 연산을 위한 메서드들
+  decr(key: string): Promise<number>;
+  incr(key: string): Promise<number>;
+
   // 상품별 판매량 관련 메서드들
   incrementProductSales(productId: number, quantity: number): Promise<void>;
   getProductSales(productId: number): Promise<number>;

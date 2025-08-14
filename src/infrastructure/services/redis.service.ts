@@ -107,6 +107,35 @@ export class RedisService implements RedisServiceInterface {
     return await this.redis.keys(pattern);
   }
 
+  // Redis 원자적 연산을 위한 메서드들
+  async decr(key: string): Promise<number> {
+    if (!this.redis) {
+      // 테스트 환경에서는 메모리 기반 감소 연산
+      const currentValue = parseInt(this.testLocks.get(key)?.value || '0');
+      const newValue = currentValue - 1;
+      this.testLocks.set(key, {
+        value: newValue.toString(),
+        expiresAt: Date.now() + 30000 // 30초 TTL
+      });
+      return newValue;
+    }
+    return await this.redis.decr(key);
+  }
+
+  async incr(key: string): Promise<number> {
+    if (!this.redis) {
+      // 테스트 환경에서는 메모리 기반 증가 연산
+      const currentValue = parseInt(this.testLocks.get(key)?.value || '0');
+      const newValue = currentValue + 1;
+      this.testLocks.set(key, {
+        value: newValue.toString(),
+        expiresAt: Date.now() + 30000 // 30초 TTL
+      });
+      return newValue;
+    }
+    return await this.redis.incr(key);
+  }
+
   async del(...keys: string[]): Promise<number> {
     if (!this.redis) {
       // 테스트 환경에서는 메모리 기반 삭제
