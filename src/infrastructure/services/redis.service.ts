@@ -9,7 +9,7 @@ export class RedisService implements RedisServiceInterface {
 
   constructor() {
     // 테스트 환경에서는 Redis 연결을 시도하지 않음
-    if (process.env.NODE_ENV === 'test' && !process.env.REDIS_HOST) {
+    if (process.env.NODE_ENV === 'test' || !process.env.REDIS_HOST) {
       this.redis = null;
       console.log('🔧 Redis 서비스: 메모리 기반 모킹 모드로 동작');
       return;
@@ -190,11 +190,11 @@ export class RedisService implements RedisServiceInterface {
   }
 
   // 인기 상품 키 설정 (캐시)
-  async setTopSellersCache(topSellers: any[]): Promise<void> {
+  async setTopSellersCache(topSellers: any[], ttl: number = 300): Promise<void> {
     if (!this.redis) return; // 테스트 환경에서는 무시
     
     const key = 'top_sellers_cache';
-    await this.redis.setex(key, 300, JSON.stringify(topSellers)); // 5분 캐시
+    await this.redis.setex(key, ttl, JSON.stringify(topSellers));
   }
 
   // 인기 상품 캐시 조회
@@ -204,6 +204,123 @@ export class RedisService implements RedisServiceInterface {
     const key = 'top_sellers_cache';
     const cached = await this.redis.get(key);
     return cached ? JSON.parse(cached) : null;
+  }
+
+  // 상품 개별 캐시 설정
+  async setProductCache(productId: number, product: any, ttl: number = 600): Promise<void> {
+    if (!this.redis) return;
+    
+    const key = `product:${productId}`;
+    await this.redis.setex(key, ttl, JSON.stringify(product));
+  }
+
+  // 상품 개별 캐시 조회
+  async getProductCache(productId: number): Promise<any | null> {
+    if (!this.redis) return null;
+    
+    const key = `product:${productId}`;
+    const cached = await this.redis.get(key);
+    return cached ? JSON.parse(cached) : null;
+  }
+
+  // 상품 목록 캐시 설정
+  async setProductsCache(products: any[], ttl: number = 600): Promise<void> {
+    if (!this.redis) return;
+    
+    const key = 'products:all';
+    await this.redis.setex(key, ttl, JSON.stringify(products));
+  }
+
+  // 상품 목록 캐시 조회
+  async getProductsCache(): Promise<any[] | null> {
+    if (!this.redis) return null;
+    
+    const key = 'products:all';
+    const cached = await this.redis.get(key);
+    return cached ? JSON.parse(cached) : null;
+  }
+
+  // 카테고리별 상품 캐시 설정
+  async setProductsByCategoryCache(category: string, products: any[], ttl: number = 600): Promise<void> {
+    if (!this.redis) return;
+    
+    const key = `products:category:${category}`;
+    await this.redis.setex(key, ttl, JSON.stringify(products));
+  }
+
+  // 카테고리별 상품 캐시 조회
+  async getProductsByCategoryCache(category: string): Promise<any[] | null> {
+    if (!this.redis) return null;
+    
+    const key = `products:category:${category}`;
+    const cached = await this.redis.get(key);
+    return cached ? JSON.parse(cached) : null;
+  }
+
+  // 사용자 포인트 캐시 설정
+  async setUserPointsCache(userId: number, points: number, ttl: number = 300): Promise<void> {
+    if (!this.redis) return;
+    
+    const key = `user:points:${userId}`;
+    await this.redis.setex(key, ttl, points.toString());
+  }
+
+  // 사용자 포인트 캐시 조회
+  async getUserPointsCache(userId: number): Promise<number | null> {
+    if (!this.redis) return null;
+    
+    const key = `user:points:${userId}`;
+    const cached = await this.redis.get(key);
+    return cached ? parseInt(cached) : null;
+  }
+
+  // 상품 개별 캐시 무효화
+  async invalidateProductCache(productId: number): Promise<void> {
+    if (!this.redis) return;
+    
+    const key = `product:${productId}`;
+    await this.redis.del(key);
+  }
+
+  // 상품 목록 캐시 무효화
+  async invalidateProductsCache(): Promise<void> {
+    if (!this.redis) return;
+    
+    const keys = [
+      'products:all',
+      'top_sellers_cache'
+    ];
+    
+    // 카테고리별 캐시도 함께 무효화
+    const categoryKeys = await this.redis.keys('products:category:*');
+    keys.push(...categoryKeys);
+    
+    if (keys.length > 0) {
+      await this.redis.del(...keys);
+    }
+  }
+
+  // 인기 상품 캐시 무효화
+  async invalidateTopSellersCache(): Promise<void> {
+    if (!this.redis) return;
+    
+    const key = 'top_sellers_cache';
+    await this.redis.del(key);
+  }
+
+  // 사용자 포인트 캐시 무효화
+  async invalidateUserPointsCache(userId: number): Promise<void> {
+    if (!this.redis) return;
+    
+    const key = `user:points:${userId}`;
+    await this.redis.del(key);
+  }
+
+  // TTL 설정 메서드
+  async setWithTTL(key: string, value: any, ttl: number): Promise<void> {
+    if (!this.redis) return;
+    
+    await this.redis.setex(key, ttl, JSON.stringify(value));
   }
 
   // Redis 연결 종료
