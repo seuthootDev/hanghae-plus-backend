@@ -3,6 +3,7 @@ import { ProductsServiceInterface } from '../../application/interfaces/services/
 import { ProductRepositoryInterface, PRODUCT_REPOSITORY } from '../../application/interfaces/repositories/product-repository.interface';
 import { ProductValidationService } from '../../domain/services/product-validation.service';
 import { Product } from '../../domain/entities/product.entity';
+import { RedisServiceInterface, REDIS_SERVICE } from '../../application/interfaces/services/redis-service.interface';
 
 @Injectable()
 export class ProductsService implements ProductsServiceInterface {
@@ -10,7 +11,10 @@ export class ProductsService implements ProductsServiceInterface {
   constructor(
     @Inject(PRODUCT_REPOSITORY)
     private readonly productRepository: ProductRepositoryInterface,
-    private readonly productValidationService: ProductValidationService
+    @Inject('PRODUCT_VALIDATION_SERVICE')
+    private readonly productValidationService: ProductValidationService,
+    @Inject(REDIS_SERVICE)
+    private readonly redisService: RedisServiceInterface
   ) {}
   
   async getProducts(): Promise<Product[]> {
@@ -74,7 +78,24 @@ export class ProductsService implements ProductsServiceInterface {
   }
 
   async save(product: Product): Promise<Product> {
-    return this.productRepository.save(product);
+    try {
+      const savedProduct = await this.productRepository.save(product);
+      
+      // 상품 정보 변경 시 관련 캐시 무효화
+      try {
+        await this.redisService.invalidateProductCache(product.id);
+        await this.redisService.invalidateProductsCache();
+        console.log(`✅ 상품 ${product.id} 관련 캐시 무효화 완료`);
+      } catch (cacheError) {
+        console.warn(`⚠️ 캐시 무효화 실패 (상품 ${product.id}):`, cacheError.message);
+        // 캐시 무효화 실패해도 상품 저장은 성공
+      }
+      
+      return savedProduct;
+    } catch (error) {
+      console.error(`❌ 상품 ${product.id} 저장 실패:`, error.message);
+      throw new InternalServerErrorException('상품을 저장할 수 없습니다.');
+    }
   }
 
   async getTopSellers(): Promise<Product[]> {
