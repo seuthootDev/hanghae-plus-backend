@@ -106,7 +106,7 @@ describe('IssueCouponUseCase', () => {
 
         // Assert
         expect(metadata).toBeDefined();
-        expect(metadata.key).toBe('coupon:issue:${args[0].couponType}');
+        expect(metadata.key).toBe('coupon:issue:user:${args[0].userId}');
         expect(metadata.timeout).toBe(5000);
       });
     });
