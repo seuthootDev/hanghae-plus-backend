@@ -52,17 +52,19 @@ export class TestSeeder {
     // 모든 테이블에 데이터를 삽입하는 메서드
     await this.seedTestData(); // 기본 사용자 데이터 삽입
 
-    // 상품 데이터
+    // 상품 데이터 (ID를 명시적으로 설정)
     const products = [
-      { name: '아메리카노', price: 3000, stock: 100, category: '음료', salesCount: 50, totalRevenue: 150000 },
-      { name: '카페라떼', price: 4000, stock: 80, category: '음료', salesCount: 60, totalRevenue: 240000 },
-      { name: '카푸치노', price: 4500, stock: 60, category: '음료', salesCount: 30, totalRevenue: 135000 },
-      { name: '티라떼', price: 3500, stock: 40, category: '음료', salesCount: 20, totalRevenue: 70000 },
-      { name: '에스프레소', price: 2000, stock: 120, category: '음료', salesCount: 10, totalRevenue: 20000 },
+      { id: 1, name: '아메리카노', price: 3000, stock: 100, category: '음료', salesCount: 50, totalRevenue: 150000 },
+      { id: 2, name: '카페라떼', price: 4000, stock: 80, category: '음료', salesCount: 60, totalRevenue: 240000 },
+      { id: 3, name: '카푸치노', price: 4500, stock: 60, category: '음료', salesCount: 30, totalRevenue: 135000 },
+      { id: 4, name: '티라떼', price: 3500, stock: 40, category: '음료', salesCount: 20, totalRevenue: 70000 },
+      { id: 5, name: '에스프레소', price: 2000, stock: 120, category: '음료', salesCount: 10, totalRevenue: 20000 },
     ];
 
     for (const productData of products) {
       const product = this.productRepository.create(productData);
+      // ID를 명시적으로 설정
+      (product as any).id = productData.id;
       await this.productRepository.save(product);
     }
 
@@ -71,49 +73,57 @@ export class TestSeeder {
     futureDate.setDate(futureDate.getDate() + 30);
 
     const coupons = [
-      { userId: 1, couponType: 'DISCOUNT_10PERCENT', discountRate: 10, discountAmount: 0, expiryDate: futureDate, isUsed: false },
-      { userId: 1, couponType: 'DISCOUNT_20PERCENT', discountRate: 20, discountAmount: 0, expiryDate: futureDate, isUsed: false },
-      { userId: 2, couponType: 'FIXED_1000', discountRate: 0, discountAmount: 1000, expiryDate: futureDate, isUsed: false },
-      { userId: 2, couponType: 'FIXED_2000', discountRate: 0, discountAmount: 2000, expiryDate: futureDate, isUsed: true },
+      { id: 1, userId: 1, couponType: 'DISCOUNT_10PERCENT', discountRate: 10, discountAmount: 0, expiryDate: futureDate, isUsed: false },
+      { id: 2, userId: 1, couponType: 'DISCOUNT_20PERCENT', discountRate: 20, discountAmount: 0, expiryDate: futureDate, isUsed: false },
+      { id: 3, userId: 2, couponType: 'FIXED_1000', discountRate: 0, discountAmount: 1000, expiryDate: futureDate, isUsed: false },
+      { id: 4, userId: 2, couponType: 'FIXED_2000', discountRate: 0, discountAmount: 2000, expiryDate: futureDate, isUsed: true },
     ];
 
     for (const couponData of coupons) {
       const coupon = this.couponRepository.create(couponData);
+      // ID를 명시적으로 설정
+      (coupon as any).id = couponData.id;
       await this.couponRepository.save(coupon);
     }
 
     // 주문 데이터
     const orders = [
-      { userId: 1, items: [{ productId: 1, quantity: 2, price: 3000 }], totalAmount: 6000, discountAmount: 600, finalAmount: 5400, couponId: 1, couponUsed: true, status: 'PENDING' },
-      { userId: 2, items: [{ productId: 2, quantity: 3, price: 4000 }], totalAmount: 12000, discountAmount: 0, finalAmount: 12000, couponId: null, couponUsed: false, status: 'PENDING' },
+      { id: 1, userId: 1, items: [{ productId: 1, quantity: 2, price: 3000 }], totalAmount: 6000, discountAmount: 600, finalAmount: 5400, couponId: 1, couponUsed: true, status: 'PENDING' },
+      { id: 2, userId: 2, items: [{ productId: 2, quantity: 3, price: 4000 }], totalAmount: 12000, discountAmount: 0, finalAmount: 12000, couponId: null, couponUsed: false, status: 'PENDING' },
     ];
 
     for (const orderData of orders) {
       const order = this.orderRepository.create(orderData);
+      // ID를 명시적으로 설정
+      (order as any).id = orderData.id;
       await this.orderRepository.save(order);
     }
 
     // 결제 데이터
     const payments = [
-      { orderId: 1, userId: 1, totalAmount: 6000, discountAmount: 600, finalAmount: 5400, couponUsed: true, status: 'SUCCESS', paidAt: new Date() },
+      { id: 1, orderId: 1, userId: 1, totalAmount: 6000, discountAmount: 600, finalAmount: 5400, couponUsed: true, status: 'SUCCESS', paidAt: new Date() },
     ];
 
     for (const paymentData of payments) {
       const payment = this.paymentRepository.create(paymentData);
+      // ID를 명시적으로 설정
+      (payment as any).id = paymentData.id;
       await this.paymentRepository.save(payment);
     }
 
     // 집계 테이블 데이터
     const aggregations = [
-      { productId: 1, salesCount: 50, totalRevenue: 150000 },
-      { productId: 2, salesCount: 60, totalRevenue: 240000 },
-      { productId: 3, salesCount: 30, totalRevenue: 135000 },
-      { productId: 4, salesCount: 20, totalRevenue: 70000 },
-      { productId: 5, salesCount: 10, totalRevenue: 20000 },
+      { id: 1, productId: 1, salesCount: 50, totalRevenue: 150000 },
+      { id: 2, productId: 2, salesCount: 60, totalRevenue: 240000 },
+      { id: 3, productId: 3, salesCount: 30, totalRevenue: 135000 },
+      { id: 4, productId: 4, salesCount: 20, totalRevenue: 70000 },
+      { id: 5, productId: 5, salesCount: 10, totalRevenue: 20000 },
     ];
 
     for (const aggregationData of aggregations) {
       const aggregation = this.aggregationRepository.create(aggregationData);
+      // ID를 명시적으로 설정
+      (aggregation as any).id = aggregationData.id;
       await this.aggregationRepository.save(aggregation);
     }
   }

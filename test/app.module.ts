@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ValidationPipe } from '@nestjs/common';
 import { UsersController } from '../src/presentation/controllers/users.controller';
 import { ProductsController } from '../src/presentation/controllers/products.controller';
 import { OrdersController } from '../src/presentation/controllers/orders.controller';
@@ -23,6 +24,7 @@ import { ChargePointsUseCase } from '../src/application/use-cases/users/charge-p
 import { GetUserPointsUseCase } from '../src/application/use-cases/users/get-user-points.use-case';
 import { GetProductsUseCase } from '../src/application/use-cases/products/get-products.use-case';
 import { GetTopSellersUseCase } from '../src/application/use-cases/products/get-top-sellers.use-case';
+import { GetProductDetailUseCase } from '../src/application/use-cases/products/get-product-detail.use-case';
 import { CreateOrderUseCase } from '../src/application/use-cases/orders/create-order.use-case';
 import { IssueCouponUseCase } from '../src/application/use-cases/coupons/issue-coupon.use-case';
 import { GetUserCouponsUseCase } from '../src/application/use-cases/coupons/get-user-coupons.use-case';
@@ -96,6 +98,7 @@ import { TransactionInterceptor } from '../src/common/interceptors/transaction.i
     GetUserPointsUseCase,
     GetProductsUseCase,
     GetTopSellersUseCase,
+    GetProductDetailUseCase,
     CreateOrderUseCase,
     IssueCouponUseCase,
     GetUserCouponsUseCase,
@@ -156,10 +159,14 @@ import { TransactionInterceptor } from '../src/common/interceptors/transaction.i
       useClass: ProductSalesAggregationRepository,
     },
     
-    // Redis 서비스
+    // Redis 서비스 (메모리 기반으로 설정)
     {
       provide: REDIS_SERVICE,
-      useClass: RedisService,
+      useFactory: () => {
+        // 테스트 환경에서는 메모리 기반 Redis 서비스 사용
+        process.env.NODE_ENV = 'test';
+        return new RedisService();
+      },
     },
     {
       provide: REDIS_DISTRIBUTED_LOCK_SERVICE,
@@ -174,6 +181,32 @@ import { TransactionInterceptor } from '../src/common/interceptors/transaction.i
     ProductValidationService,
     AuthValidationService,
     
+    // 도메인 서비스들을 문자열 토큰으로도 등록 (의존성 주입을 위해)
+    {
+      provide: 'USER_VALIDATION_SERVICE',
+      useClass: UserValidationService,
+    },
+    {
+      provide: 'PRODUCT_VALIDATION_SERVICE',
+      useClass: ProductValidationService,
+    },
+    {
+      provide: 'COUPON_VALIDATION_SERVICE',
+      useClass: CouponValidationService,
+    },
+    {
+      provide: 'ORDER_VALIDATION_SERVICE',
+      useClass: OrderValidationService,
+    },
+    {
+      provide: 'PAYMENT_VALIDATION_SERVICE',
+      useClass: PaymentValidationService,
+    },
+    {
+      provide: 'AUTH_VALIDATION_SERVICE',
+      useClass: AuthValidationService,
+    },
+    
     // TestSeeder 추가
     TestSeeder,
     
@@ -181,6 +214,12 @@ import { TransactionInterceptor } from '../src/common/interceptors/transaction.i
     OptimisticLockInterceptor,
     PessimisticLockInterceptor,
     TransactionInterceptor,
+    
+    // ValidationPipe 추가
+    {
+      provide: APP_PIPE,
+      useClass: ValidationPipe,
+    },
     
   ],
 })

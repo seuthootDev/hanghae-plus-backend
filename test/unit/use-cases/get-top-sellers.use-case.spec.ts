@@ -6,6 +6,7 @@ import { ProductSalesAggregationRepositoryInterface } from '../../../src/applica
 import { TopSellerResponseDto } from '../../../src/presentation/dto/productsDTO/top-seller-response.dto';
 import { Product } from '../../../src/domain/entities/product.entity';
 import { ProductSalesAggregation } from '../../../src/domain/entities/product-sales-aggregation.entity';
+import { createMockRedisService } from '../../helpers/redis-mock.helper';
 
 describe('GetTopSellersUseCase', () => {
   let useCase: GetTopSellersUseCase;
@@ -27,20 +28,7 @@ describe('GetTopSellersUseCase', () => {
 
     const mockRedisServiceProvider = {
       provide: REDIS_SERVICE,
-      useValue: {
-        set: jest.fn(),
-        eval: jest.fn(),
-        pttl: jest.fn(),
-        exists: jest.fn(),
-        keys: jest.fn(),
-        del: jest.fn(),
-        getTopSellersCache: jest.fn(),
-        setTopSellersCache: jest.fn(),
-        incrementProductSales: jest.fn(),
-        getProductSales: jest.fn(),
-        getAllProductSales: jest.fn(),
-        onModuleDestroy: jest.fn(),
-      },
+      useValue: createMockRedisService(),
     };
 
     const mockAggregationRepositoryProvider = {
@@ -116,7 +104,7 @@ describe('GetTopSellersUseCase', () => {
       expect(mockRedisService.getTopSellersCache).toHaveBeenCalledTimes(1);
       expect(mockAggregationRepository.findTopSellers).toHaveBeenCalledWith(5);
       expect(mockProductsService.getProducts).toHaveBeenCalledTimes(1);
-      expect(mockRedisService.setTopSellersCache).toHaveBeenCalledWith(expectedResult);
+      expect(mockRedisService.setTopSellersCache).toHaveBeenCalledWith(expectedResult, 300);
     });
 
     it('집계 데이터가 없으면 빈 배열을 반환해야 한다', async () => {
@@ -130,7 +118,7 @@ describe('GetTopSellersUseCase', () => {
 
       // Assert
       expect(result).toEqual([]);
-      expect(mockRedisService.setTopSellersCache).toHaveBeenCalledWith([]);
+      expect(mockRedisService.setTopSellersCache).toHaveBeenCalledWith([], 300);
     });
   });
 }); 

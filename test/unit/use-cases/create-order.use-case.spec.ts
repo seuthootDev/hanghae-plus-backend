@@ -6,13 +6,13 @@ import { UsersServiceInterface, USERS_SERVICE } from '../../../src/application/i
 import { CouponsServiceInterface, COUPONS_SERVICE } from '../../../src/application/interfaces/services/coupon-service.interface';
 import { OrderValidationService } from '../../../src/domain/services/order-validation.service';
 import { UserValidationService } from '../../../src/domain/services/user-validation.service';
+import { RedisServiceInterface, REDIS_SERVICE } from '../../../src/application/interfaces/services/redis-service.interface';
 import { CreateOrderDto } from '../../../src/presentation/dto/ordersDTO/create-order.dto';
-import { OrderResponseDto } from '../../../src/presentation/dto/ordersDTO/order-response.dto';
 import { Product } from '../../../src/domain/entities/product.entity';
 import { User } from '../../../src/domain/entities/user.entity';
 import { Coupon } from '../../../src/domain/entities/coupon.entity';
 import { Order } from '../../../src/domain/entities/order.entity';
-import { RedisServiceInterface, REDIS_SERVICE } from '../../../src/application/interfaces/services/redis-service.interface';
+import { createMockRedisService } from '../../helpers/redis-mock.helper';
 import { ProductSalesAggregationRepositoryInterface } from '../../../src/application/interfaces/repositories/product-sales-aggregation-repository.interface';
 import { TRANSACTIONAL_KEY } from '../../../src/common/decorators/transactional.decorator';
 
@@ -89,20 +89,7 @@ describe('CreateOrderUseCase', () => {
       },
     };
 
-    mockRedisService = {
-      set: jest.fn(),
-      eval: jest.fn(),
-      pttl: jest.fn(),
-      exists: jest.fn(),
-      keys: jest.fn(),
-      del: jest.fn(),
-      getTopSellersCache: jest.fn(),
-      setTopSellersCache: jest.fn(),
-      incrementProductSales: jest.fn(),
-      getProductSales: jest.fn(),
-      getAllProductSales: jest.fn(),
-      onModuleDestroy: jest.fn(),
-    };
+    mockRedisService = createMockRedisService();
 
     mockAggregationRepository = {
       findByProductId: jest.fn(),

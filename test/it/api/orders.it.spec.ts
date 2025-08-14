@@ -14,19 +14,22 @@ describe('Orders API (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    
-    // ValidationPipe 설정
-    app.useGlobalPipes(new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-    }));
-    
     testSeeder = moduleFixture.get<TestSeeder>(TestSeeder);
+    
+    // Redis 서비스 가져오기
+    const redisService = moduleFixture.get('REDIS_SERVICE');
+    const couponsService = moduleFixture.get('COUPONS_SERVICE');
+    
     await app.init();
     
-    // 테스트 데이터 시딩 (상품, 쿠폰 데이터 포함)
+    // 테스트 데이터 시딩
     await testSeeder.seedFullTestData();
+    
+    // Redis 쿠폰 재고 초기화
+    if ('initializeCouponStock' in couponsService) {
+      await (couponsService as any).initializeCouponStock();
+      console.log('🔄 E2E 테스트: Redis 쿠폰 재고 초기화 완료');
+    }
   });
 
   afterAll(async () => {
