@@ -5,6 +5,8 @@ import { AppModule } from './app.module';
 import { DatabaseSeeder } from './database/seeder';
 import { DataSource } from 'typeorm';
 import { TransactionInterceptor } from './common/interceptors/transaction.interceptor';
+import { OptimisticLockInterceptor } from './common/interceptors/optimistic-lock.interceptor';
+import { PessimisticLockInterceptor } from './common/interceptors/pessimistic-lock.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -16,9 +18,17 @@ async function bootstrap() {
     transform: true,
   }));
 
-  // 트랜잭션 인터셉터 설정
+  // 통합 인터셉터 설정
+  const optimisticLockInterceptor = app.get(OptimisticLockInterceptor);
+  const pessimisticLockInterceptor = app.get(PessimisticLockInterceptor);
   const transactionInterceptor = app.get(TransactionInterceptor);
-  app.useGlobalInterceptors(transactionInterceptor);
+
+  // 인터셉터 순서대로 등록 (락 → 트랜잭션 순서)
+  app.useGlobalInterceptors(
+    optimisticLockInterceptor,      // 1. 낙관적 락 + Redis 락
+    pessimisticLockInterceptor,     // 2. 비관적 락 + Redis 락
+    transactionInterceptor          // 3. 트랜잭션 (기존 것)
+  );
 
   // Swagger 설정
   const config = new DocumentBuilder()

@@ -18,6 +18,8 @@ export class RedisDistributedLockService implements RedisDistributedLockServiceI
   async acquireLock(key: string, options: LockOptions = {}): Promise<boolean> {
     const { ttl = 5000, retryCount = 3, retryDelay = 100 } = options;
     
+    console.log(`🔒 Redis 분산락 획득 시도: ${key} (TTL: ${ttl}ms, 재시도: ${retryCount}회)`);
+    
     for (let i = 0; i < retryCount; i++) {
       try {
         // Redis SET 명령어로 락 획득 시도
@@ -25,8 +27,11 @@ export class RedisDistributedLockService implements RedisDistributedLockServiceI
         const result = await this.redisService.set(key, 'locked', 'PX', ttl, 'NX');
         
         if (result === 'OK') {
+          console.log(`✅ Redis 분산락 획득 성공: ${key}`);
           return true; // 락 획득 성공
         }
+        
+        console.log(`⏳ Redis 분산락 획득 실패 (시도 ${i + 1}/${retryCount}): ${key} - 이미 락이 존재함`);
         
         // 락 획득 실패 시 대기
         if (i < retryCount - 1) {
@@ -41,6 +46,7 @@ export class RedisDistributedLockService implements RedisDistributedLockServiceI
       }
     }
     
+    console.log(`❌ Redis 분산락 획득 최종 실패: ${key}`);
     return false; // 모든 재시도 실패
   }
 
@@ -51,16 +57,8 @@ export class RedisDistributedLockService implements RedisDistributedLockServiceI
    */
   async releaseLock(key: string): Promise<boolean> {
     try {
-      // Lua 스크립트로 안전한 락 해제
-      const luaScript = `
-        if redis.call("get", KEYS[1]) == ARGV[1] then
-          return redis.call("del", KEYS[1])
-        else
-          return 0
-        end
-      `;
-      
-      const result = await this.redisService.eval(luaScript, 1, key, 'locked');
+      // 간단하게 키 삭제
+      const result = await this.redisService.del(key);
       return result === 1;
     } catch (error) {
       console.error('Redis 락 해제 실패:', error);
@@ -89,8 +87,34 @@ export class RedisDistributedLockService implements RedisDistributedLockServiceI
    */
   async isLocked(key: string): Promise<boolean> {
     try {
+      // 키가 존재하는지 확인
       const exists = await this.redisService.exists(key);
-      return exists === 1;
+      if (exists === 0) {
+        return false;
+      }
+
+      // TTL을 확인하여 만료된 락은 자동으로 해제
+      const ttl = await this.redisService.pttl(key);
+      if (ttl === -1) {
+        // 키가 존재하지 않음 (이미 삭제됨)
+        return false;
+      }
+      if (ttl === -2) {
+        // 키는 존재하지만 TTL이 설정되지 않음 (영구 락)
+        return true;
+      }
+      if (ttl <= 0) {
+        // TTL이 만료됨 - 키를 삭제하고 false 반환
+        try {
+          await this.redisService.del(key);
+        } catch (delError) {
+          // 삭제 실패는 무시하고 false 반환
+        }
+        return false;
+      }
+      
+      // TTL이 유효함
+      return true;
     } catch (error) {
       console.error('Redis 락 존재 확인 실패:', error);
       return false;

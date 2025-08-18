@@ -1,52 +1,24 @@
 ## :pushpin: PR 제목 규칙
-[STEP10] 정승훈 - e-commerce
+[STEP12] 정승훈 - e-commerce
 
 ---
-### 동시성 처리가 필요하다고 느낀 서비스
+### **핵심 체크리스트** :white_check_mark:
 
-#### **비관적 락 (Pessimistic Lock)**
-- **쿠폰 발급**
-  - 선착순 쿠폰의 정확한 순서 보장이 필수
-  - 쿠폰 수량이 제한적이고 선착순 원칙이 비즈니스 핵심
-  - 동시 요청이 많을 때 순서 보장 필요
+#### :one: 분산락 적용 (3개)
+- [✔️] 적절한 곳에 분산락이 사용되었는가? 
+- [`79a61a7`](https://github.com/seuthootDev/hanghae-plus-backend/commit/79a61a7b7814171293bbbe92dc03a1c4ba1aedc0)
+[`0f4c3c0`](https://github.com/seuthootDev/hanghae-plus-backend/commit/0f4c3c09f325e07269a32d9317c087d9ca848c83)
+- [✔️] 트랜젝션 순서와 락순서가 보장되었는가?
+- [`ae2dcea`](https://github.com/seuthootDev/hanghae-plus-backend/commit/ae2dcea2e024abc2ffe8de389854089a6c4309b7)
 
-#### **낙관적 락 (Optimistic Lock)**
-- **포인트 차감/충전**
-- **주문 생성**
-- **회원가입**
-  - 충돌이 적고 성능이 중요한 환경
-  - 중복 체크로 충돌 방지
+#### :two: 통합 테스트 (2개)
+- [✔️] infrastructure 레이어를 포함하는 통합 테스트가 작성되었는가?
+- [✔️] 핵심 기능에 대한 흐름이 테스트에서 검증되었는가?
+- [`8090699`](https://github.com/seuthootDev/hanghae-plus-backend/commit/8090699760fd478dbd4a94637d212977613e33b4)
+- [✔️] 동시성을 검증할 수 있는 테스트코드로 작성 되었는가?
+- [`84d0629`](https://github.com/seuthootDev/hanghae-plus-backend/commit/84d06294e65b5ff86ecb0a5124610e2e0717ceb7)
+- [✔️] Test Container 가 적용 되었는가?
+- [`2d5eebf`](https://github.com/seuthootDev/hanghae-plus-backend/commit/2d5eebf0576671b9f0474bce5dec6f36d7a5baa3) [`08d2c95`](https://github.com/seuthootDev/hanghae-plus-backend/commit/08d2c95bcb382142b85fcf55cbc5de72d25132be)
 
-#### **선택 기준**
-- **비관적 락**: 정확한 순서 보장이 필수인 경우 (선착순 쿠폰)
-- **낙관적 락**: 충돌이 적고 성능이 중요한 경우 (포인트, 주문, 회원가입)
-
-### 동시성 처리 전략
-#### 방향
-  - 현재는 단일 서버, 단일 디비를 사용하지만, 다중 서버 다중 디비를 염두해 둔 동시성 제어 기법을 사용하는 것이 목표
-  - 뮤텍스, 세마포어같은 메모리 기반 방식은 다중 서버 환경에서는 무용지물
-  - 디비 물리적 락은 분산 디비에서 사용할 수 없음
-#### 목표
-  - 트랜젝션 락을 활용해서 어플리케이션 레벨에서의 동시성 제어를 우선 목표로 한다
-  - 이후 레디스 락을 활용해서 다중 서버 환경에서의 동시성 제어를 구현
-  - 데이터베이스 물리적 락을 구현한다 (단일이든 다중이든)
-
-## :clipboard: 핵심 체크리스트 :white_check_mark:
-
-### STEP09 - Concurrency (2개)
-- [✔️] 애플리케이션 내에서 발생 가능한 **동시성 문제를 식별**했는가?
-- [✔️] 보고서에 DB를 활용한 **동시성 문제 해결 방안**이 포함되어 있는가?
-- [`15f5265`](https://github.com/seuthootDev/hanghae-plus-backend/commit/15f52656b3481c4d2fd47c0fe9f005642d9221e3) 
-
----
-
-### STEP10 - Finalize (1개)
-- [✔️] **동시성 문제를 드러낼 수 있는 통합 테스트**를 작성했는가?
-- [`5e45758`](https://github.com/seuthootDev/hanghae-plus-backend/commit/5e457589862041efdffa75351e2fb989b006fb87)
-- [`89a906b`](https://github.com/seuthootDev/hanghae-plus-backend/commit/89a906b25202378cfc4e7ccad5acd422ecef1b96)
-- [`63b1509`](https://github.com/seuthootDev/hanghae-plus-backend/commit/63b15098f1121380ce1a97d4e422a5bfbfde52ef)
-- [`488eed7`](https://github.com/seuthootDev/hanghae-plus-backend/commit/488eed7fb510d7808bb7c6a1d726e1db6e323646)
-
----
-
-## ✍️ 간단 회고 (3줄 이내)
+#### :three: Cache 적용 (3개)
+- [✔️] 적절하게 Key 적용이 되었는가?

@@ -11,6 +11,7 @@ import { IssueCouponDto, CouponType } from '../../../src/presentation/dto/coupon
 import { CreateOrderDto } from '../../../src/presentation/dto/ordersDTO/create-order.dto';
 import { ProcessPaymentDto } from '../../../src/presentation/dto/paymentsDTO/process-payment.dto';
 import { performance } from 'perf_hooks';
+import { CouponsServiceInterface, COUPONS_SERVICE } from '../../../src/application/interfaces/services/coupon-service.interface';
 
 describe('Concurrency Control Integration Tests', () => {
   let module: TestingModule;
@@ -34,6 +35,15 @@ describe('Concurrency Control Integration Tests', () => {
     testSeeder = module.get<TestSeeder>(TestSeeder);
 
     await testSeeder.seedFullTestData();
+  });
+
+  beforeEach(async () => {
+    // 각 테스트 전에 Redis 재고 초기화 (쿠폰 테스트를 위해)
+    const couponsService = module.get<CouponsServiceInterface>(COUPONS_SERVICE);
+    if ('initializeCouponStock' in couponsService) {
+      await (couponsService as any).initializeCouponStock();
+      console.log('🔄 Redis 재고 초기화 완료');
+    }
   });
 
   afterAll(async () => {

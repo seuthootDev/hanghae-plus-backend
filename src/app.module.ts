@@ -12,17 +12,17 @@ import { OrdersController } from './presentation/controllers/orders.controller';
 import { CouponsController } from './presentation/controllers/coupons.controller';
 import { PaymentsController } from './presentation/controllers/payments.controller';
 import { AuthController } from './presentation/controllers/auth.controller';
-import { UsersService } from './infrastructure/services/users.service';
-import { ProductsService } from './infrastructure/services/products.service';
-import { OrdersService } from './infrastructure/services/orders.service';
-import { CouponsService } from './infrastructure/services/coupons.service';
-import { PaymentsService } from './infrastructure/services/payments.service';
+import { UsersService } from './infrastructure/services/user.service';
+import { ProductsService } from './infrastructure/services/product.service';
+import { OrdersService } from './infrastructure/services/order.service';
+import { CouponsService } from './infrastructure/services/coupon.service';
+import { PaymentsService } from './infrastructure/services/payment.service';
 import { AuthService } from './infrastructure/services/auth.service';
-import { USERS_SERVICE } from './application/interfaces/services/users-service.interface';
-import { PRODUCTS_SERVICE } from './application/interfaces/services/products-service.interface';
-import { ORDERS_SERVICE } from './application/interfaces/services/orders-service.interface';
-import { COUPONS_SERVICE } from './application/interfaces/services/coupons-service.interface';
-import { PAYMENTS_SERVICE } from './application/interfaces/services/payments-service.interface';
+import { USERS_SERVICE } from './application/interfaces/services/user-service.interface';
+import { PRODUCTS_SERVICE } from './application/interfaces/services/product-service.interface';
+import { ORDERS_SERVICE } from './application/interfaces/services/order-service.interface';
+import { COUPONS_SERVICE } from './application/interfaces/services/coupon-service.interface';
+import { PAYMENTS_SERVICE } from './application/interfaces/services/payment-service.interface';
 import { AUTH_SERVICE } from './application/interfaces/services/auth-service.interface';
 import { ChargePointsUseCase } from './application/use-cases/users/charge-points.use-case';
 import { GetUserPointsUseCase } from './application/use-cases/users/get-user-points.use-case';
@@ -48,7 +48,6 @@ import { PaymentRepository } from './infrastructure/repositories/payment.reposit
 import { ProductSalesAggregationRepository } from './infrastructure/repositories/product-sales-aggregation.repository';
 import { RedisService } from './infrastructure/services/redis.service';
 import { RedisDistributedLockService } from './infrastructure/services/redis-distributed-lock.service';
-import { RedisPessimisticLockInterceptor } from './common/interceptors/redis-pessimistic-lock.interceptor';
 import { RedisServiceInterface, REDIS_SERVICE } from './application/interfaces/services/redis-service.interface';
 import { RedisDistributedLockServiceInterface, REDIS_DISTRIBUTED_LOCK_SERVICE } from './application/interfaces/services/redis-distributed-lock-service.interface';
 import { UserEntity } from './infrastructure/repositories/typeorm/user.entity';
@@ -172,7 +171,6 @@ import { AuthValidationService } from './domain/services/auth-validation.service
     TransactionInterceptor,
     OptimisticLockInterceptor,
     PessimisticLockInterceptor,
-    RedisPessimisticLockInterceptor,
     DbPessimisticLockInterceptor,
     DbOptimisticLockInterceptor,
   ],

@@ -1,19 +1,18 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CreateOrderUseCase } from '../../../src/application/use-cases/orders/create-order.use-case';
-import { OrdersServiceInterface, ORDERS_SERVICE } from '../../../src/application/interfaces/services/orders-service.interface';
-import { ProductsServiceInterface, PRODUCTS_SERVICE } from '../../../src/application/interfaces/services/products-service.interface';
-import { UsersServiceInterface, USERS_SERVICE } from '../../../src/application/interfaces/services/users-service.interface';
-import { CouponsServiceInterface, COUPONS_SERVICE } from '../../../src/application/interfaces/services/coupons-service.interface';
+import { OrdersServiceInterface, ORDERS_SERVICE } from '../../../src/application/interfaces/services/order-service.interface';
+import { ProductsServiceInterface, PRODUCTS_SERVICE } from '../../../src/application/interfaces/services/product-service.interface';
+import { UsersServiceInterface, USERS_SERVICE } from '../../../src/application/interfaces/services/user-service.interface';
+import { CouponsServiceInterface, COUPONS_SERVICE } from '../../../src/application/interfaces/services/coupon-service.interface';
 import { OrderValidationService } from '../../../src/domain/services/order-validation.service';
 import { UserValidationService } from '../../../src/domain/services/user-validation.service';
+import { RedisServiceInterface, REDIS_SERVICE } from '../../../src/application/interfaces/services/redis-service.interface';
 import { CreateOrderDto } from '../../../src/presentation/dto/ordersDTO/create-order.dto';
-import { OrderResponseDto } from '../../../src/presentation/dto/ordersDTO/order-response.dto';
 import { Product } from '../../../src/domain/entities/product.entity';
 import { User } from '../../../src/domain/entities/user.entity';
 import { Coupon } from '../../../src/domain/entities/coupon.entity';
 import { Order } from '../../../src/domain/entities/order.entity';
-import { RedisServiceInterface, REDIS_SERVICE } from '../../../src/application/interfaces/services/redis-service.interface';
-import { RedisDistributedLockServiceInterface, REDIS_DISTRIBUTED_LOCK_SERVICE } from '../../../src/application/interfaces/services/redis-distributed-lock-service.interface';
+import { createMockRedisService } from '../../helpers/redis-mock.helper';
 import { ProductSalesAggregationRepositoryInterface } from '../../../src/application/interfaces/repositories/product-sales-aggregation-repository.interface';
 import { TRANSACTIONAL_KEY } from '../../../src/common/decorators/transactional.decorator';
 
@@ -26,7 +25,6 @@ describe('CreateOrderUseCase', () => {
   let mockOrderValidationService: jest.Mocked<OrderValidationService>;
   let mockUserValidationService: jest.Mocked<UserValidationService>;
   let mockRedisService: jest.Mocked<RedisServiceInterface>;
-  let mockRedisDistributedLockService: jest.Mocked<RedisDistributedLockServiceInterface>;
   let mockAggregationRepository: jest.Mocked<ProductSalesAggregationRepositoryInterface>;
 
   beforeEach(async () => {
@@ -91,29 +89,7 @@ describe('CreateOrderUseCase', () => {
       },
     };
 
-    mockRedisService = {
-      set: jest.fn(),
-      eval: jest.fn(),
-      pttl: jest.fn(),
-      exists: jest.fn(),
-      keys: jest.fn(),
-      del: jest.fn(),
-      getTopSellersCache: jest.fn(),
-      setTopSellersCache: jest.fn(),
-      incrementProductSales: jest.fn(),
-      getProductSales: jest.fn(),
-      getAllProductSales: jest.fn(),
-      onModuleDestroy: jest.fn(),
-    };
-
-    mockRedisDistributedLockService = {
-      acquireLock: jest.fn(),
-      releaseLock: jest.fn(),
-      getLockTTL: jest.fn(),
-      isLocked: jest.fn(),
-      getLockKeys: jest.fn(),
-      clearAllLocks: jest.fn(),
-    };
+    mockRedisService = createMockRedisService();
 
     mockAggregationRepository = {
       findByProductId: jest.fn(),
@@ -136,10 +112,6 @@ describe('CreateOrderUseCase', () => {
           useValue: mockRedisService,
         },
         {
-          provide: REDIS_DISTRIBUTED_LOCK_SERVICE,
-          useValue: mockRedisDistributedLockService,
-        },
-        {
           provide: 'PRODUCT_SALES_AGGREGATION_REPOSITORY',
           useValue: mockAggregationRepository,
         },
@@ -154,7 +126,6 @@ describe('CreateOrderUseCase', () => {
     mockOrderValidationService = module.get(OrderValidationService);
     mockUserValidationService = module.get(UserValidationService);
     mockRedisService = module.get(REDIS_SERVICE);
-    mockRedisDistributedLockService = module.get(REDIS_DISTRIBUTED_LOCK_SERVICE);
   });
 
   describe('execute', () => {
@@ -374,13 +345,11 @@ describe('CreateOrderUseCase', () => {
 
       mockOrdersService.createOrder.mockRejectedValue(new Error('주문 생성 실패'));
 
-      mockProductsService.findById.mockResolvedValue(mockProduct);
-      mockProductsService.save.mockResolvedValue(mockProduct);
-
       // Act & Assert
       await expect(useCase.execute(createOrderDto)).rejects.toThrow('주문 생성 실패');
-      expect(mockProductsService.findById).toHaveBeenCalledWith(1);
-      expect(mockProductsService.save).toHaveBeenCalledWith(mockProduct);
+      
+      // 재고 반환 로직은 이제 인터셉터에서 처리되므로 직접 검증하지 않음
+      // 대신 에러가 발생했는지만 확인
     });
   });
 
@@ -401,10 +370,12 @@ describe('CreateOrderUseCase', () => {
         { productId: 1, quantity: 1 }
       ];
 
-      mockProductsService.findById.mockRejectedValue(new Error('상품 조회 실패'));
+      mockProductsService.validateAndReserveProducts.mockRejectedValue(
+        new Error('상품 검증 및 재고 차감에 실패했습니다.')
+      );
 
       // Act & Assert
-      await expect(useCase.execute(createOrderDto)).rejects.toThrow('상품 조회 실패');
+      await expect(useCase.execute(createOrderDto)).rejects.toThrow('상품 검증 및 재고 차감에 실패했습니다.');
     });
 
     it('사용자 조회 중 에러가 발생하면 트랜잭션이 롤백되어야 한다', async () => {

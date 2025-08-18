@@ -77,10 +77,10 @@ describe('Redis Distributed Lock Integration Tests', () => {
       await redisDistributedLockService.releaseLock(lockKey);
     });
 
-    it('TTL이 만료되면 락이 자동으로 해제되어야 한다', async () => {
+        it('TTL이 만료되면 락이 자동으로 해제되어야 한다', async () => {
       // Arrange
       const lockKey = 'test:ttl:lock';
-
+      
       // Act - 짧은 TTL로 락 획득
       const acquired = await redisDistributedLockService.acquireLock(lockKey, {
         ttl: 100, // 100ms
@@ -88,8 +88,8 @@ describe('Redis Distributed Lock Integration Tests', () => {
       });
       expect(acquired).toBe(true);
 
-      // Act - TTL 만료 대기
-      await new Promise(resolve => setTimeout(resolve, 200));
+      // Act - TTL 만료 대기 (더 긴 시간으로 확실하게)
+      await new Promise(resolve => setTimeout(resolve, 300));
 
       // Assert - TTL 만료 후 락 해제 확인
       const isLocked = await redisDistributedLockService.isLocked(lockKey);

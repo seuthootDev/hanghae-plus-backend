@@ -1,10 +1,10 @@
 import { Injectable, Inject, BadRequestException, NotFoundException } from '@nestjs/common';
 import { ProcessPaymentDto } from '../../../presentation/dto/paymentsDTO/process-payment.dto';
 import { PaymentResponseDto } from '../../../presentation/dto/paymentsDTO/payment-response.dto';
-import { PaymentsServiceInterface, PAYMENTS_SERVICE } from '../../interfaces/services/payments-service.interface';
-import { OrdersServiceInterface, ORDERS_SERVICE } from '../../interfaces/services/orders-service.interface';
-import { UsersServiceInterface, USERS_SERVICE } from '../../interfaces/services/users-service.interface';
-import { ProductsServiceInterface, PRODUCTS_SERVICE } from '../../interfaces/services/products-service.interface';
+import { PaymentsServiceInterface, PAYMENTS_SERVICE } from '../../interfaces/services/payment-service.interface';
+import { OrdersServiceInterface, ORDERS_SERVICE } from '../../interfaces/services/order-service.interface';
+import { UsersServiceInterface, USERS_SERVICE } from '../../interfaces/services/user-service.interface';
+import { ProductsServiceInterface, PRODUCTS_SERVICE } from '../../interfaces/services/product-service.interface';
 import { PaymentValidationService } from '../../../domain/services/payment-validation.service';
 import { UserValidationService } from '../../../domain/services/user-validation.service';
 import { Transactional } from '../../../common/decorators/transactional.decorator';

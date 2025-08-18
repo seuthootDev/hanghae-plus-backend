@@ -1,7 +1,5 @@
 import { Injectable, BadRequestException, Inject, NotFoundException, InternalServerErrorException } from '@nestjs/common';
-import { ProcessPaymentDto } from '../../presentation/dto/paymentsDTO/process-payment.dto';
-import { PaymentResponseDto } from '../../presentation/dto/paymentsDTO/payment-response.dto';
-import { PaymentsServiceInterface } from '../../application/interfaces/services/payments-service.interface';
+import { PaymentsServiceInterface } from '../../application/interfaces/services/payment-service.interface';
 import { PaymentRepositoryInterface, PAYMENT_REPOSITORY } from '../../application/interfaces/repositories/payment-repository.interface';
 import { Payment } from '../../domain/entities/payment.entity';
 

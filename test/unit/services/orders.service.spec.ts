@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { OrdersService } from '../../../src/infrastructure/services/orders.service';
+import { OrdersService } from '../../../src/infrastructure/services/order.service';
 import { OrderRepositoryInterface, ORDER_REPOSITORY } from '../../../src/application/interfaces/repositories/order-repository.interface';
 import { Order, OrderItem } from '../../../src/domain/entities/order.entity';
 

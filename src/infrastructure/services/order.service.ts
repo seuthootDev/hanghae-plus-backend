@@ -1,7 +1,5 @@
 import { Injectable, BadRequestException, Inject, NotFoundException, InternalServerErrorException } from '@nestjs/common';
-import { CreateOrderDto } from '../../presentation/dto/ordersDTO/create-order.dto';
-import { OrderResponseDto } from '../../presentation/dto/ordersDTO/order-response.dto';
-import { OrdersServiceInterface } from '../../application/interfaces/services/orders-service.interface';
+import { OrdersServiceInterface } from '../../application/interfaces/services/order-service.interface';
 import { OrderRepositoryInterface, ORDER_REPOSITORY } from '../../application/interfaces/repositories/order-repository.interface';
 import { Order, OrderItem } from '../../domain/entities/order.entity';
 
