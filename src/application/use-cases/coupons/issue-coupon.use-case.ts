@@ -2,7 +2,6 @@ import { Injectable, Inject } from '@nestjs/common';
 import { IssueCouponDto } from '../../../presentation/dto/couponsDTO/issue-coupon.dto';
 import { CouponResponseDto } from '../../../presentation/dto/couponsDTO/coupon-response.dto';
 import { CouponsServiceInterface, COUPONS_SERVICE } from '../../interfaces/services/coupon-service.interface';
-import { PessimisticLock } from '../../../common/decorators/pessimistic-lock.decorator';
 
 @Injectable()
 export class IssueCouponUseCase {
@@ -11,13 +10,8 @@ export class IssueCouponUseCase {
     private readonly couponsService: CouponsServiceInterface
   ) {}
 
-  @PessimisticLock({
-    key: 'coupon:issue:user:${args[0].userId}', // 사용자별 락으로 변경
-    timeout: 5000,
-    errorMessage: '쿠폰 발급 중입니다. 잠시 후 다시 시도해주세요.'
-  })
   async execute(issueCouponDto: IssueCouponDto): Promise<CouponResponseDto> {
-    // 기존 비관적 락이 DB 레벨에서 보호
+    // Redis Sorted Set 기반 선착순 쿠폰 발급 (분산락 불필요)
     const coupon = await this.couponsService.issueCoupon(issueCouponDto);
     
     return {

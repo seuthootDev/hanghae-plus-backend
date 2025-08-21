@@ -5,6 +5,7 @@ import { Coupon } from '../../domain/entities/coupon.entity';
 import { CouponRepositoryInterface } from '../../application/interfaces/repositories/coupon-repository.interface';
 import { CouponEntity } from './typeorm/coupon.entity';
 import { DbPessimisticLock } from '../../common/decorators/db-pessimistic-lock.decorator';
+import { CouponType } from '../../domain/entities/coupon.entity';
 
 @Injectable()
 export class CouponRepository implements CouponRepositoryInterface {
@@ -91,7 +92,7 @@ export class CouponRepository implements CouponRepositoryInterface {
     ));
   }
 
-  async findByType(couponType: string): Promise<Coupon[]> {
+  async findByType(couponType: CouponType): Promise<Coupon[]> {
     const couponEntities = await this.couponRepository.find({ where: { couponType } });
     
     return couponEntities.map(entity => new Coupon(
