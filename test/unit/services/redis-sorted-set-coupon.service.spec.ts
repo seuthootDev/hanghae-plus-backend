@@ -2,12 +2,14 @@ import { Test } from '@nestjs/testing';
 import { CouponsService } from '../../../src/infrastructure/services/coupon.service';
 import { CouponRepositoryInterface, COUPON_REPOSITORY } from '../../../src/application/interfaces/repositories/coupon-repository.interface';
 import { RedisServiceInterface, REDIS_SERVICE } from '../../../src/application/interfaces/services/redis-service.interface';
+import { RankingLogRepositoryInterface, RANKING_LOG_REPOSITORY } from '../../../src/application/interfaces/repositories/ranking-log-repository.interface';
 import { CouponType } from '../../../src/domain/entities/coupon.entity';
 
 describe('Redis Sorted Set Coupon Service', () => {
   let couponsService: CouponsService;
   let mockCouponRepository: jest.Mocked<CouponRepositoryInterface>;
   let mockRedisService: jest.Mocked<RedisServiceInterface>;
+  let mockRankingLogRepository: jest.Mocked<RankingLogRepositoryInterface>;
 
   beforeEach(async () => {
     // Mock Repository
@@ -57,6 +59,15 @@ describe('Redis Sorted Set Coupon Service', () => {
       onModuleDestroy: jest.fn()
     };
 
+    // Mock Ranking Log Repository
+    mockRankingLogRepository = {
+      save: jest.fn(),
+      findByUserIdAndCouponType: jest.fn(),
+      findFailedLogs: jest.fn(),
+      updateStatus: jest.fn(),
+      incrementRetryCount: jest.fn(),
+    };
+
     const module = await Test.createTestingModule({
       providers: [
         CouponsService,
@@ -67,6 +78,10 @@ describe('Redis Sorted Set Coupon Service', () => {
         {
           provide: REDIS_SERVICE,
           useValue: mockRedisService
+        },
+        {
+          provide: RANKING_LOG_REPOSITORY,
+          useValue: mockRankingLogRepository
         }
       ]
     }).compile();

@@ -3,6 +3,7 @@ import { CouponsService } from '../../../src/infrastructure/services/coupon.serv
 import { CouponRepositoryInterface, COUPON_REPOSITORY } from '../../../src/application/interfaces/repositories/coupon-repository.interface';
 import { CouponValidationService } from '../../../src/domain/services/coupon-validation.service';
 import { RedisServiceInterface, REDIS_SERVICE } from '../../../src/application/interfaces/services/redis-service.interface';
+import { RankingLogRepositoryInterface, RANKING_LOG_REPOSITORY } from '../../../src/application/interfaces/repositories/ranking-log-repository.interface';
 import { IssueCouponDto } from '../../../src/presentation/dto/couponsDTO/issue-coupon.dto';
 import { Coupon, CouponType } from '../../../src/domain/entities/coupon.entity';
 import { createMockRedisService } from '../../helpers/redis-mock.helper';
@@ -12,6 +13,7 @@ describe('CouponsService', () => {
   let mockCouponRepository: jest.Mocked<CouponRepositoryInterface>;
   let mockCouponValidationService: jest.Mocked<CouponValidationService>;
   let mockRedisService: jest.Mocked<RedisServiceInterface>;
+  let mockRankingLogRepository: jest.Mocked<RankingLogRepositoryInterface>;
 
   beforeEach(async () => {
     const mockCouponRepositoryProvider = {
@@ -40,12 +42,24 @@ describe('CouponsService', () => {
       useValue: createMockRedisService(),
     };
 
+    const mockRankingLogRepositoryProvider = {
+      provide: RANKING_LOG_REPOSITORY,
+      useValue: {
+        save: jest.fn(),
+        findByUserIdAndCouponType: jest.fn(),
+        findFailedLogs: jest.fn(),
+        updateStatus: jest.fn(),
+        incrementRetryCount: jest.fn(),
+      },
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CouponsService,
         mockCouponRepositoryProvider,
         mockCouponValidationServiceProvider,
         mockRedisServiceProvider,
+        mockRankingLogRepositoryProvider,
       ],
     }).compile();
 
@@ -53,6 +67,7 @@ describe('CouponsService', () => {
     mockCouponRepository = module.get(COUPON_REPOSITORY);
     mockCouponValidationService = module.get(CouponValidationService);
     mockRedisService = module.get(REDIS_SERVICE);
+    mockRankingLogRepository = module.get(RANKING_LOG_REPOSITORY);
   });
 
   describe('issueCoupon', () => {

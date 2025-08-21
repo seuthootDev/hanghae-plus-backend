@@ -37,6 +37,7 @@ import { PRODUCT_REPOSITORY } from '../src/application/interfaces/repositories/p
 import { ORDER_REPOSITORY } from '../src/application/interfaces/repositories/order-repository.interface';
 import { COUPON_REPOSITORY } from '../src/application/interfaces/repositories/coupon-repository.interface';
 import { PAYMENT_REPOSITORY } from '../src/application/interfaces/repositories/payment-repository.interface';
+import { RANKING_LOG_REPOSITORY } from '../src/application/interfaces/repositories/ranking-log-repository.interface';
 import { UserRepository } from '../src/infrastructure/repositories/user.repository';
 import { ProductRepository } from '../src/infrastructure/repositories/product.repository';
 import { OrderRepository } from '../src/infrastructure/repositories/order.repository';
@@ -150,6 +151,16 @@ import { TransactionInterceptor } from '../src/common/interceptors/transaction.i
     {
       provide: PAYMENT_REPOSITORY,
       useClass: PaymentRepository,
+    },
+    {
+      provide: RANKING_LOG_REPOSITORY,
+      useValue: {
+        save: async () => ({}),
+        findByUserIdAndCouponType: async () => [],
+        findFailedLogs: async () => [],
+        updateStatus: async () => {},
+        incrementRetryCount: async () => {},
+      },
     },
     
     // Redis 서비스 (메모리 기반으로 설정)
