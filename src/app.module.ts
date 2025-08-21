@@ -41,12 +41,14 @@ import { PRODUCT_REPOSITORY } from './application/interfaces/repositories/produc
 import { ORDER_REPOSITORY } from './application/interfaces/repositories/order-repository.interface';
 import { COUPON_REPOSITORY } from './application/interfaces/repositories/coupon-repository.interface';
 import { PAYMENT_REPOSITORY } from './application/interfaces/repositories/payment-repository.interface';
+import { RANKING_LOG_REPOSITORY } from './application/interfaces/repositories/ranking-log-repository.interface';
 import { UserRepository } from './infrastructure/repositories/user.repository';
 import { ProductRepository } from './infrastructure/repositories/product.repository';
 import { OrderRepository } from './infrastructure/repositories/order.repository';
 import { CouponRepository } from './infrastructure/repositories/coupon.repository';
 import { PaymentRepository } from './infrastructure/repositories/payment.repository';
 import { ProductSalesAggregationRepository } from './infrastructure/repositories/product-sales-aggregation.repository';
+import { RankingLogRepository } from './infrastructure/repositories/ranking-log.repository';
 import { RedisService } from './infrastructure/services/redis.service';
 import { RedisDistributedLockService } from './infrastructure/services/redis-distributed-lock.service';
 import { RedisServiceInterface, REDIS_SERVICE } from './application/interfaces/services/redis-service.interface';
@@ -57,6 +59,7 @@ import { OrderEntity } from './infrastructure/repositories/typeorm/order.entity'
 import { CouponEntity } from './infrastructure/repositories/typeorm/coupon.entity';
 import { PaymentEntity } from './infrastructure/repositories/typeorm/payment.entity';
 import { ProductSalesAggregationEntity } from './infrastructure/repositories/typeorm/product-sales-aggregation.entity';
+import { RankingLogEntity } from './infrastructure/repositories/typeorm/ranking-log.entity';
 import { OrderValidationService } from './domain/services/order-validation.service';
 import { UserValidationService } from './domain/services/user-validation.service';
 import { PaymentValidationService } from './domain/services/payment-validation.service';
@@ -74,7 +77,8 @@ import { AuthValidationService } from './domain/services/auth-validation.service
       OrderEntity,
       CouponEntity,
       PaymentEntity,
-      ProductSalesAggregationEntity
+      ProductSalesAggregationEntity,
+      RankingLogEntity
     ])
   ],
   controllers: [
@@ -149,6 +153,10 @@ import { AuthValidationService } from './domain/services/auth-validation.service
     {
       provide: 'PRODUCT_SALES_AGGREGATION_REPOSITORY',
       useClass: ProductSalesAggregationRepository,
+    },
+    {
+      provide: RANKING_LOG_REPOSITORY,
+      useClass: RankingLogRepository,
     },
     
     // Redis 서비스
