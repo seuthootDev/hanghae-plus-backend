@@ -12,6 +12,17 @@ export function createMockRedisService(): jest.Mocked<RedisServiceInterface> {
     decr: jest.fn(),
     incr: jest.fn(),
     
+    // Redis 기본 메서드들
+    get: jest.fn(),
+    
+    // Redis Sorted Set 메서드들
+    zadd: jest.fn(),
+    zrem: jest.fn(),
+    zscore: jest.fn(),
+    zrank: jest.fn(),
+    zrange: jest.fn(),
+    zcard: jest.fn(),
+    
     // 기존 캐시 메서드들
     getTopSellersCache: jest.fn(),
     setTopSellersCache: jest.fn(),

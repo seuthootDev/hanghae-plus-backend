@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { IssueCouponUseCase } from '../../../src/application/use-cases/coupons/issue-coupon.use-case';
 import { CouponsServiceInterface, COUPONS_SERVICE } from '../../../src/application/interfaces/services/coupon-service.interface';
-import { IssueCouponDto, CouponType } from '../../../src/presentation/dto/couponsDTO/issue-coupon.dto';
+import { IssueCouponDto } from '../../../src/presentation/dto/couponsDTO/issue-coupon.dto';
 import { CouponResponseDto } from '../../../src/presentation/dto/couponsDTO/coupon-response.dto';
-import { Coupon } from '../../../src/domain/entities/coupon.entity';
+import { Coupon, CouponType } from '../../../src/domain/entities/coupon.entity';
 
 describe('IssueCouponUseCase', () => {
   let useCase: IssueCouponUseCase;
@@ -96,19 +96,6 @@ describe('IssueCouponUseCase', () => {
       await expect(useCase.execute(issueCouponDto)).rejects.toThrow(
         '쿠폰 발급에 실패했습니다.'
       );
-    });
-
-    describe('데코레이터 적용 테스트', () => {
-      it('@PessimisticLock 데코레이터가 적용되어야 한다', () => {
-        // Arrange & Act
-        const method = useCase.execute;
-        const metadata = Reflect.getMetadata('pessimistic_lock', method);
-
-        // Assert
-        expect(metadata).toBeDefined();
-        expect(metadata.key).toBe('coupon:issue:user:${args[0].userId}');
-        expect(metadata.timeout).toBe(5000);
-      });
     });
   });
 }); 

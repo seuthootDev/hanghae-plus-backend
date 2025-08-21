@@ -10,7 +10,7 @@ import { RedisServiceInterface, REDIS_SERVICE } from '../../../src/application/i
 import { CreateOrderDto } from '../../../src/presentation/dto/ordersDTO/create-order.dto';
 import { Product } from '../../../src/domain/entities/product.entity';
 import { User } from '../../../src/domain/entities/user.entity';
-import { Coupon } from '../../../src/domain/entities/coupon.entity';
+import { Coupon, CouponType } from '../../../src/domain/entities/coupon.entity';
 import { Order } from '../../../src/domain/entities/order.entity';
 import { createMockRedisService } from '../../helpers/redis-mock.helper';
 import { ProductSalesAggregationRepositoryInterface } from '../../../src/application/interfaces/repositories/product-sales-aggregation-repository.interface';
@@ -143,7 +143,7 @@ describe('CreateOrderUseCase', () => {
       const mockProduct1 = new Product(1, '상품1', 10000, 10, '설명1');
       const mockProduct2 = new Product(2, '상품2', 15000, 5, '설명2');
       const mockUser = new User(1, 'user@test.com', 'password', 50000);
-      const mockCoupon = new Coupon(1, 1, 'DISCOUNT_10', 10, 0, new Date(), false);
+      const mockCoupon = new Coupon(1, 1, CouponType.DISCOUNT_10PERCENT, 10, 0, new Date(), false);
 
       const mockOrderItems = [
         { productId: 1, quantity: 2, price: 10000 },

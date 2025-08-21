@@ -7,6 +7,7 @@ import { CouponEntity } from '../../src/infrastructure/repositories/typeorm/coup
 import { OrderEntity } from '../../src/infrastructure/repositories/typeorm/order.entity';
 import { PaymentEntity } from '../../src/infrastructure/repositories/typeorm/payment.entity';
 import { ProductSalesAggregationEntity } from '../../src/infrastructure/repositories/typeorm/product-sales-aggregation.entity';
+import { CouponType } from '../../src/domain/entities/coupon.entity';
 import * as bcrypt from 'bcrypt';
 import { envConfig } from '../../src/config/env.config';
 
@@ -73,10 +74,10 @@ export class TestSeeder {
     futureDate.setDate(futureDate.getDate() + 30);
 
     const coupons = [
-      { id: 1, userId: 1, couponType: 'DISCOUNT_10PERCENT', discountRate: 10, discountAmount: 0, expiryDate: futureDate, isUsed: false },
-      { id: 2, userId: 1, couponType: 'DISCOUNT_20PERCENT', discountRate: 20, discountAmount: 0, expiryDate: futureDate, isUsed: false },
-      { id: 3, userId: 2, couponType: 'FIXED_1000', discountRate: 0, discountAmount: 1000, expiryDate: futureDate, isUsed: false },
-      { id: 4, userId: 2, couponType: 'FIXED_2000', discountRate: 0, discountAmount: 2000, expiryDate: futureDate, isUsed: true },
+      { id: 1, userId: 1, couponType: CouponType.DISCOUNT_10PERCENT, discountRate: 10, discountAmount: 0, expiryDate: futureDate, isUsed: false },
+      { id: 2, userId: 1, couponType: CouponType.DISCOUNT_20PERCENT, discountRate: 20, discountAmount: 0, expiryDate: futureDate, isUsed: false },
+      { id: 3, userId: 2, couponType: CouponType.FIXED_1000, discountRate: 0, discountAmount: 1000, expiryDate: futureDate, isUsed: false },
+      { id: 4, userId: 2, couponType: CouponType.FIXED_2000, discountRate: 0, discountAmount: 2000, expiryDate: futureDate, isUsed: true },
     ];
 
     for (const couponData of coupons) {

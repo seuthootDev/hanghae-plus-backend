@@ -1,4 +1,4 @@
-import { Coupon } from '../../../src/domain/entities/coupon.entity';
+import { Coupon, CouponType } from '../../../src/domain/entities/coupon.entity';
 
 describe('Coupon Entity', () => {
   let validCoupon: Coupon;
@@ -14,11 +14,11 @@ describe('Coupon Entity', () => {
     const pastDate = new Date();
     pastDate.setDate(pastDate.getDate() - 1); // 1일 전
 
-    validCoupon = new Coupon(1, 1, 'DISCOUNT', 10, 0, futureDate, false);
-    expiredCoupon = new Coupon(2, 1, 'DISCOUNT', 10, 0, pastDate, false);
-    usedCoupon = new Coupon(3, 1, 'DISCOUNT', 10, 0, futureDate, true);
-    rateCoupon = new Coupon(4, 1, 'RATE', 20, 0, futureDate, false);
-    amountCoupon = new Coupon(5, 1, 'AMOUNT', 0, 5000, futureDate, false);
+    validCoupon = new Coupon(1, 1, CouponType.DISCOUNT_10PERCENT, 10, 0, futureDate, false);
+    expiredCoupon = new Coupon(2, 1, CouponType.DISCOUNT_10PERCENT, 10, 0, pastDate, false);
+    usedCoupon = new Coupon(3, 1, CouponType.DISCOUNT_10PERCENT, 10, 0, futureDate, true);
+    rateCoupon = new Coupon(4, 1, CouponType.DISCOUNT_20PERCENT, 20, 0, futureDate, false);
+    amountCoupon = new Coupon(5, 1, CouponType.FIXED_2000, 0, 2000, futureDate, false);
   });
 
   describe('getters', () => {
@@ -58,7 +58,7 @@ describe('Coupon Entity', () => {
     it('오늘 만료되는 쿠폰은 만료되지 않았음을 반환해야 한다', () => {
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      const todayExpiry = new Coupon(6, 1, 'DISCOUNT', 10, 0, tomorrow, false);
+      const todayExpiry = new Coupon(6, 1, CouponType.DISCOUNT_10PERCENT, 10, 0, tomorrow, false);
       expect(todayExpiry.isExpired()).toBe(false);
     });
   });
@@ -77,7 +77,7 @@ describe('Coupon Entity', () => {
     });
 
     it('만료되고 사용된 쿠폰은 false를 반환해야 한다', () => {
-      const expiredAndUsed = new Coupon(7, 1, 'DISCOUNT', 10, 0, new Date(Date.now() - 86400000), true);
+      const expiredAndUsed = new Coupon(7, 1, CouponType.DISCOUNT_10PERCENT, 10, 0, new Date(Date.now() - 86400000), true);
       expect(expiredAndUsed.isValid()).toBe(false);
     });
   });
@@ -111,14 +111,14 @@ describe('Coupon Entity', () => {
         const totalAmount = 10000;
         const discount = amountCoupon.calculateDiscount(totalAmount);
 
-        expect(discount).toBe(5000);
+        expect(discount).toBe(2000);
       });
 
       it('할인금액이 총 금액보다 클 때도 처리해야 한다', () => {
         const totalAmount = 3000;
         const discount = amountCoupon.calculateDiscount(totalAmount);
 
-        expect(discount).toBe(5000); // 할인금액이 총 금액보다 클 수 있음
+        expect(discount).toBe(2000); // 할인금액이 총 금액보다 클 수 있음
       });
 
       it('유효하지 않은 할인금액 쿠폰은 0을 반환해야 한다', () => {
@@ -147,20 +147,20 @@ describe('Coupon Entity', () => {
   });
 
   describe('coupon types', () => {
-    it('RATE 타입 쿠폰이 할인율을 사용해야 한다', () => {
-      expect(rateCoupon.couponType).toBe('RATE');
+    it('DISCOUNT_20PERCENT 타입 쿠폰이 할인율을 사용해야 한다', () => {
+      expect(rateCoupon.couponType).toBe(CouponType.DISCOUNT_20PERCENT);
       expect(rateCoupon.discountRate).toBe(20);
       expect(rateCoupon.discountAmount).toBe(0);
     });
 
-    it('AMOUNT 타입 쿠폰이 할인금액을 사용해야 한다', () => {
-      expect(amountCoupon.couponType).toBe('AMOUNT');
+    it('FIXED_2000 타입 쿠폰이 할인금액을 사용해야 한다', () => {
+      expect(amountCoupon.couponType).toBe(CouponType.FIXED_2000);
       expect(amountCoupon.discountRate).toBe(0);
-      expect(amountCoupon.discountAmount).toBe(5000);
+      expect(amountCoupon.discountAmount).toBe(2000);
     });
 
-    it('DISCOUNT 타입 쿠폰이 기본값을 가져야 한다', () => {
-      expect(validCoupon.couponType).toBe('DISCOUNT');
+    it('DISCOUNT_10PERCENT 타입 쿠폰이 기본값을 가져야 한다', () => {
+      expect(validCoupon.couponType).toBe(CouponType.DISCOUNT_10PERCENT);
       expect(validCoupon.discountRate).toBe(10);
       expect(validCoupon.discountAmount).toBe(0);
     });

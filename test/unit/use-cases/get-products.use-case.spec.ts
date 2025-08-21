@@ -3,6 +3,7 @@ import { GetProductsUseCase } from '../../../src/application/use-cases/products/
 import { ProductsServiceInterface, PRODUCTS_SERVICE } from '../../../src/application/interfaces/services/product-service.interface';
 import { RedisServiceInterface, REDIS_SERVICE } from '../../../src/application/interfaces/services/redis-service.interface';
 import { Product } from '../../../src/domain/entities/product.entity';
+import { createMockRedisService } from '../../helpers/redis-mock.helper';
 
 describe('GetProductsUseCase', () => {
   let useCase: GetProductsUseCase;
@@ -18,35 +19,7 @@ describe('GetProductsUseCase', () => {
       save: jest.fn(),
     };
 
-    mockRedisService = {
-      set: jest.fn(),
-      eval: jest.fn(),
-      pttl: jest.fn(),
-      exists: jest.fn(),
-      keys: jest.fn(),
-      del: jest.fn(),
-      decr: jest.fn(),
-      incr: jest.fn(),
-      getTopSellersCache: jest.fn(),
-      setTopSellersCache: jest.fn(),
-      incrementProductSales: jest.fn(),
-      getProductSales: jest.fn(),
-      getAllProductSales: jest.fn(),
-      setProductCache: jest.fn(),
-      getProductCache: jest.fn(),
-      setProductsCache: jest.fn(),
-      getProductsCache: jest.fn(),
-      setProductsByCategoryCache: jest.fn(),
-      getProductsByCategoryCache: jest.fn(),
-      setUserPointsCache: jest.fn(),
-      getUserPointsCache: jest.fn(),
-      invalidateProductCache: jest.fn(),
-      invalidateProductsCache: jest.fn(),
-      invalidateTopSellersCache: jest.fn(),
-      invalidateUserPointsCache: jest.fn(),
-      setWithTTL: jest.fn(),
-      onModuleDestroy: jest.fn(),
-    };
+    mockRedisService = createMockRedisService();
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [

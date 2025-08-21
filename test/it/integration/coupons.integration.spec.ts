@@ -3,7 +3,8 @@ import { IssueCouponUseCase } from '../../../src/application/use-cases/coupons/i
 import { GetUserCouponsUseCase } from '../../../src/application/use-cases/coupons/get-user-coupons.use-case';
 import { TestAppModule } from '../../app.module';
 import { TestSeeder } from '../../database/test-seeder';
-import { IssueCouponDto, CouponType } from '../../../src/presentation/dto/couponsDTO/issue-coupon.dto';
+import { IssueCouponDto } from '../../../src/presentation/dto/couponsDTO/issue-coupon.dto';
+import { CouponType } from '../../../src/domain/entities/coupon.entity';
 import { CouponRepositoryInterface, COUPON_REPOSITORY } from '../../../src/application/interfaces/repositories/coupon-repository.interface';
 import { CouponsServiceInterface, COUPONS_SERVICE } from '../../../src/application/interfaces/services/coupon-service.interface';
 
@@ -378,5 +379,187 @@ describe('Coupons Integration Tests', () => {
       expect(newFixed1000).toBeDefined();
       expect(newFixed2000).toBeDefined();
     });
+  });
+
+  describe('Redis Sorted Set 기반 선착순 쿠폰 발급 테스트', () => {
+    it('동시에 여러 사용자가 쿠폰을 발급할 때 순위가 보장되어야 한다', async () => {
+      // Arrange
+      const couponType = CouponType.DISCOUNT_10PERCENT;
+      const userIds = [101, 102, 103, 104, 105]; // 5명의 사용자
+      
+      // Redis 재고 초기화 (100개)
+      const couponsService = module.get<CouponsServiceInterface>(COUPONS_SERVICE);
+      const redisService = (couponsService as any).redisService;
+      await redisService.set(`coupon:stock:${couponType}`, '100');
+      await redisService.set(`coupon:endtime:${couponType}`, (Date.now() + 60000).toString()); // 1분 후 종료
+      
+      // 기존 데이터 정리
+      await redisService.del(`coupon:queue:${couponType}`);
+      await redisService.del(`coupon:issued:${couponType}`);
+      await redisService.del(`coupon:rank:${couponType}`);
+      
+      // Act - 동시에 쿠폰 발급 시도
+      const promises = userIds.map(userId => 
+        issueCouponUseCase.execute({
+          userId,
+          couponType
+        }).catch(error => ({ error: error.message, userId }))
+      );
+      
+      const results = await Promise.all(promises);
+      
+      // Assert - 모든 사용자가 성공적으로 쿠폰을 발급받았는지 확인
+      const successfulIssues = results.filter((result): result is any => !('error' in result));
+      expect(successfulIssues).toHaveLength(5);
+      
+      // 순위 정보 조회
+      const rankings = await couponsService.getCouponRanking(couponType, 10);
+      expect(rankings).toHaveLength(5);
+      
+      // 순위가 1부터 5까지 순차적으로 되어있는지 확인
+      rankings.forEach((ranking, index) => {
+        expect(ranking.rank).toBe(index + 1);
+      });
+      
+      // 대기열 상태 확인
+      const queueStatus = await couponsService.getCouponQueueStatus(couponType);
+      expect(queueStatus.totalIssued).toBe(5);
+      expect(queueStatus.totalInQueue).toBe(0);
+      expect(queueStatus.remainingStock).toBe(95);
+      expect(queueStatus.isEnded).toBe(false);
+    }, 10000);
+
+    it('재고가 부족할 때 순위에 따라 발급이 결정되어야 한다', async () => {
+      // Arrange
+      const couponType = CouponType.DISCOUNT_20PERCENT;
+      const userIds = Array.from({ length: 20 }, (_, i) => 200 + i); // 20명의 사용자
+      
+      // Redis 재고를 10개로 설정
+      const couponsService = module.get<CouponsServiceInterface>(COUPONS_SERVICE);
+      const redisService = (couponsService as any).redisService;
+      await redisService.set(`coupon:stock:${couponType}`, '10');
+      await redisService.set(`coupon:endtime:${couponType}`, (Date.now() + 60000).toString());
+      
+      // 기존 데이터 정리
+      await redisService.del(`coupon:queue:${couponType}`);
+      await redisService.del(`coupon:issued:${couponType}`);
+      await redisService.del(`coupon:rank:${couponType}`);
+      
+      // Act - 20명이 동시에 쿠폰 발급 시도
+      const promises = userIds.map(userId => 
+        issueCouponUseCase.execute({
+          userId,
+          couponType
+        }).catch(error => ({ error: error.message, userId }))
+      );
+      
+      const results = await Promise.all(promises);
+      
+      // Assert - 정확히 10개만 성공해야 함
+      const successfulIssues = results.filter((result): result is any => !('error' in result));
+      const failedIssues = results.filter((result): result is { error: any; userId: number } => 'error' in result);
+      
+      expect(successfulIssues).toHaveLength(10);
+      expect(failedIssues).toHaveLength(10);
+      
+      // 실패한 요청들은 모두 재고 부족 에러여야 함
+      failedIssues.forEach(failed => {
+        expect(failed.error).toContain('쿠폰이 소진되었습니다');
+      });
+      
+      // 순위 정보 확인 - 10명의 순위가 정확히 기록되어야 함
+      const rankings = await couponsService.getCouponRanking(couponType, 10);
+      expect(rankings).toHaveLength(10);
+      
+      // 순위가 1부터 10까지 순차적으로 되어있는지 확인
+      rankings.forEach((ranking, index) => {
+        expect(ranking.rank).toBe(index + 1);
+      });
+    }, 10000);
+
+    it('이미 발급받은 사용자는 중복 발급을 시도할 수 없어야 한다', async () => {
+      // Arrange
+      const couponType = CouponType.FIXED_1000;
+      const userId = 300;
+      
+      // Redis 재고 초기화
+      const couponsService = module.get<CouponsServiceInterface>(COUPONS_SERVICE);
+      const redisService = (couponsService as any).redisService;
+      await redisService.set(`coupon:stock:${couponType}`, '50');
+      await redisService.set(`coupon:endtime:${couponType}`, (Date.now() + 60000).toString());
+      
+      // 기존 데이터 정리
+      await redisService.del(`coupon:queue:${couponType}`);
+      await redisService.del(`coupon:issued:${couponType}`);
+      await redisService.del(`coupon:rank:${couponType}`);
+      
+      // 첫 번째 발급 시도
+      const firstIssue = await issueCouponUseCase.execute({
+        userId,
+        couponType
+      });
+      expect(firstIssue).toBeDefined();
+      
+      // Act - 두 번째 발급 시도 (중복)
+      try {
+        await issueCouponUseCase.execute({
+          userId,
+          couponType
+        });
+        fail('중복 발급이 성공했지만 실패해야 합니다.');
+      } catch (error) {
+        // Assert - 중복 발급 시도 시 에러 발생
+        expect(error.message).toContain('쿠폰 발급이 불가능합니다');
+      }
+      
+      // 순위 정보 확인 - 한 번만 기록되어야 함
+      const rankings = await couponsService.getCouponRanking(couponType, 10);
+      const userRanking = rankings.find(r => r.userId === userId);
+      expect(userRanking).toBeDefined();
+      expect(userRanking.rank).toBe(1);
+    }, 10000);
+
+    it('쿠폰 순위 조회가 정상적으로 동작해야 한다', async () => {
+      // Arrange
+      const couponType = CouponType.FIXED_2000;
+      const userIds = [401, 402, 403];
+      
+      const couponsService = module.get<CouponsServiceInterface>(COUPONS_SERVICE);
+      const redisService = (couponsService as any).redisService;
+      await redisService.set(`coupon:stock:${couponType}`, '10');
+      await redisService.set(`coupon:endtime:${couponType}`, (Date.now() + 60000).toString());
+      
+      // 기존 데이터 정리
+      await redisService.del(`coupon:queue:${couponType}`);
+      await redisService.del(`coupon:issued:${couponType}`);
+      await redisService.del(`coupon:rank:${couponType}`);
+      
+      // Act - 순차적으로 쿠폰 발급
+      for (const userId of userIds) {
+        await issueCouponUseCase.execute({
+          userId,
+          couponType
+        });
+        // 각 발급 사이에 작은 딜레이를 줘서 순위 구분
+        await new Promise(resolve => setTimeout(resolve, 10));
+      }
+      
+      // Assert - 순위 조회
+      const rankings = await couponsService.getCouponRanking(couponType, 5);
+      expect(rankings).toHaveLength(3);
+      
+      // 순위 확인
+      expect(rankings[0].userId).toBe(401);
+      expect(rankings[0].rank).toBe(1);
+      expect(rankings[1].userId).toBe(402);
+      expect(rankings[1].rank).toBe(2);
+      expect(rankings[2].userId).toBe(403);
+      expect(rankings[2].rank).toBe(3);
+      
+      // 대기열 상태 확인
+      const queueStatus = await couponsService.getCouponQueueStatus(couponType);
+      expect(queueStatus.totalIssued).toBe(3);
+      expect(queueStatus.remainingStock).toBe(7);
+    }, 10000);
   });
 }); 
