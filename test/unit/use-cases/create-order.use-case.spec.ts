@@ -13,7 +13,7 @@ import { User } from '../../../src/domain/entities/user.entity';
 import { Coupon, CouponType } from '../../../src/domain/entities/coupon.entity';
 import { Order } from '../../../src/domain/entities/order.entity';
 import { createMockRedisService } from '../../helpers/redis-mock.helper';
-import { ProductSalesAggregationRepositoryInterface } from '../../../src/application/interfaces/repositories/product-sales-aggregation-repository.interface';
+
 import { TRANSACTIONAL_KEY } from '../../../src/common/decorators/transactional.decorator';
 
 describe('CreateOrderUseCase', () => {
@@ -25,7 +25,7 @@ describe('CreateOrderUseCase', () => {
   let mockOrderValidationService: jest.Mocked<OrderValidationService>;
   let mockUserValidationService: jest.Mocked<UserValidationService>;
   let mockRedisService: jest.Mocked<RedisServiceInterface>;
-  let mockAggregationRepository: jest.Mocked<ProductSalesAggregationRepositoryInterface>;
+
 
   beforeEach(async () => {
     const mockOrdersServiceProvider = {
@@ -91,13 +91,6 @@ describe('CreateOrderUseCase', () => {
 
     mockRedisService = createMockRedisService();
 
-    mockAggregationRepository = {
-      findByProductId: jest.fn(),
-      findTopSellers: jest.fn(),
-      save: jest.fn(),
-      updateSales: jest.fn(),
-    };
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CreateOrderUseCase,
@@ -110,10 +103,6 @@ describe('CreateOrderUseCase', () => {
         {
           provide: REDIS_SERVICE,
           useValue: mockRedisService,
-        },
-        {
-          provide: 'PRODUCT_SALES_AGGREGATION_REPOSITORY',
-          useValue: mockAggregationRepository,
         },
       ],
     }).compile();
@@ -168,9 +157,9 @@ describe('CreateOrderUseCase', () => {
       const mockOrder = new Order(1, userId, mockOrderItems, 35000, 3500, 31500, 1, true, 'PENDING');
       mockOrdersService.createOrder.mockResolvedValue(mockOrder);
 
-      (mockRedisService.incrementProductSales as jest.Mock).mockResolvedValue(undefined);
-      (mockRedisService.getProductSales as jest.Mock).mockResolvedValue(0);
-      mockAggregationRepository.updateSales.mockResolvedValue(null);
+      // Redis Sorted Set 기반 상품 랭킹 업데이트 모킹
+      mockRedisService.zscore.mockResolvedValue(0); // 기존 점수
+      mockRedisService.zadd.mockResolvedValue(1);
 
       // Act
       const result = await useCase.execute(createOrderDto);
@@ -191,11 +180,11 @@ describe('CreateOrderUseCase', () => {
         couponUsed: true
       });
 
-      // Redis + 집계 테이블 업데이트 검증
-      expect(mockRedisService.incrementProductSales).toHaveBeenCalledWith(1, 2);
-      expect(mockRedisService.incrementProductSales).toHaveBeenCalledWith(2, 1);
-      expect(mockAggregationRepository.updateSales).toHaveBeenCalledWith(1, 0, 0);
-      expect(mockAggregationRepository.updateSales).toHaveBeenCalledWith(2, 0, 0);
+      // Redis Sorted Set 기반 상품 랭킹 업데이트 검증
+      expect(mockRedisService.zscore).toHaveBeenCalledWith('product:ranking', '1');
+      expect(mockRedisService.zscore).toHaveBeenCalledWith('product:ranking', '2');
+      expect(mockRedisService.zadd).toHaveBeenCalledWith('product:ranking', 2, '1'); // 기존 점수 0 + 수량 2
+      expect(mockRedisService.zadd).toHaveBeenCalledWith('product:ranking', 1, '2'); // 기존 점수 0 + 수량 1
     });
 
     it('쿠폰이 없는 경우에도 주문이 성공적으로 생성되어야 한다', async () => {
@@ -232,9 +221,9 @@ describe('CreateOrderUseCase', () => {
       const mockOrder = new Order(1, userId, mockOrderItems, 20000, 0, 20000, null, false, 'PENDING');
       mockOrdersService.createOrder.mockResolvedValue(mockOrder);
 
-      (mockRedisService.incrementProductSales as jest.Mock).mockResolvedValue(undefined);
-      (mockRedisService.getProductSales as jest.Mock).mockResolvedValue(0);
-      mockAggregationRepository.updateSales.mockResolvedValue(null);
+      // Redis Sorted Set 기반 상품 랭킹 업데이트 모킹
+      mockRedisService.zscore.mockResolvedValue(0);
+      mockRedisService.zadd.mockResolvedValue(1);
 
       // Act
       const result = await useCase.execute(createOrderDto);
@@ -447,9 +436,8 @@ describe('CreateOrderUseCase', () => {
         couponUsed: false
       });
       mockOrdersService.createOrder.mockResolvedValue(mockOrder);
-      (mockRedisService.incrementProductSales as jest.Mock).mockResolvedValue(undefined);
-      (mockRedisService.getProductSales as jest.Mock).mockResolvedValue(0);
-      mockAggregationRepository.updateSales.mockResolvedValue(null);
+      mockRedisService.zscore.mockResolvedValue(0);
+      mockRedisService.zadd.mockResolvedValue(1);
 
       // Act
       const result = await useCase.execute(createOrderDto);

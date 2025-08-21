@@ -3,6 +3,7 @@ import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { TestAppModule } from '../../app.module';
 import { TestSeeder } from '../../database/test-seeder';
+import { REDIS_SERVICE } from '../../../src/application/interfaces/services/redis-service.interface';
 
 describe('Products API (e2e)', () => {
   let app: INestApplication;
@@ -17,13 +18,32 @@ describe('Products API (e2e)', () => {
     testSeeder = moduleFixture.get<TestSeeder>(TestSeeder);
     
     // Redis 서비스 가져오기
-    const redisService = moduleFixture.get('REDIS_SERVICE');
+    const redisService = app.get(REDIS_SERVICE);
     const couponsService = moduleFixture.get('COUPONS_SERVICE');
     
     await app.init();
     
     // 테스트 데이터 시딩
     await testSeeder.seedFullTestData();
+    
+    // Redis Sorted Set에 초기 상품 랭킹 설정
+    const rankingKey = 'product:ranking';
+    const initialRankings = [
+      { productId: 1, score: 50 }, // 아메리카노: 50개 판매
+      { productId: 2, score: 60 }, // 카페라떼: 60개 판매 (1위)
+      { productId: 3, score: 30 }, // 카푸치노: 30개 판매
+      { productId: 4, score: 20 }, // 티라떼: 20개 판매
+      { productId: 5, score: 10 }, // 에스프레소: 10개 판매
+    ];
+
+    for (const ranking of initialRankings) {
+      await redisService.zadd(rankingKey, ranking.score, ranking.productId.toString());
+    }
+    
+    // 설정된 데이터 확인
+    const allRankings = await redisService.zrange(rankingKey, 0, -1, 'WITHSCORES');
+    console.log('🔍 Redis Sorted Set 데이터 확인:', allRankings);
+    console.log('✅ Redis Sorted Set에 초기 상품 랭킹 설정 완료');
     
     // Redis 쿠폰 재고 초기화
     if ('initializeCouponStock' in couponsService) {
