@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ScheduleModule } from '@nestjs/schedule';
 import { DatabaseModule } from './database/database.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TransactionInterceptor } from './common/interceptors/transaction.interceptor';
@@ -65,6 +66,7 @@ import { AuthValidationService } from './domain/services/auth-validation.service
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     DatabaseModule,
     TypeOrmModule.forFeature([
       UserEntity,
