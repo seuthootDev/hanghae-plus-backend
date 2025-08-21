@@ -219,12 +219,17 @@ export class RedisService implements RedisServiceInterface {
     if (!this.redis) {
       // 테스트 환경에서는 메모리 기반 Sorted Set 구현
       const lock = this.testLocks.get(key);
-      if (!lock) return [];
+      if (!lock) {
+        return [];
+      }
       
       const entries = JSON.parse(lock.value as string) as [string, number][];
       const sortedSet = new Map<string, number>(entries);
       const sortedEntries = Array.from(sortedSet.entries()).sort((a, b) => a[1] - b[1]);
-      const sliced = sortedEntries.slice(start, stop + 1);
+      
+      // Redis zrange와 동일하게 처리: stop이 -1이면 끝까지
+      const actualStop = stop === -1 ? sortedEntries.length - 1 : stop;
+      const sliced = sortedEntries.slice(start, actualStop + 1);
       
       if (withScores === 'WITHSCORES') {
         const result: string[] = [];
@@ -234,7 +239,8 @@ export class RedisService implements RedisServiceInterface {
         return result;
       }
       
-      return sliced.map(([member]) => member);
+      const result = sliced.map(([member]) => member);
+      return result;
     }
     return await this.redis.zrange(key, start, stop, withScores as any);
   }

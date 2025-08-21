@@ -9,7 +9,6 @@ import { OrderValidationService } from '../../../domain/services/order-validatio
 import { UserValidationService } from '../../../domain/services/user-validation.service';
 import { Order, OrderItem } from '../../../domain/entities/order.entity';
 import { RedisServiceInterface, REDIS_SERVICE } from '../../interfaces/services/redis-service.interface';
-import { ProductSalesAggregationRepositoryInterface } from '../../interfaces/repositories/product-sales-aggregation-repository.interface';
 import { Transactional } from '../../../common/decorators/transactional.decorator';
 import { OptimisticLock } from '../../../common/decorators/optimistic-lock.decorator';
 
@@ -27,9 +26,7 @@ export class CreateOrderUseCase {
     private readonly orderValidationService: OrderValidationService,
     private readonly userValidationService: UserValidationService,
     @Inject(REDIS_SERVICE)
-    private readonly redisService: RedisServiceInterface,
-    @Inject('PRODUCT_SALES_AGGREGATION_REPOSITORY')
-    private readonly aggregationRepository: ProductSalesAggregationRepositoryInterface
+    private readonly redisService: RedisServiceInterface
   ) {}
 
   @Transactional()
@@ -86,8 +83,8 @@ export class CreateOrderUseCase {
       couponUsed
     });
     
-    // 7. Redis + 집계 테이블 업데이트 (Use Case에서 조율)
-    await this.updateSalesAggregation(orderItems);
+    // 7. Redis Sorted Set 기반 상품 랭킹 업데이트
+    await this.updateProductRanking(orderItems);
     
     return {
       orderId: order.id,
@@ -101,14 +98,23 @@ export class CreateOrderUseCase {
     };
   }
 
-  private async updateSalesAggregation(orderItems: OrderItem[]): Promise<void> {
+  private async updateProductRanking(orderItems: OrderItem[]): Promise<void> {
+    const rankingKey = 'product:ranking';
+    
     for (const item of orderItems) {
-      // Redis에 실시간 판매량 증가
-      await this.redisService.incrementProductSales(item.productId, item.quantity);
-      
-      // DB 집계 테이블 업데이트 (배치 처리용)
-      const currentSales = await this.redisService.getProductSales(item.productId);
-      await this.aggregationRepository.updateSales(item.productId, currentSales, 0); // revenue는 별도 계산 필요
+      try {
+        // Redis Sorted Set에서 해당 상품의 현재 점수 조회
+        const currentScore = await this.redisService.zscore(rankingKey, item.productId.toString());
+        const newScore = (currentScore || 0) + item.quantity; // 판매량을 점수로 사용
+        
+        // 상품 랭킹 업데이트 (판매량 증가)
+        await this.redisService.zadd(rankingKey, newScore, item.productId.toString());
+        
+        console.log(`📈 상품 ${item.productId} 랭킹 업데이트: ${currentScore || 0} → ${newScore}`);
+      } catch (error) {
+        console.warn(`⚠️ 상품 ${item.productId} 랭킹 업데이트 실패:`, error.message);
+        // 랭킹 업데이트 실패해도 주문은 성공
+      }
     }
   }
 } 
