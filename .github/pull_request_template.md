@@ -33,7 +33,7 @@
 - [✔] 선착순 쿠폰발급 기능에 대해 Redis 기반의 설계
 - [✔] 적절하게 동작할 수 있도록 쿠폰 발급 로직을 개선해 제출
 - [✔] 시스템 ( 랭킹, 비동기 ) 디자인 설계 및 개발 후 회고 내용을 담은 보고서 제출
-- [`05c2b9c`](https://github.com/whish/hanghae-plus-backend/commit/05c2b9cfe7d0b249a9e1e58dd1e3696086d9003f) [`f625a44`](https://github.com/whish/hanghae-plus-backend/commit/f625a4430ae5e3fa133d4e34b1b5e7381c424d33) [`8590803`](https://github.com/whish/hanghae-plus-backend/commit/85908034a00bca8b6d572e0aaa1584dc107d06d0)
+- [`05c2b9c`](https://github.com/whish/hanghae-plus-backend/commit/05c2b9cfe7d0b249a9e1e58dd1e3696086d9003f) [`f625a44`](https://github.com/whish/hanghae-plus-backend/commit/f625a4430ae5e3fa133d4e34b1b5e7381c424d33) [`8590803`](https://github.com/whish/hanghae-plus-backend/commit/85908034a00bca8b6d572e0aaa1584dc107d06d0) [`dba41ce`](https://github.com/whish/hanghae-plus-backend/commit/dba41ce1980f0eb5097b60aea2d4503e7bdfd7ee) [`1bc331b`](https://github.com/whish/hanghae-plus-backend/commit/1bc331be59ea39342231293b0c7a830db47d9eb4) [`2647df8`](https://github.com/whish/hanghae-plus-backend/commit/2647df8a64d92ce5ff66d832d1d946c637a2c79c)
 
 ### **간단 회고** (3줄 이내)
 - **잘한 점**: 레디스를 활용한 방법으로 선착순 쿠폰 발급, 인기상품 조회 기능 리팩토링
