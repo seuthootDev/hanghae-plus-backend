@@ -272,6 +272,20 @@ export class RedisService implements RedisServiceInterface {
     return await this.redis.del(...keys);
   }
 
+  async expire(key: string, seconds: number): Promise<boolean> {
+    if (!this.redis) {
+      // 테스트 환경에서는 메모리 기반 TTL 구현
+      const lock = this.testLocks.get(key);
+      if (lock) {
+        lock.expiresAt = Date.now() + (seconds * 1000);
+        return true;
+      }
+      return false;
+    }
+    const result = await this.redis.expire(key, seconds);
+    return result === 1; // Redis expire는 1(성공) 또는 0(실패) 반환
+  }
+
   // 상품별 판매량 증가
   async incrementProductSales(productId: number, quantity: number): Promise<void> {
     if (!this.redis) return; // 테스트 환경에서는 무시

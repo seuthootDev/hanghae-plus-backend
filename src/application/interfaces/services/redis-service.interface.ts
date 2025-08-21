@@ -51,6 +51,7 @@ export interface RedisServiceInterface {
 
   // TTL 설정 메서드
   setWithTTL(key: string, value: any, ttl: number): Promise<void>;
+  expire(key: string, seconds: number): Promise<boolean>;
 
   // Redis 연결 종료
   onModuleDestroy(): Promise<void>;
