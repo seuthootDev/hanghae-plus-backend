@@ -1,24 +1,47 @@
 ## :pushpin: PR 제목 규칙
-[STEP12] 정승훈 - e-commerce
+[STEP0X] 이름 - 선택 시나리오 (e-commerce/concert)
 
 ---
 ### **핵심 체크리스트** :white_check_mark:
 
-#### :one: 분산락 적용 (3개)
-- [✔️] 적절한 곳에 분산락이 사용되었는가? 
-- [`79a61a7`](https://github.com/seuthootDev/hanghae-plus-backend/commit/79a61a7b7814171293bbbe92dc03a1c4ba1aedc0)
-[`0f4c3c0`](https://github.com/seuthootDev/hanghae-plus-backend/commit/0f4c3c09f325e07269a32d9317c087d9ca848c83)
-- [✔️] 트랜젝션 순서와 락순서가 보장되었는가?
-- [`ae2dcea`](https://github.com/seuthootDev/hanghae-plus-backend/commit/ae2dcea2e024abc2ffe8de389854089a6c4309b7)
+#### one: ranking design 
+- [ ] 적절한 설계를 기반으로 랭킹기능이 개발되었는가?
+- [ ] 적절한 자료구조를 선택하였는가?
 
-#### :two: 통합 테스트 (2개)
-- [✔️] infrastructure 레이어를 포함하는 통합 테스트가 작성되었는가?
-- [✔️] 핵심 기능에 대한 흐름이 테스트에서 검증되었는가?
-- [`8090699`](https://github.com/seuthootDev/hanghae-plus-backend/commit/8090699760fd478dbd4a94637d212977613e33b4)
-- [✔️] 동시성을 검증할 수 있는 테스트코드로 작성 되었는가?
-- [`84d0629`](https://github.com/seuthootDev/hanghae-plus-backend/commit/84d06294e65b5ff86ecb0a5124610e2e0717ceb7)
-- [✔️] Test Container 가 적용 되었는가?
-- [`2d5eebf`](https://github.com/seuthootDev/hanghae-plus-backend/commit/2d5eebf0576671b9f0474bce5dec6f36d7a5baa3) [`08d2c95`](https://github.com/seuthootDev/hanghae-plus-backend/commit/08d2c95bcb382142b85fcf55cbc5de72d25132be)
 
-#### :three: Cache 적용 (3개)
-- [✔️] 적절하게 Key 적용이 되었는가?
+#### two: Asynchronous Design 
+- [ ] 적절한 설계를 기반으로 쿠폰 발급 or 대기열 기능이 개발되었는가?
+- [ ] 적절한 자료구조를 선택하였는가?
+
+
+#### three: 통합 테스트 
+- [ ] redis 테스트 컨테이너를 통해 적절하게 통합 테스트가 작성되었는가?(독립적 테스트 환경을 보장하는가?)
+- [ ] 핵심 기능에 대한 흐름이 테스트에서 검증되었는가?
+
+---
+### STEP 13 Ranking Design
+- **이커머스 시나리오**
+- [] 가장 많이 주문한 상품 랭킹을 Redis 기반으로 설계
+- [] 설계를 기반으로 개발 및 구현
+    
+- **콘서트 예약 시나리오**
+- [] 빠른 매진 랭킹을 Redis 기반으로 설계
+- [] 설계를 기반으로 개발 및 구현
+
+
+### STEP 14 Asynchronous Design
+- **이커머스 시나리오**
+- [] 선착순 쿠폰발급 기능에 대해 Redis 기반의 설계
+- [] 적절하게 동작할 수 있도록 쿠폰 발급 로직을 개선해 제출
+- [] 시스템 ( 랭킹, 비동기 ) 디자인 설계 및 개발 후 회고 내용을 담은 보고서 제출
+    
+- **콘서트 예약 시나리오**
+- [] 대기열 기능에 대해 Redis 기반의 설계
+- [] 적절하게 동작할 수 있도록 토큰 발급 로직을 개선해 제출
+- [] 시스템 ( 랭킹, 비동기 ) 디자인 설계 및 개발 후 회고 내용을 담은 보고서 제출
+
+
+### **간단 회고** (3줄 이내)
+- **잘한 점**: 
+- **어려운 점**: 
+- **다음 시도**:
