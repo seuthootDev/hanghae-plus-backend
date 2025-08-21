@@ -3,6 +3,8 @@ import { Coupon, CouponType } from '../../domain/entities/coupon.entity';
 import { CouponsServiceInterface } from '../../application/interfaces/services/coupon-service.interface';
 import { CouponRepositoryInterface, COUPON_REPOSITORY } from '../../application/interfaces/repositories/coupon-repository.interface';
 import { RedisServiceInterface, REDIS_SERVICE } from '../../application/interfaces/services/redis-service.interface';
+import { RankingLogRepositoryInterface, RANKING_LOG_REPOSITORY } from '../../application/interfaces/repositories/ranking-log-repository.interface';
+import { RankingLog } from '../../domain/entities/ranking-log.entity';
 import { IssueCouponDto } from '../../presentation/dto/couponsDTO/issue-coupon.dto';
 import { Inject } from '@nestjs/common';
 
@@ -13,7 +15,9 @@ export class CouponsService implements CouponsServiceInterface {
     @Inject(COUPON_REPOSITORY)
     private readonly couponRepository: CouponRepositoryInterface,
     @Inject(REDIS_SERVICE)
-    private readonly redisService: RedisServiceInterface
+    private readonly redisService: RedisServiceInterface,
+    @Inject(RANKING_LOG_REPOSITORY)
+    private readonly rankingLogRepository: RankingLogRepositoryInterface
   ) {}
 
   async issueCoupon(issueCouponDto: IssueCouponDto): Promise<Coupon> {
@@ -45,6 +49,9 @@ export class CouponsService implements CouponsServiceInterface {
       
       // 5. 발급 성공 시 순위 정보를 영구 저장
       await this.finalizeUserRank(userId, couponType, rank);
+      
+      // 6. 랭킹 로그를 비동기로 저장 (사용자 응답과 별개)
+      this.saveRankingLogAsync(userId, couponType, rank);
       
       return coupon;
     } catch (error) {
@@ -283,5 +290,20 @@ export class CouponsService implements CouponsServiceInterface {
 
   async save(coupon: Coupon): Promise<Coupon> {
     return this.couponRepository.save(coupon);
+  }
+
+  /**
+   * 랭킹 로그를 비동기로 저장 (사용자 응답과 별개)
+   */
+  private saveRankingLogAsync(userId: number, couponType: string, rank: number): void {
+    setImmediate(async () => {
+      try {
+        const rankingLog = RankingLog.create(userId, couponType, rank);
+        await this.rankingLogRepository.save(rankingLog);
+      } catch (error) {
+        console.error('❌ 랭킹 로그 저장 실패:', error.message);
+        // 로그 저장 실패해도 메인 기능에 영향 없음
+      }
+    });
   }
 } 
