@@ -48,6 +48,7 @@ export function createMockRedisService(): jest.Mocked<RedisServiceInterface> {
     
     // 유틸리티 메서드들
     setWithTTL: jest.fn(),
+    expire: jest.fn(),
     onModuleDestroy: jest.fn(),
   };
 }

@@ -22,9 +22,9 @@ describe('Products Integration Tests', () => {
 
     await testSeeder.seedFullTestData();
     
-    // Redis Sorted Set에 초기 상품 랭킹 설정
+    // Redis Sorted Set에 초기 상품 랭킹 설정 (3일 슬라이딩 윈도우)
     const redisService = module.get(REDIS_SERVICE);
-    const rankingKey = 'product:ranking';
+    const rankingKey = 'product:ranking:3d';
     const initialRankings = [
       { productId: 1, score: 50 }, // 아메리카노: 50개 판매
       { productId: 2, score: 60 }, // 카페라떼: 60개 판매 (1위)
@@ -39,9 +39,9 @@ describe('Products Integration Tests', () => {
   });
 
   afterAll(async () => {
-    // Redis 랭킹 데이터 정리
+    // Redis 랭킹 데이터 정리 (3일 슬라이딩 윈도우)
     const redisService = module.get(REDIS_SERVICE);
-    await redisService.del('product:ranking');
+    await redisService.del('product:ranking:3d');
     
     await testSeeder.clearTestData();
     await module.close();

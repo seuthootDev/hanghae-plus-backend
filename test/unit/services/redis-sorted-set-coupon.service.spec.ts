@@ -53,6 +53,7 @@ describe('Redis Sorted Set Coupon Service', () => {
       invalidateTopSellersCache: jest.fn(),
       invalidateUserPointsCache: jest.fn(),
       setWithTTL: jest.fn(),
+      expire: jest.fn(),
       onModuleDestroy: jest.fn()
     };
 

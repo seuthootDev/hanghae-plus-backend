@@ -180,11 +180,14 @@ describe('CreateOrderUseCase', () => {
         couponUsed: true
       });
 
-      // Redis Sorted Set 기반 상품 랭킹 업데이트 검증
-      expect(mockRedisService.zscore).toHaveBeenCalledWith('product:ranking', '1');
-      expect(mockRedisService.zscore).toHaveBeenCalledWith('product:ranking', '2');
-      expect(mockRedisService.zadd).toHaveBeenCalledWith('product:ranking', 2, '1'); // 기존 점수 0 + 수량 2
-      expect(mockRedisService.zadd).toHaveBeenCalledWith('product:ranking', 1, '2'); // 기존 점수 0 + 수량 1
+      // Redis Sorted Set 기반 상품 랭킹 업데이트 검증 (일일 키)
+      const today = new Date().toISOString().split('T')[0];
+      const dailyKey = `product:ranking:${today}`;
+      
+      expect(mockRedisService.zscore).toHaveBeenCalledWith(dailyKey, '1');
+      expect(mockRedisService.zscore).toHaveBeenCalledWith(dailyKey, '2');
+      expect(mockRedisService.zadd).toHaveBeenCalledWith(dailyKey, 2, '1'); // 기존 점수 0 + 수량 2
+      expect(mockRedisService.zadd).toHaveBeenCalledWith(dailyKey, 1, '2'); // 기존 점수 0 + 수량 1
     });
 
     it('쿠폰이 없는 경우에도 주문이 성공적으로 생성되어야 한다', async () => {

@@ -65,7 +65,7 @@ describe('GetTopSellersUseCase', () => {
 
       // Assert
       expect(result).toEqual(expectedResult);
-      expect(mockRedisService.zrange).toHaveBeenCalledWith('product:ranking', 0, -1, 'WITHSCORES');
+      expect(mockRedisService.zrange).toHaveBeenCalledWith('product:ranking:3d', 0, -1, 'WITHSCORES');
       expect(mockProductsService.getProducts).toHaveBeenCalledTimes(1);
     });
 
@@ -78,7 +78,7 @@ describe('GetTopSellersUseCase', () => {
 
       // Assert
       expect(result).toEqual([]);
-      expect(mockRedisService.zrange).toHaveBeenCalledWith('product:ranking', 0, -1, 'WITHSCORES');
+      expect(mockRedisService.zrange).toHaveBeenCalledWith('product:ranking:3d', 0, -1, 'WITHSCORES');
       expect(mockProductsService.getProducts).not.toHaveBeenCalled();
     });
 
