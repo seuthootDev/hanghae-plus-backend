@@ -27,6 +27,17 @@ export class ProductsController {
     return this.getProductsUseCase.execute();
   }
 
+  @Get('top-sellers')
+  @ApiOperation({ summary: '인기 판매 상품 조회' })
+  @ApiResponse({ 
+    status: 200, 
+    description: '인기 판매 상품 조회 성공',
+    type: [TopSellerResponseDto]
+  })
+  async getTopSellers(): Promise<TopSellerResponseDto[]> {
+    return this.getTopSellersUseCase.execute();
+  }
+
   @Get(':id')
   @ApiOperation({ summary: '상품 상세 조회' })
   @ApiParam({ name: 'id', description: '상품 ID' })
@@ -38,16 +49,5 @@ export class ProductsController {
   @ApiResponse({ status: 404, description: '상품을 찾을 수 없음' })
   async getProduct(@Param('id', ParseIntPipe) id: number): Promise<ProductResponseDto> {
     return this.getProductDetailUseCase.execute(id);
-  }
-
-  @Get('top-sellers')
-  @ApiOperation({ summary: '인기 판매 상품 조회' })
-  @ApiResponse({ 
-    status: 200, 
-    description: '인기 판매 상품 조회 성공',
-    type: [TopSellerResponseDto]
-  })
-  async getTopSellers(): Promise<TopSellerResponseDto[]> {
-    return this.getTopSellersUseCase.execute();
   }
 } 
