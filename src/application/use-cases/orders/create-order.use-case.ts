@@ -99,18 +99,22 @@ export class CreateOrderUseCase {
   }
 
   private async updateProductRanking(orderItems: OrderItem[]): Promise<void> {
-    const rankingKey = 'product:ranking';
+    // 오늘 날짜 키 생성 (YYYY-MM-DD 형식)
+    const today = new Date().toISOString().split('T')[0];
+    const dailyRankingKey = `product:ranking:${today}`;
     
     for (const item of orderItems) {
       try {
-        // Redis Sorted Set에서 해당 상품의 현재 점수 조회
-        const currentScore = await this.redisService.zscore(rankingKey, item.productId.toString());
-        const newScore = (currentScore || 0) + item.quantity; // 판매량을 점수로 사용
+        // 일일 랭킹에 판매량 추가
+        const currentDailyScore = await this.redisService.zscore(dailyRankingKey, item.productId.toString());
+        const newDailyScore = (currentDailyScore || 0) + item.quantity;
         
-        // 상품 랭킹 업데이트 (판매량 증가)
-        await this.redisService.zadd(rankingKey, newScore, item.productId.toString());
+        // 일일 랭킹 업데이트
+        await this.redisService.zadd(dailyRankingKey, newDailyScore, item.productId.toString());
         
-        console.log(`📈 상품 ${item.productId} 랭킹 업데이트: ${currentScore || 0} → ${newScore}`);
+        // 일일 데이터는 4일 후 만료 (3일 + 1일 여유)
+        await this.redisService.expire(dailyRankingKey, 4 * 24 * 60 * 60);
+        
       } catch (error) {
         console.warn(`⚠️ 상품 ${item.productId} 랭킹 업데이트 실패:`, error.message);
         // 랭킹 업데이트 실패해도 주문은 성공

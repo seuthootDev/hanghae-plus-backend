@@ -1,4 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { TopSellerResponseDto } from '../../../presentation/dto/productsDTO/top-seller-response.dto';
 import { ProductsServiceInterface, PRODUCTS_SERVICE } from '../../interfaces/services/product-service.interface';
 import { RedisServiceInterface, REDIS_SERVICE } from '../../interfaces/services/redis-service.interface';
@@ -12,17 +13,71 @@ export class GetTopSellersUseCase {
     private readonly redisService: RedisServiceInterface
   ) {}
 
+  // 매일 자정에 3일 전 데이터 정리 (슬라이딩 윈도우)
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async cleanupOldRankings() {
+    try {
+      
+      // 3일 전 날짜 계산
+      const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
+      const oldDateKey = threeDaysAgo.toISOString().split('T')[0];
+      const oldRankingKey = `product:ranking:${oldDateKey}`;
+      
+      // 3일 전 데이터 삭제
+      const deletedCount = await this.redisService.del(oldRankingKey);
+      
+      // 전체 랭킹 재계산 (2일치 + 오늘 데이터 합산)
+      await this.recalculateOverallRanking();
+      
+    } catch (error) {
+      console.error('❌ 자정 랭킹 정리 실패:', error.message);
+    }
+  }
+
+  // 전체 랭킹 재계산 (2일치 + 오늘 데이터 합산)
+  private async recalculateOverallRanking(): Promise<void> {
+    try {
+      const overallRankingKey = 'product:ranking:3d';
+      
+      // 최근 3일간의 날짜 키들 생성
+      const dateKeys = [];
+      for (let i = 0; i < 3; i++) {
+        const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
+        const dateKey = date.toISOString().split('T')[0];
+        dateKeys.push(`product:ranking:${dateKey}`);
+      }
+      
+      // 각 날짜별 데이터를 전체 랭킹에 합산
+      for (const dateKey of dateKeys) {
+        const dailyRankings = await this.redisService.zrange(dateKey, 0, -1, 'WITHSCORES');
+        
+        for (let i = 0; i < dailyRankings.length; i += 2) {
+          const productId = dailyRankings[i];
+          const dailyScore = parseFloat(dailyRankings[i + 1]);
+          
+          // 전체 랭킹에 누적
+          const currentScore = await this.redisService.zscore(overallRankingKey, productId);
+          const newScore = (currentScore || 0) + dailyScore;
+          await this.redisService.zadd(overallRankingKey, newScore, productId);
+        }
+      }
+      
+      // 전체 랭킹에 3일 TTL 설정
+      await this.redisService.expire(overallRankingKey, 3 * 24 * 60 * 60);
+      
+    } catch (error) {
+      console.error('❌ 전체 랭킹 재계산 실패:', error.message);
+    }
+  }
+
   async execute(): Promise<TopSellerResponseDto[]> {
-    console.log('🚀 GetTopSellersUseCase 실행 시작');
     
     try {
       // Redis Sorted Set에서 상위 5개 상품 ID 조회 (점수 내림차순)
-      console.log('🔍 Redis Sorted Set에서 인기 상품 랭킹 조회');
-      const rankingKey = 'product:ranking';
+      const rankingKey = 'product:ranking:3d'; // 3일 슬라이딩 윈도우 (전체 합산)
       const allProductIds = await this.redisService.zrange(rankingKey, 0, -1, 'WITHSCORES'); // 모든 상품 ID와 점수 조회
       
       if (!allProductIds || allProductIds.length === 0) {
-        console.log('ℹ️ 인기 상품 랭킹 데이터가 없습니다.');
         return [];
       }
       
@@ -40,12 +95,9 @@ export class GetTopSellersUseCase {
         .slice(0, 5)
         .map(item => item.productId);
       
-      console.log(`📊 랭킹 데이터 조회 결과: ${topProductIds.length}개`);
       
       // 상품 정보 조회
-      console.log('🔍 상품 정보 조회 시도');
       const products = await this.productsService.getProducts();
-      console.log(`📦 상품 데이터 조회 결과: ${products?.length || 0}개`);
       
       const productMap = new Map(products.map(p => [p.id, p]));
       
@@ -62,8 +114,6 @@ export class GetTopSellersUseCase {
           price: product.price
         }));
       
-      console.log(`🎯 최종 인기 상품 결과: ${result.length}개`);
-      console.log('✅ GetTopSellersUseCase 실행 완료');
       
       return result;
       
