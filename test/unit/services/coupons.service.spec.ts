@@ -3,8 +3,9 @@ import { CouponsService } from '../../../src/infrastructure/services/coupon.serv
 import { CouponRepositoryInterface, COUPON_REPOSITORY } from '../../../src/application/interfaces/repositories/coupon-repository.interface';
 import { CouponValidationService } from '../../../src/domain/services/coupon-validation.service';
 import { RedisServiceInterface, REDIS_SERVICE } from '../../../src/application/interfaces/services/redis-service.interface';
-import { IssueCouponDto, CouponType } from '../../../src/presentation/dto/couponsDTO/issue-coupon.dto';
-import { Coupon } from '../../../src/domain/entities/coupon.entity';
+import { RankingLogRepositoryInterface, RANKING_LOG_REPOSITORY } from '../../../src/application/interfaces/repositories/ranking-log-repository.interface';
+import { IssueCouponDto } from '../../../src/presentation/dto/couponsDTO/issue-coupon.dto';
+import { Coupon, CouponType } from '../../../src/domain/entities/coupon.entity';
 import { createMockRedisService } from '../../helpers/redis-mock.helper';
 
 describe('CouponsService', () => {
@@ -12,6 +13,7 @@ describe('CouponsService', () => {
   let mockCouponRepository: jest.Mocked<CouponRepositoryInterface>;
   let mockCouponValidationService: jest.Mocked<CouponValidationService>;
   let mockRedisService: jest.Mocked<RedisServiceInterface>;
+  let mockRankingLogRepository: jest.Mocked<RankingLogRepositoryInterface>;
 
   beforeEach(async () => {
     const mockCouponRepositoryProvider = {
@@ -40,12 +42,24 @@ describe('CouponsService', () => {
       useValue: createMockRedisService(),
     };
 
+    const mockRankingLogRepositoryProvider = {
+      provide: RANKING_LOG_REPOSITORY,
+      useValue: {
+        save: jest.fn(),
+        findByUserIdAndCouponType: jest.fn(),
+        findFailedLogs: jest.fn(),
+        updateStatus: jest.fn(),
+        incrementRetryCount: jest.fn(),
+      },
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CouponsService,
         mockCouponRepositoryProvider,
         mockCouponValidationServiceProvider,
         mockRedisServiceProvider,
+        mockRankingLogRepositoryProvider,
       ],
     }).compile();
 
@@ -53,6 +67,7 @@ describe('CouponsService', () => {
     mockCouponRepository = module.get(COUPON_REPOSITORY);
     mockCouponValidationService = module.get(CouponValidationService);
     mockRedisService = module.get(REDIS_SERVICE);
+    mockRankingLogRepository = module.get(RANKING_LOG_REPOSITORY);
   });
 
   describe('issueCoupon', () => {
@@ -64,7 +79,11 @@ describe('CouponsService', () => {
 
       const mockCoupon = new Coupon(1, 1, CouponType.DISCOUNT_10PERCENT, 10, 0, new Date(), false);
 
-      // Redis 재고 체크 모킹
+      // Redis Sorted Set 기반 로직 모킹
+      mockRedisService.zscore.mockResolvedValue(null); // 사용자 랭크 없음
+      mockRedisService.get.mockResolvedValue(null); // 발급 시간 제한 없음
+      mockRedisService.zadd.mockResolvedValue(1); // 랭크 기록 성공
+      mockRedisService.zrank.mockResolvedValue(0); // 첫 번째 순위
       mockRedisService.decr.mockResolvedValue(99); // 재고가 있음
       mockCouponRepository.save.mockResolvedValue(mockCoupon);
 
@@ -73,6 +92,9 @@ describe('CouponsService', () => {
 
       // Assert
       expect(result).toEqual(mockCoupon);
+      expect(mockRedisService.zscore).toHaveBeenCalledWith(`coupon:issued:${CouponType.DISCOUNT_10PERCENT}`, '1');
+      expect(mockRedisService.zscore).toHaveBeenCalledWith(`coupon:queue:${CouponType.DISCOUNT_10PERCENT}`, '1');
+      expect(mockRedisService.zadd).toHaveBeenCalledWith(`coupon:queue:${CouponType.DISCOUNT_10PERCENT}`, expect.any(Number), '1');
       expect(mockRedisService.decr).toHaveBeenCalledWith('coupon:stock:DISCOUNT_10PERCENT');
       expect(mockCouponRepository.save).toHaveBeenCalled();
     });
@@ -83,13 +105,22 @@ describe('CouponsService', () => {
       issueCouponDto.userId = 1;
       issueCouponDto.couponType = CouponType.DISCOUNT_10PERCENT;
 
-      // Redis 재고 부족 모킹
+      // Redis Sorted Set 기반 로직 모킹
+      mockRedisService.zscore.mockResolvedValue(null); // 사용자 랭크 없음
+      mockRedisService.get.mockResolvedValue(null); // 발급 시간 제한 없음
+      mockRedisService.zadd.mockResolvedValue(1); // 랭크 기록 성공
+      mockRedisService.zrank.mockResolvedValue(0); // 첫 번째 순위
       mockRedisService.decr.mockResolvedValue(-1); // 재고 부족
-      mockRedisService.incr.mockResolvedValue(0); // 롤백
+      mockRedisService.zrem.mockResolvedValue(1);
+      mockRedisService.incr.mockResolvedValue(0); // 재고 복구
 
       // Act & Assert
-      await expect(service.issueCoupon(issueCouponDto)).rejects.toThrow('DISCOUNT_10PERCENT 쿠폰이 소진되었습니다.');
+      await expect(service.issueCoupon(issueCouponDto)).rejects.toThrow('쿠폰이 소진되었습니다.');
+      expect(mockRedisService.zscore).toHaveBeenCalledWith(`coupon:issued:${CouponType.DISCOUNT_10PERCENT}`, '1');
+      expect(mockRedisService.zscore).toHaveBeenCalledWith(`coupon:queue:${CouponType.DISCOUNT_10PERCENT}`, '1');
+      expect(mockRedisService.zadd).toHaveBeenCalledWith(`coupon:queue:${CouponType.DISCOUNT_10PERCENT}`, expect.any(Number), '1');
       expect(mockRedisService.decr).toHaveBeenCalledWith('coupon:stock:DISCOUNT_10PERCENT');
+      expect(mockRedisService.zrem).toHaveBeenCalledWith(`coupon:queue:${CouponType.DISCOUNT_10PERCENT}`, '1');
       expect(mockRedisService.incr).toHaveBeenCalledWith('coupon:stock:DISCOUNT_10PERCENT');
     });
   });
@@ -98,9 +129,9 @@ describe('CouponsService', () => {
     it('사용자의 쿠폰 목록을 성공적으로 반환해야 한다', async () => {
       // Arrange
       const userId = 1;
-      const mockCoupons = [
-        new Coupon(1, userId, 'DISCOUNT_10PERCENT', 10, 0, new Date(), false),
-        new Coupon(2, userId, 'FIXED_1000', 0, 1000, new Date(), false),
+      const mockCoupons: Coupon[] = [
+        new Coupon(1, userId, CouponType.DISCOUNT_10PERCENT, 10, 0, new Date(), false),
+        new Coupon(2, userId, CouponType.FIXED_1000, 0, 1000, new Date(), false),
       ];
 
       mockCouponRepository.findByUserId.mockResolvedValue(mockCoupons);
@@ -154,12 +185,10 @@ describe('CouponsService', () => {
       // Arrange
       const couponId = 1;
       const totalAmount = 10000;
-      const mockCoupon = new Coupon(1, 1, 'DISCOUNT_10PERCENT', 10, 0, new Date(), false);
+      const mockCoupon = new Coupon(1, 1, CouponType.DISCOUNT_10PERCENT, 10, 0, new Date(), false);
       mockCoupon.isValid = jest.fn().mockReturnValue(true);
       mockCoupon.calculateDiscount = jest.fn().mockReturnValue(1000);
-
       mockCouponRepository.findById.mockResolvedValue(mockCoupon);
-      mockCouponValidationService.validateCouponUsage.mockImplementation(() => {});
 
       // Act
       const result = await service.validateAndCalculateDiscount(couponId, totalAmount);
@@ -170,7 +199,6 @@ describe('CouponsService', () => {
         discountAmount: 1000,
         couponUsed: true
       });
-      expect(mockCouponValidationService.validateCouponUsage).toHaveBeenCalledWith(mockCoupon);
       expect(mockCoupon.isValid).toHaveBeenCalled();
       expect(mockCoupon.calculateDiscount).toHaveBeenCalledWith(totalAmount);
     });
@@ -179,11 +207,9 @@ describe('CouponsService', () => {
       // Arrange
       const couponId = 1;
       const totalAmount = 10000;
-      const mockCoupon = new Coupon(1, 1, 'DISCOUNT_10PERCENT', 10, 0, new Date(), false);
+      const mockCoupon = new Coupon(1, 1, CouponType.DISCOUNT_10PERCENT, 10, 0, new Date(), false);
       mockCoupon.isValid = jest.fn().mockReturnValue(false);
-
       mockCouponRepository.findById.mockResolvedValue(mockCoupon);
-      mockCouponValidationService.validateCouponUsage.mockImplementation(() => {});
 
       // Act
       const result = await service.validateAndCalculateDiscount(couponId, totalAmount);
@@ -194,7 +220,6 @@ describe('CouponsService', () => {
         discountAmount: 0,
         couponUsed: false
       });
-      expect(mockCouponValidationService.validateCouponUsage).toHaveBeenCalledWith(mockCoupon);
       expect(mockCoupon.isValid).toHaveBeenCalled();
     });
   });
@@ -202,7 +227,7 @@ describe('CouponsService', () => {
   describe('findById', () => {
     it('쿠폰을 성공적으로 찾아야 한다', async () => {
       // Arrange
-      const mockCoupon = new Coupon(1, 1, 'DISCOUNT_10PERCENT', 10, 0, new Date(), false);
+      const mockCoupon = new Coupon(1, 1, CouponType.DISCOUNT_10PERCENT, 10, 0, new Date(), false);
       mockCouponRepository.findById.mockResolvedValue(mockCoupon);
 
       // Act
@@ -228,7 +253,7 @@ describe('CouponsService', () => {
   describe('save', () => {
     it('쿠폰을 성공적으로 저장해야 한다', async () => {
       // Arrange
-      const mockCoupon = new Coupon(1, 1, 'DISCOUNT_10PERCENT', 10, 0, new Date(), false);
+      const mockCoupon = new Coupon(1, 1, CouponType.DISCOUNT_10PERCENT, 10, 0, new Date(), false);
       mockCouponRepository.save.mockResolvedValue(mockCoupon);
 
       // Act

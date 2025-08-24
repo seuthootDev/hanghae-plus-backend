@@ -7,7 +7,8 @@ import { ProcessPaymentUseCase } from '../../../src/application/use-cases/paymen
 import { TestAppModule } from '../../app.module';
 import { TestSeeder } from '../../database/test-seeder';
 import { ChargePointsDto } from '../../../src/presentation/dto/usersDTO/charge-points.dto';
-import { IssueCouponDto, CouponType } from '../../../src/presentation/dto/couponsDTO/issue-coupon.dto';
+import { IssueCouponDto } from '../../../src/presentation/dto/couponsDTO/issue-coupon.dto';
+import { CouponType } from '../../../src/domain/entities/coupon.entity';
 import { CreateOrderDto } from '../../../src/presentation/dto/ordersDTO/create-order.dto';
 import { ProcessPaymentDto } from '../../../src/presentation/dto/paymentsDTO/process-payment.dto';
 import { performance } from 'perf_hooks';

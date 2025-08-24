@@ -11,6 +11,17 @@ export interface RedisServiceInterface {
   decr(key: string): Promise<number>;
   incr(key: string): Promise<number>;
 
+  // Redis 기본 메서드들
+  get(key: string): Promise<string | null>;
+
+  // Redis Sorted Set 메서드들
+  zadd(key: string, score: number, member: string): Promise<number>;
+  zrem(key: string, member: string): Promise<number>;
+  zscore(key: string, member: string): Promise<number | null>;
+  zrank(key: string, member: string): Promise<number | null>;
+  zrange(key: string, start: number, stop: number, withScores?: string): Promise<string[]>;
+  zcard(key: string): Promise<number>;
+
   // 상품별 판매량 관련 메서드들
   incrementProductSales(productId: number, quantity: number): Promise<void>;
   getProductSales(productId: number): Promise<number>;
@@ -40,6 +51,7 @@ export interface RedisServiceInterface {
 
   // TTL 설정 메서드
   setWithTTL(key: string, value: any, ttl: number): Promise<void>;
+  expire(key: string, seconds: number): Promise<boolean>;
 
   // Redis 연결 종료
   onModuleDestroy(): Promise<void>;

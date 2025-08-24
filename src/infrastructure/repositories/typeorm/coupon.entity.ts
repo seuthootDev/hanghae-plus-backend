@@ -1,5 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany, Index } from 'typeorm';
 import { OrderEntity } from './order.entity';
+import { CouponType } from '../../../domain/entities/coupon.entity';
 
 @Entity('coupons')
 @Index(['userId'])
@@ -12,7 +13,7 @@ export class CouponEntity {
   userId: number;
 
   @Column({ length: 50 })
-  couponType: string;
+  couponType: CouponType;
 
   @Column({ type: 'int', default: 0 })
   discountRate: number;

@@ -1,8 +1,17 @@
+export enum CouponType {
+  DISCOUNT_10PERCENT = 'DISCOUNT_10PERCENT',
+  DISCOUNT_20PERCENT = 'DISCOUNT_20PERCENT',
+  DISCOUNT_30PERCENT = 'DISCOUNT_30PERCENT',
+  FIXED_1000 = 'FIXED_1000',
+  FIXED_2000 = 'FIXED_2000',
+  LIMITED_OFFER = 'LIMITED_OFFER'
+}
+
 export class Coupon {
   constructor(
     public readonly id: number,
     public readonly userId: number,
-    public readonly couponType: string,
+    public readonly couponType: CouponType,
     public readonly discountRate: number,
     public readonly discountAmount: number = 0,
     public readonly expiryDate: Date,

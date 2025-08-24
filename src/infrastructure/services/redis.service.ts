@@ -11,7 +11,6 @@ export class RedisService implements RedisServiceInterface {
     // 테스트 환경에서는 Redis 연결을 시도하지 않음
     if (process.env.NODE_ENV === 'test' || !process.env.REDIS_HOST) {
       this.redis = null;
-      console.log('🔧 Redis 서비스: 메모리 기반 모킹 모드로 동작');
       return;
     }
     
@@ -21,7 +20,6 @@ export class RedisService implements RedisServiceInterface {
       password: process.env.REDIS_PASSWORD,
     });
     
-    console.log(`🔗 Redis 서비스: 실제 Redis 연결 - ${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`);
   }
 
   // Redis 분산 락을 위한 메서드들
@@ -136,6 +134,130 @@ export class RedisService implements RedisServiceInterface {
     return await this.redis.incr(key);
   }
 
+  // Redis 기본 메서드들
+  async get(key: string): Promise<string | null> {
+    if (!this.redis) {
+      // 테스트 환경에서는 메모리 기반 조회
+      const lock = this.testLocks.get(key);
+      if (!lock || Date.now() > lock.expiresAt) {
+        return null;
+      }
+      return lock.value;
+    }
+    return await this.redis.get(key);
+  }
+
+  // Redis Sorted Set 메서드들
+  async zadd(key: string, score: number, member: string): Promise<number> {
+    if (!this.redis) {
+      // 테스트 환경에서는 메모리 기반 Sorted Set 구현
+      if (!this.testLocks.has(key)) {
+        this.testLocks.set(key, {
+          value: JSON.stringify([[member, score]]),
+          expiresAt: Date.now() + 30000
+        });
+        return 1;
+      }
+      
+      const lock = this.testLocks.get(key);
+      const entries = JSON.parse(lock.value as string) as [string, number][];
+      const sortedSet = new Map<string, number>(entries);
+      sortedSet.set(member, score);
+      lock.value = JSON.stringify(Array.from(sortedSet.entries()));
+      return 1;
+    }
+    return await this.redis.zadd(key, score, member);
+  }
+
+  async zrem(key: string, member: string): Promise<number> {
+    if (!this.redis) {
+      // 테스트 환경에서는 메모리 기반 Sorted Set 구현
+      const lock = this.testLocks.get(key);
+      if (!lock) return 0;
+      
+      const entries = JSON.parse(lock.value as string) as [string, number][];
+      const sortedSet = new Map<string, number>(entries);
+      const removed = sortedSet.delete(member);
+      lock.value = JSON.stringify(Array.from(sortedSet.entries()));
+      return removed ? 1 : 0;
+    }
+    return await this.redis.zrem(key, member);
+  }
+
+  async zscore(key: string, member: string): Promise<number | null> {
+    if (!this.redis) {
+      // 테스트 환경에서는 메모리 기반 Sorted Set 구현
+      const lock = this.testLocks.get(key);
+      if (!lock) return null;
+      
+      const entries = JSON.parse(lock.value as string) as [string, number][];
+      const sortedSet = new Map<string, number>(entries);
+      return sortedSet.get(member) || null;
+    }
+    const result = await this.redis.zscore(key, member);
+    return result ? parseFloat(result) : null;
+  }
+
+  async zrank(key: string, member: string): Promise<number | null> {
+    if (!this.redis) {
+      // 테스트 환경에서는 메모리 기반 Sorted Set 구현
+      const lock = this.testLocks.get(key);
+      if (!lock) return null;
+      
+      const entries = JSON.parse(lock.value as string) as [string, number][];
+      const sortedSet = new Map<string, number>(entries);
+      if (!sortedSet.has(member)) return null;
+      
+      const sortedEntries = Array.from(sortedSet.entries()).sort((a, b) => a[1] - b[1]);
+      const index = sortedEntries.findIndex(([m]) => m === member);
+      return index >= 0 ? index : null;
+    }
+    return await this.redis.zrank(key, member);
+  }
+
+  async zrange(key: string, start: number, stop: number, withScores?: string): Promise<string[]> {
+    if (!this.redis) {
+      // 테스트 환경에서는 메모리 기반 Sorted Set 구현
+      const lock = this.testLocks.get(key);
+      if (!lock) {
+        return [];
+      }
+      
+      const entries = JSON.parse(lock.value as string) as [string, number][];
+      const sortedSet = new Map<string, number>(entries);
+      const sortedEntries = Array.from(sortedSet.entries()).sort((a, b) => a[1] - b[1]);
+      
+      // Redis zrange와 동일하게 처리: stop이 -1이면 끝까지
+      const actualStop = stop === -1 ? sortedEntries.length - 1 : stop;
+      const sliced = sortedEntries.slice(start, actualStop + 1);
+      
+      if (withScores === 'WITHSCORES') {
+        const result: string[] = [];
+        for (const [member, score] of sliced) {
+          result.push(member, score.toString());
+        }
+        return result;
+      }
+      
+      const result = sliced.map(([member]) => member);
+      return result;
+    }
+    return await this.redis.zrange(key, start, stop, withScores as any);
+  }
+
+  async zcard(key: string): Promise<number> {
+    if (!this.redis) {
+      // 테스트 환경에서는 메모리 기반 Sorted Set 구현
+      const lock = this.testLocks.get(key);
+      if (!lock) return 0;
+      
+      const entries = JSON.parse(lock.value as string) as [string, number][];
+      const sortedSet = new Map<string, number>(entries);
+      return sortedSet.size;
+    }
+    return await this.redis.zcard(key);
+  }
+
   async del(...keys: string[]): Promise<number> {
     if (!this.redis) {
       // 테스트 환경에서는 메모리 기반 삭제
@@ -148,6 +270,20 @@ export class RedisService implements RedisServiceInterface {
       return deletedCount;
     }
     return await this.redis.del(...keys);
+  }
+
+  async expire(key: string, seconds: number): Promise<boolean> {
+    if (!this.redis) {
+      // 테스트 환경에서는 메모리 기반 TTL 구현
+      const lock = this.testLocks.get(key);
+      if (lock) {
+        lock.expiresAt = Date.now() + (seconds * 1000);
+        return true;
+      }
+      return false;
+    }
+    const result = await this.redis.expire(key, seconds);
+    return result === 1; // Redis expire는 1(성공) 또는 0(실패) 반환
   }
 
   // 상품별 판매량 증가

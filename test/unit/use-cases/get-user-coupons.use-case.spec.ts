@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { GetUserCouponsUseCase } from '../../../src/application/use-cases/coupons/get-user-coupons.use-case';
 import { CouponsServiceInterface, COUPONS_SERVICE } from '../../../src/application/interfaces/services/coupon-service.interface';
-import { Coupon } from '../../../src/domain/entities/coupon.entity';
+import { Coupon, CouponType } from '../../../src/domain/entities/coupon.entity';
 import { CouponResponseDto } from '../../../src/presentation/dto/couponsDTO/coupon-response.dto';
 
 describe('GetUserCouponsUseCase', () => {
@@ -32,14 +32,14 @@ describe('GetUserCouponsUseCase', () => {
       // given
       const userId = 1;
       const mockCoupons: Coupon[] = [
-        new Coupon(1, userId, 'DISCOUNT_10PERCENT', 10, 0, new Date('2025-12-31'), false),
-        new Coupon(2, userId, 'FIXED_1000', 0, 1000, new Date('2025-12-31'), false),
+        new Coupon(1, userId, CouponType.DISCOUNT_10PERCENT, 10, 0, new Date('2025-12-31'), false),
+        new Coupon(2, userId, CouponType.FIXED_1000, 0, 1000, new Date('2025-12-31'), false),
       ];
       const expectedResponse: CouponResponseDto[] = [
         {
           couponId: 1,
           userId: 1,
-          couponType: 'DISCOUNT_10PERCENT',
+          couponType: CouponType.DISCOUNT_10PERCENT,
           discountRate: 10,
           expiryDate: '2025-12-31',
           isUsed: false,
@@ -47,7 +47,7 @@ describe('GetUserCouponsUseCase', () => {
         {
           couponId: 2,
           userId: 1,
-          couponType: 'FIXED_1000',
+          couponType: CouponType.FIXED_1000,
           discountRate: 0,
           expiryDate: '2025-12-31',
           isUsed: false,

@@ -3,6 +3,7 @@ import { TestAppModule } from '../../app.module';
 import { GetProductsUseCase } from '../../../src/application/use-cases/products/get-products.use-case';
 import { GetTopSellersUseCase } from '../../../src/application/use-cases/products/get-top-sellers.use-case';
 import { TestSeeder } from '../../database/test-seeder';
+import { REDIS_SERVICE } from '../../../src/application/interfaces/services/redis-service.interface';
 
 describe('Products Integration Tests', () => {
   let module: TestingModule;
@@ -20,9 +21,28 @@ describe('Products Integration Tests', () => {
     testSeeder = module.get<TestSeeder>(TestSeeder);
 
     await testSeeder.seedFullTestData();
+    
+    // Redis Sorted Set에 초기 상품 랭킹 설정 (3일 슬라이딩 윈도우)
+    const redisService = module.get(REDIS_SERVICE);
+    const rankingKey = 'product:ranking:3d';
+    const initialRankings = [
+      { productId: 1, score: 50 }, // 아메리카노: 50개 판매
+      { productId: 2, score: 60 }, // 카페라떼: 60개 판매 (1위)
+      { productId: 3, score: 30 }, // 카푸치노: 30개 판매
+      { productId: 4, score: 20 }, // 티라떼: 20개 판매
+      { productId: 5, score: 10 }, // 에스프레소: 10개 판매
+    ];
+
+    for (const ranking of initialRankings) {
+      await redisService.zadd(rankingKey, ranking.score, ranking.productId.toString());
+    }
   });
 
   afterAll(async () => {
+    // Redis 랭킹 데이터 정리 (3일 슬라이딩 윈도우)
+    const redisService = module.get(REDIS_SERVICE);
+    await redisService.del('product:ranking:3d');
+    
     await testSeeder.clearTestData();
     await module.close();
   });

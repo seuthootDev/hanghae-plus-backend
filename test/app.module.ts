@@ -37,12 +37,12 @@ import { PRODUCT_REPOSITORY } from '../src/application/interfaces/repositories/p
 import { ORDER_REPOSITORY } from '../src/application/interfaces/repositories/order-repository.interface';
 import { COUPON_REPOSITORY } from '../src/application/interfaces/repositories/coupon-repository.interface';
 import { PAYMENT_REPOSITORY } from '../src/application/interfaces/repositories/payment-repository.interface';
+import { RANKING_LOG_REPOSITORY } from '../src/application/interfaces/repositories/ranking-log-repository.interface';
 import { UserRepository } from '../src/infrastructure/repositories/user.repository';
 import { ProductRepository } from '../src/infrastructure/repositories/product.repository';
 import { OrderRepository } from '../src/infrastructure/repositories/order.repository';
 import { CouponRepository } from '../src/infrastructure/repositories/coupon.repository';
 import { PaymentRepository } from '../src/infrastructure/repositories/payment.repository';
-import { ProductSalesAggregationRepository } from '../src/infrastructure/repositories/product-sales-aggregation.repository';
 import { RedisService } from '../src/infrastructure/services/redis.service';
 import { RedisDistributedLockService } from '../src/infrastructure/services/redis-distributed-lock.service';
 import { REDIS_SERVICE } from '../src/application/interfaces/services/redis-service.interface';
@@ -52,7 +52,6 @@ import { ProductEntity } from '../src/infrastructure/repositories/typeorm/produc
 import { OrderEntity } from '../src/infrastructure/repositories/typeorm/order.entity';
 import { CouponEntity } from '../src/infrastructure/repositories/typeorm/coupon.entity';
 import { PaymentEntity } from '../src/infrastructure/repositories/typeorm/payment.entity';
-import { ProductSalesAggregationEntity } from '../src/infrastructure/repositories/typeorm/product-sales-aggregation.entity';
 import { OrderValidationService } from '../src/domain/services/order-validation.service';
 import { UserValidationService } from '../src/domain/services/user-validation.service';
 import { PaymentValidationService } from '../src/domain/services/payment-validation.service';
@@ -69,7 +68,7 @@ import { TransactionInterceptor } from '../src/common/interceptors/transaction.i
     TypeOrmModule.forRoot({
       type: 'sqlite',
       database: ':memory:',
-      entities: [UserEntity, ProductEntity, OrderEntity, CouponEntity, PaymentEntity, ProductSalesAggregationEntity],
+      entities: [UserEntity, ProductEntity, OrderEntity, CouponEntity, PaymentEntity],
       synchronize: true,
       logging: false,
       dropSchema: true,
@@ -81,7 +80,6 @@ import { TransactionInterceptor } from '../src/common/interceptors/transaction.i
       OrderEntity,
       CouponEntity,
       PaymentEntity,
-      ProductSalesAggregationEntity
     ])
   ],
   controllers: [
@@ -155,8 +153,14 @@ import { TransactionInterceptor } from '../src/common/interceptors/transaction.i
       useClass: PaymentRepository,
     },
     {
-      provide: 'PRODUCT_SALES_AGGREGATION_REPOSITORY',
-      useClass: ProductSalesAggregationRepository,
+      provide: RANKING_LOG_REPOSITORY,
+      useValue: {
+        save: async () => ({}),
+        findByUserIdAndCouponType: async () => [],
+        findFailedLogs: async () => [],
+        updateStatus: async () => {},
+        incrementRetryCount: async () => {},
+      },
     },
     
     // Redis 서비스 (메모리 기반으로 설정)
