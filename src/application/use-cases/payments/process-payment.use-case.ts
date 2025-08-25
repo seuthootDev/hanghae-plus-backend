@@ -9,6 +9,8 @@ import { PaymentValidationService } from '../../../domain/services/payment-valid
 import { UserValidationService } from '../../../domain/services/user-validation.service';
 import { Transactional } from '../../../common/decorators/transactional.decorator';
 import { OptimisticLock } from '../../../common/decorators/optimistic-lock.decorator';
+import { PaymentCompletedEvent } from '../../../domain/events/payment-completed.event';
+import { IEventBus } from '../../../common/events/event-bus.interface';
 
 @Injectable()
 export class ProcessPaymentUseCase {
@@ -22,7 +24,9 @@ export class ProcessPaymentUseCase {
     @Inject(PRODUCTS_SERVICE)
     private readonly productsService: ProductsServiceInterface,
     private readonly paymentValidationService: PaymentValidationService,
-    private readonly userValidationService: UserValidationService
+    private readonly userValidationService: UserValidationService,
+    @Inject('EVENT_BUS')
+    private readonly eventBus: IEventBus
   ) {}
 
   @Transactional()
@@ -65,6 +69,19 @@ export class ProcessPaymentUseCase {
       
       // 6. 주문 상태 업데이트 (OrdersService 사용)
       await this.ordersService.updateOrderStatus(order!.id, 'PAID');
+      
+      // 7. 결제 완료 이벤트 발행 (트랜잭션 완료 후)
+      this.eventBus.publish(new PaymentCompletedEvent(
+        order!.id.toString(),
+        order!.userId.toString(),
+        order!.items,
+        order!.totalAmount,
+        order!.discountAmount,
+        order!.finalAmount,
+        order!.couponUsed,
+        new Date(),
+        'PAID'
+      ));
       
       return {
         paymentId: payment.id,
