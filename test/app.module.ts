@@ -62,6 +62,8 @@ import { TestSeeder } from './database/test-seeder';
 import { OptimisticLockInterceptor } from '../src/common/interceptors/optimistic-lock.interceptor';
 import { PessimisticLockInterceptor } from '../src/common/interceptors/pessimistic-lock.interceptor';
 import { TransactionInterceptor } from '../src/common/interceptors/transaction.interceptor';
+import { IEventBus } from '../src/common/events/event-bus.interface';
+import { EventBusMock } from './helpers/event-bus-mock.helper';
 
 @Module({
   imports: [
@@ -213,6 +215,12 @@ import { TransactionInterceptor } from '../src/common/interceptors/transaction.i
     
     // TestSeeder 추가
     TestSeeder,
+    
+    // 이벤트 시스템 (테스트용 Mock)
+    {
+      provide: 'EVENT_BUS',
+      useClass: EventBusMock,
+    },
     
     // 인터셉터들 추가
     OptimisticLockInterceptor,

@@ -84,6 +84,14 @@ describe('ProcessPaymentUseCase', () => {
       },
     };
 
+    const mockEventBusProvider = {
+      provide: 'EVENT_BUS',
+      useValue: {
+        publish: jest.fn(),
+        subscribe: jest.fn(),
+      },
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ProcessPaymentUseCase,
@@ -93,6 +101,7 @@ describe('ProcessPaymentUseCase', () => {
         mockProductsServiceProvider,
         mockPaymentValidationServiceProvider,
         mockUserValidationServiceProvider,
+        mockEventBusProvider,
       ],
     }).compile();
 
