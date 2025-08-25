@@ -9,8 +9,6 @@ export class EventBus implements IEventBus {
     const eventType = event.constructor.name;
     const handlers = this.handlers.get(eventType) || [];
     
-    console.log(`📢 이벤트 발행: ${eventType}`, event);
-    
     // 비동기로 핸들러 실행 (Fire-and-Forget)
     handlers.forEach(handler => {
       setImmediate(() => {
@@ -30,6 +28,5 @@ export class EventBus implements IEventBus {
     }
     
     this.handlers.get(eventName)!.push(handler);
-    console.log(`📝 이벤트 핸들러 등록: ${eventName}`);
   }
 }
