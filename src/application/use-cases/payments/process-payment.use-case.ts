@@ -10,6 +10,7 @@ import { UserValidationService } from '../../../domain/services/user-validation.
 import { Transactional } from '../../../common/decorators/transactional.decorator';
 import { OptimisticLock } from '../../../common/decorators/optimistic-lock.decorator';
 import { PaymentCompletedEvent } from '../../../domain/events/payment-completed.event';
+import { PaymentFailedEvent } from '../../../domain/events/payment-failed.event';
 import { IEventBus } from '../../../common/events/event-bus.interface';
 
 @Injectable()
@@ -94,19 +95,22 @@ export class ProcessPaymentUseCase {
         paidAt: payment.paidAt
       };
     } catch (error) {
-      // 결제 실패 시 재고 반환
+      // 결제 실패 시 이벤트 발행
       if (order) {
         try {
-          for (const item of order.items) {
-            const product = await this.productsService.findById(item.productId);
-            if (product) {
-              product.increaseStock(item.quantity);
-              await this.productsService.save(product);
-            }
-          }
-        } catch (stockError) {
-          // 재고 반환 실패는 로그만 남기고 원래 에러를 던짐
-          console.error('재고 반환 실패:', stockError);
+          // 결제 실패 이벤트 발행 (일반 실패)
+          this.eventBus.publish(new PaymentFailedEvent(
+            order.id.toString(),
+            order.userId.toString(),
+            order.items,
+            order.couponId,
+            error.message || '결제 처리 실패',
+            new Date(),
+            false // isTimeout = false (일반 실패)
+          ));
+        } catch (eventError) {
+          // 이벤트 발행 실패는 로그만 남기고 원래 에러를 던지지 않음
+          console.error('결제 실패 이벤트 발행 실패:', eventError);
         }
       }
       
