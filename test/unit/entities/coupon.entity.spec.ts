@@ -46,6 +46,34 @@ describe('Coupon Entity', () => {
     });
   });
 
+  describe('revertUsage', () => {
+    it('사용된 쿠폰의 사용 상태를 되돌릴 수 있어야 한다', () => {
+      expect(usedCoupon.isUsed).toBe(true);
+
+      usedCoupon.revertUsage();
+
+      expect(usedCoupon.isUsed).toBe(false);
+    });
+
+    it('사용되지 않은 쿠폰의 사용 상태를 되돌려도 상태가 유지되어야 한다', () => {
+      expect(validCoupon.isUsed).toBe(false);
+
+      validCoupon.revertUsage();
+
+      expect(validCoupon.isUsed).toBe(false);
+    });
+
+    it('여러 번 되돌려도 안전하게 처리되어야 한다', () => {
+      expect(usedCoupon.isUsed).toBe(true);
+
+      usedCoupon.revertUsage();
+      expect(usedCoupon.isUsed).toBe(false);
+
+      usedCoupon.revertUsage();
+      expect(usedCoupon.isUsed).toBe(false);
+    });
+  });
+
   describe('isExpired', () => {
     it('유효한 쿠폰은 만료되지 않았음을 반환해야 한다', () => {
       expect(validCoupon.isExpired()).toBe(false);

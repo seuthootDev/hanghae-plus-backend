@@ -21,6 +21,7 @@ describe('ProcessPaymentUseCase', () => {
   let mockProductsService: jest.Mocked<ProductsServiceInterface>;
   let mockPaymentValidationService: jest.Mocked<PaymentValidationService>;
   let mockUserValidationService: jest.Mocked<UserValidationService>;
+  let mockEventBus: jest.Mocked<any>;
 
   beforeEach(async () => {
     const mockPaymentsServiceProvider = {
@@ -112,6 +113,9 @@ describe('ProcessPaymentUseCase', () => {
     mockProductsService = module.get('PRODUCTS_SERVICE');
     mockPaymentValidationService = module.get(PaymentValidationService);
     mockUserValidationService = module.get(UserValidationService);
+    
+    // 이벤트 버스 모킹 가져오기
+    mockEventBus = module.get('EVENT_BUS');
   });
 
   describe('execute', () => {
@@ -269,7 +273,7 @@ describe('ProcessPaymentUseCase', () => {
       await expect(useCase.execute(processPaymentDto)).rejects.toThrow('이미 처리된 주문입니다.');
     });
 
-    it('결제 처리 실패 시 재고가 반환되어야 한다', async () => {
+    it('결제 처리 실패 시 PaymentFailedEvent가 발행되어야 한다', async () => {
       // given
       const processPaymentDto: ProcessPaymentDto = {
         orderId: 1,
@@ -288,19 +292,24 @@ describe('ProcessPaymentUseCase', () => {
       );
 
       const mockUser = new User(1, 'user@test.com', 'password', 50000);
-      const mockProduct = new Product(1, '상품1', 10000, 10, '설명1');
-      mockProduct.increaseStock = jest.fn();
 
       mockOrdersService.findById.mockResolvedValue(mockOrder);
       mockUsersService.validateUser.mockResolvedValue(mockUser);
       mockPaymentsService.processPayment.mockRejectedValue(new Error('결제 처리 실패'));
-      mockProductsService.findById.mockResolvedValue(mockProduct);
-      mockProductsService.save.mockResolvedValue(mockProduct);
 
       // when & then
       await expect(useCase.execute(processPaymentDto)).rejects.toThrow('결제 처리 실패');
-      expect(mockProductsService.findById).toHaveBeenCalledWith(1);
-      expect(mockProductsService.save).toHaveBeenCalledWith(mockProduct);
+      
+      // PaymentFailedEvent가 발행되었는지 확인
+      expect(mockEventBus.publish).toHaveBeenCalledWith(
+        expect.objectContaining({
+          orderId: '1',
+          userId: '1',
+          items: [{ productId: 1, quantity: 2, price: 10000 }],
+          failureReason: '결제 처리 실패',
+          isTimeout: false
+        })
+      );
     });
 
     it('쿠폰이 적용된 주문도 처리할 수 있어야 한다', async () => {
