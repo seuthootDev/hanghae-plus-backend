@@ -55,7 +55,11 @@ import { RedisServiceInterface, REDIS_SERVICE } from './application/interfaces/s
 import { RedisDistributedLockServiceInterface, REDIS_DISTRIBUTED_LOCK_SERVICE } from './application/interfaces/services/redis-distributed-lock-service.interface';
 import { EventBus } from './common/events/event-bus';
 import { DataPlatformService } from './infrastructure/services/data-platform.service';
+
+import { OrderCreatedHandler } from './infrastructure/event-handlers/order-created.handler';
+import { OrderFailedHandler } from './infrastructure/event-handlers/order-failed.handler';
 import { PaymentCompletedHandler } from './infrastructure/event-handlers/payment-events.handler';
+import { PaymentFailedHandler } from './infrastructure/event-handlers/payment-failed.handler';
 import { UserEntity } from './infrastructure/repositories/typeorm/user.entity';
 import { ProductEntity } from './infrastructure/repositories/typeorm/product.entity';
 import { OrderEntity } from './infrastructure/repositories/typeorm/order.entity';
@@ -184,7 +188,11 @@ import { PaymentCompletedEvent } from './domain/events/payment-completed.event';
     // 이벤트 시스템
     EventBus,
     DataPlatformService,
-    PaymentCompletedHandler,
+    
+    // 이벤트 핸들러들
+    OrderCreatedHandler,
+    OrderFailedHandler,
+    PaymentFailedHandler,
     
     // 트랜잭션 인터셉터
     TransactionInterceptor,
@@ -195,13 +203,30 @@ import { PaymentCompletedEvent } from './domain/events/payment-completed.event';
   ],
 })
 export class AppModule implements OnModuleInit {
-  constructor(private readonly eventBus: EventBus) {}
+  constructor(
+    private readonly eventBus: EventBus,
+    private readonly orderCreatedHandler: OrderCreatedHandler,
+    private readonly orderFailedHandler: OrderFailedHandler,
+    private readonly paymentCompletedHandler: PaymentCompletedHandler,
+    private readonly paymentFailedHandler: PaymentFailedHandler
+  ) {}
 
   onModuleInit() {
     // 이벤트 핸들러 등록
-    this.eventBus.subscribe(PaymentCompletedEvent, (event: PaymentCompletedEvent) => {
-      const handler = new PaymentCompletedHandler(new DataPlatformService());
-      handler.handle(event);
+    this.eventBus.subscribe('OrderCreatedEvent', (event: any) => {
+      this.orderCreatedHandler.handle(event);
+    });
+
+    this.eventBus.subscribe('OrderFailedEvent', (event: any) => {
+      this.orderFailedHandler.handle(event);
+    });
+
+    this.eventBus.subscribe('PaymentCompletedEvent', (event: any) => {
+      this.paymentCompletedHandler.handle(event);
+    });
+
+    this.eventBus.subscribe('PaymentFailedEvent', (event: any) => {
+      this.paymentFailedHandler.handle(event);
     });
   }
 }

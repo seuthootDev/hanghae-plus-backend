@@ -2,6 +2,7 @@ import { DataSource } from 'typeorm';
 import { UserEntity } from '../infrastructure/repositories/typeorm/user.entity';
 import { ProductEntity } from '../infrastructure/repositories/typeorm/product.entity';
 import { CouponEntity } from '../infrastructure/repositories/typeorm/coupon.entity';
+import { CouponType } from '../domain/entities/coupon.entity';
 import * as bcrypt from 'bcrypt';
 import { envConfig } from '../config/env.config';
 
@@ -98,9 +99,9 @@ export class DatabaseSeeder {
     
     // 기본 쿠폰 정책 (관리자가 사용자에게 발급할 수 있는 쿠폰들)
     const coupons = [
-      { userId: 1, couponType: 'DISCOUNT_10PERCENT', discountRate: 10, discountAmount: 0, expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), isUsed: false },
-      { userId: 1, couponType: 'FIXED_1000', discountRate: 0, discountAmount: 1000, expiryDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), isUsed: true },
-      { userId: 2, couponType: 'DISCOUNT_20PERCENT', discountRate: 20, discountAmount: 0, expiryDate: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000), isUsed: false },
+      { userId: 1, couponType: CouponType.DISCOUNT_10PERCENT, discountRate: 10, discountAmount: 0, expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), isUsed: false },
+      { userId: 1, couponType: CouponType.FIXED_1000, discountRate: 0, discountAmount: 1000, expiryDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), isUsed: true },
+      { userId: 2, couponType: CouponType.DISCOUNT_20PERCENT, discountRate: 20, discountAmount: 0, expiryDate: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000), isUsed: false },
     ];
 
     for (const couponData of coupons) {
