@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PaymentCompletedEvent } from '../../../domain/events/payment-completed.event';
+import { PaymentCompletedEvent } from '../../domain/events/payment-completed.event';
 import { DataPlatformService } from '../services/data-platform.service';
 
 @Injectable()
