@@ -50,7 +50,9 @@ describe('Payments API (e2e)', () => {
         .expect(201);
 
       const paymentData = {
-        orderId: orderResponse.body.orderId
+        orderId: orderResponse.body.orderId,
+        paymentMethod: 'CARD',
+        amount: 6000
       };
 
       return request(app.getHttpServer())
@@ -95,7 +97,9 @@ describe('Payments API (e2e)', () => {
         .expect(201);
 
       const paymentData = {
-        orderId: orderResponse.body.orderId
+        orderId: orderResponse.body.orderId,
+        paymentMethod: 'CARD',
+        amount: 4000
       };
 
       return request(app.getHttpServer())
@@ -123,22 +127,22 @@ describe('Payments API (e2e)', () => {
 
     it.each([
       {
-        paymentData: { orderId: 999 },
+        paymentData: { orderId: 999, paymentMethod: 'CARD', amount: 10000 },
         description: '존재하지 않는 주문',
         expectedStatus: 404
       },
       {
-        paymentData: { orderId: 102 },
+        paymentData: { orderId: 102, paymentMethod: 'CARD', amount: 10000 },
         description: '포인트 부족',
         expectedStatus: 404
       },
-              {
-          paymentData: {},
-          description: '주문 ID 누락',
-          expectedStatus: 400
-        },
       {
-        paymentData: { orderId: 'invalid' },
+        paymentData: {},
+        description: '주문 ID 누락',
+        expectedStatus: 400
+      },
+      {
+        paymentData: { orderId: 'invalid', paymentMethod: 'CARD', amount: 10000 },
         description: '잘못된 주문 ID 타입',
         expectedStatus: 400
       }
@@ -160,7 +164,9 @@ describe('Payments API (e2e)', () => {
         .expect(201);
 
       const paymentData = {
-        orderId: orderResponse.body.orderId
+        orderId: orderResponse.body.orderId,
+        paymentMethod: 'CARD',
+        amount: 3000
       };
 
       return request(app.getHttpServer())

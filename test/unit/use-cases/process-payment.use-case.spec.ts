@@ -123,6 +123,8 @@ describe('ProcessPaymentUseCase', () => {
       // given
       const processPaymentDto: ProcessPaymentDto = {
         orderId: 1,
+        paymentMethod: 'CARD',
+        amount: 20000,
       };
 
       const mockOrder = new Order(
@@ -182,6 +184,8 @@ describe('ProcessPaymentUseCase', () => {
       // given
       const processPaymentDto: ProcessPaymentDto = {
         orderId: 999,
+        paymentMethod: 'CARD',
+        amount: 20000,
       };
 
       mockOrdersService.findById.mockResolvedValue(null);
@@ -194,6 +198,8 @@ describe('ProcessPaymentUseCase', () => {
       // given
       const processPaymentDto: ProcessPaymentDto = {
         orderId: 1,
+        paymentMethod: 'CARD',
+        amount: 20000,
       };
 
       const mockOrder = new Order(
@@ -219,6 +225,8 @@ describe('ProcessPaymentUseCase', () => {
       // given
       const processPaymentDto: ProcessPaymentDto = {
         orderId: 1,
+        paymentMethod: 'CARD',
+        amount: 20000,
       };
 
       const mockOrder = new Order(
@@ -247,6 +255,8 @@ describe('ProcessPaymentUseCase', () => {
       // given
       const processPaymentDto: ProcessPaymentDto = {
         orderId: 1,
+        paymentMethod: 'CARD',
+        amount: 20000,
       };
 
       const mockOrder = new Order(
@@ -277,6 +287,8 @@ describe('ProcessPaymentUseCase', () => {
       // given
       const processPaymentDto: ProcessPaymentDto = {
         orderId: 1,
+        paymentMethod: 'CARD',
+        amount: 20000,
       };
 
       const mockOrder = new Order(
@@ -316,6 +328,8 @@ describe('ProcessPaymentUseCase', () => {
       // given
       const processPaymentDto: ProcessPaymentDto = {
         orderId: 1,
+        paymentMethod: 'CARD',
+        amount: 20000,
       };
 
       const mockOrder = new Order(
