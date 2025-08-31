@@ -87,8 +87,8 @@ export class OrderValidationService {
       this.validateProduct(products[i], items[i].quantity);
     }
     
-    // 쿠폰 검증
-    this.validateCoupon(coupon);
+    // 쿠폰 검증은 이미 CouponsService에서 수행됨 (중복 검증 제거)
+    // this.validateCoupon(coupon);
     
     // 사용자 포인트 검증
     this.validateUserPoints(user, finalAmount);

@@ -274,10 +274,14 @@ export class CouponsService implements CouponsServiceInterface {
     }
 
     // 쿠폰 유효성 검증
-    // this.couponValidationService.validateCouponUsage(coupon); // This line was removed as per the new_code
-
     if (coupon.isValid()) {
+      // 할인 금액을 먼저 계산 (쿠폰 사용 전)
       const discountAmount = coupon.calculateDiscount(totalAmount);
+      
+      // 쿠폰 사용 상태로 변경
+      coupon.use();
+      await this.couponRepository.save(coupon);
+      
       return { coupon, discountAmount, couponUsed: true };
     }
 

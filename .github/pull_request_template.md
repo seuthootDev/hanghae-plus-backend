@@ -1,9 +1,9 @@
 ## :pushpin: PR 제목 규칙
-[STEP0X] 이름 - 선택 시나리오 (e-commerce/concert)
+[STEP15] 정승훈 - (e-commerce)
 
 ---
-### **핵심 체크리스트** :white_check_mark:
+### STEP 15 Application Event
+- [✔️] 주문/예약 정보를 원 트랜잭션이 종료된 이후에 전송
+- [✔️] 주문/예약 정보를 전달하는 부가 로직에 대한 관심사를 메인 서비스에서 분리
 
-#### one: ranking design 
-- [ ] 적절한 설계를 기반으로 랭킹기능이 개발되었는가?
-- [ ] 적절한 자료구조를 선택하였는가?
+

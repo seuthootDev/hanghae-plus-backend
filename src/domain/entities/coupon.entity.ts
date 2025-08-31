@@ -28,6 +28,10 @@ export class Coupon {
     this._isUsed = true;
   }
 
+  revertUsage(): void {
+    this._isUsed = false;
+  }
+
   isExpired(): boolean {
     return new Date() > this.expiryDate;
   }

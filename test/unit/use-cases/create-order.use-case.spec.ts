@@ -104,6 +104,13 @@ describe('CreateOrderUseCase', () => {
           provide: REDIS_SERVICE,
           useValue: mockRedisService,
         },
+        {
+          provide: 'EVENT_BUS',
+          useValue: {
+            publish: jest.fn(),
+            subscribe: jest.fn()
+          },
+        },
       ],
     }).compile();
 

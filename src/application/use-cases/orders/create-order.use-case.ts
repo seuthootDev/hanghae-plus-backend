@@ -11,6 +11,9 @@ import { Order, OrderItem } from '../../../domain/entities/order.entity';
 import { RedisServiceInterface, REDIS_SERVICE } from '../../interfaces/services/redis-service.interface';
 import { Transactional } from '../../../common/decorators/transactional.decorator';
 import { OptimisticLock } from '../../../common/decorators/optimistic-lock.decorator';
+import { OrderCreatedEvent } from '../../../domain/events/order-created.event';
+import { OrderFailedEvent } from '../../../domain/events/order-failed.event';
+import { IEventBus } from '../../../common/events/event-bus.interface';
 
 @Injectable()
 export class CreateOrderUseCase {
@@ -26,7 +29,9 @@ export class CreateOrderUseCase {
     private readonly orderValidationService: OrderValidationService,
     private readonly userValidationService: UserValidationService,
     @Inject(REDIS_SERVICE)
-    private readonly redisService: RedisServiceInterface
+    private readonly redisService: RedisServiceInterface,
+    @Inject('EVENT_BUS')
+    private readonly eventBus: IEventBus
   ) {}
 
   @Transactional()
@@ -41,6 +46,16 @@ export class CreateOrderUseCase {
     errorMessage: '주문 생성 중입니다. 잠시 후 다시 시도해주세요.'
   })
   async execute(createOrderDto: CreateOrderDto): Promise<OrderResponseDto> {
+    try {
+      return await this.createOrderInternal(createOrderDto);
+    } catch (error) {
+      // 주문 생성 실패 시 보상 트랜잭션 이벤트 발행
+      await this.handleOrderCreationFailure(createOrderDto, error);
+      throw error;
+    }
+  }
+
+  private async createOrderInternal(createOrderDto: CreateOrderDto): Promise<OrderResponseDto> {
     const { userId, items, couponId } = createOrderDto;
     
     // 1. 주문 상품 검증
@@ -86,6 +101,20 @@ export class CreateOrderUseCase {
     // 7. Redis Sorted Set 기반 상품 랭킹 업데이트
     await this.updateProductRanking(orderItems);
     
+    // 8. 주문 생성 완료 이벤트 발행 (트랜잭션 완료 후)
+    this.eventBus.publish(new OrderCreatedEvent(
+      order.id.toString(),
+      order.userId.toString(),
+      order.items,
+      order.totalAmount,
+      order.discountAmount,
+      order.finalAmount,
+      order.couponId,
+      order.couponUsed,
+      new Date(),
+      new Date(Date.now() + 10 * 60 * 1000) // 10분 후 만료
+    ));
+    
     return {
       orderId: order.id,
       userId: order.userId,
@@ -119,6 +148,28 @@ export class CreateOrderUseCase {
         console.warn(`⚠️ 상품 ${item.productId} 랭킹 업데이트 실패:`, error.message);
         // 랭킹 업데이트 실패해도 주문은 성공
       }
+    }
+  }
+
+  /**
+   * 주문 생성 실패 시 보상 트랜잭션 이벤트 발행
+   */
+  private async handleOrderCreationFailure(createOrderDto: CreateOrderDto, error: any): Promise<void> {
+    try {
+      const { userId, items, couponId } = createOrderDto;
+      
+      // 주문 실패 이벤트 발행
+      this.eventBus.publish(new OrderFailedEvent(
+        'TEMP_' + Date.now(), // 임시 주문 ID
+        userId.toString(),
+        items,
+        couponId,
+        error.message || '주문 생성 실패',
+        new Date()
+      ));
+    } catch (eventError) {
+      // 이벤트 발행 실패는 로깅만 하고 원래 에러를 던지지 않음
+      console.error('주문 실패 이벤트 발행 실패:', eventError);
     }
   }
 } 

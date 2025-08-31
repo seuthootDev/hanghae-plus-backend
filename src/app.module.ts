@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, OnModuleInit } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
 import { DatabaseModule } from './database/database.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -53,6 +53,13 @@ import { RedisService } from './infrastructure/services/redis.service';
 import { RedisDistributedLockService } from './infrastructure/services/redis-distributed-lock.service';
 import { RedisServiceInterface, REDIS_SERVICE } from './application/interfaces/services/redis-service.interface';
 import { RedisDistributedLockServiceInterface, REDIS_DISTRIBUTED_LOCK_SERVICE } from './application/interfaces/services/redis-distributed-lock-service.interface';
+import { EventBus } from './common/events/event-bus';
+import { DataPlatformService } from './infrastructure/services/data-platform.service';
+
+import { OrderCreatedHandler } from './infrastructure/event-handlers/order-created.handler';
+import { OrderFailedHandler } from './infrastructure/event-handlers/order-failed.handler';
+import { PaymentCompletedHandler } from './infrastructure/event-handlers/payment-events.handler';
+import { PaymentFailedHandler } from './infrastructure/event-handlers/payment-failed.handler';
 import { UserEntity } from './infrastructure/repositories/typeorm/user.entity';
 import { ProductEntity } from './infrastructure/repositories/typeorm/product.entity';
 import { OrderEntity } from './infrastructure/repositories/typeorm/order.entity';
@@ -66,6 +73,7 @@ import { PaymentValidationService } from './domain/services/payment-validation.s
 import { CouponValidationService } from './domain/services/coupon-validation.service';
 import { ProductValidationService } from './domain/services/product-validation.service';
 import { AuthValidationService } from './domain/services/auth-validation.service';
+import { PaymentCompletedEvent } from './domain/events/payment-completed.event';
 
 @Module({
   imports: [
@@ -177,6 +185,15 @@ import { AuthValidationService } from './domain/services/auth-validation.service
     ProductValidationService,
     AuthValidationService,
     
+    // 이벤트 시스템
+    EventBus,
+    DataPlatformService,
+    
+    // 이벤트 핸들러들
+    OrderCreatedHandler,
+    OrderFailedHandler,
+    PaymentFailedHandler,
+    
     // 트랜잭션 인터셉터
     TransactionInterceptor,
     OptimisticLockInterceptor,
@@ -185,4 +202,31 @@ import { AuthValidationService } from './domain/services/auth-validation.service
     DbOptimisticLockInterceptor,
   ],
 })
-export class AppModule {}
+export class AppModule implements OnModuleInit {
+  constructor(
+    private readonly eventBus: EventBus,
+    private readonly orderCreatedHandler: OrderCreatedHandler,
+    private readonly orderFailedHandler: OrderFailedHandler,
+    private readonly paymentCompletedHandler: PaymentCompletedHandler,
+    private readonly paymentFailedHandler: PaymentFailedHandler
+  ) {}
+
+  onModuleInit() {
+    // 이벤트 핸들러 등록
+    this.eventBus.subscribe('OrderCreatedEvent', (event: any) => {
+      this.orderCreatedHandler.handle(event);
+    });
+
+    this.eventBus.subscribe('OrderFailedEvent', (event: any) => {
+      this.orderFailedHandler.handle(event);
+    });
+
+    this.eventBus.subscribe('PaymentCompletedEvent', (event: any) => {
+      this.paymentCompletedHandler.handle(event);
+    });
+
+    this.eventBus.subscribe('PaymentFailedEvent', (event: any) => {
+      this.paymentFailedHandler.handle(event);
+    });
+  }
+}
