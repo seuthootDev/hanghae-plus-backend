@@ -31,8 +31,8 @@ export class TestSeeder {
     const hashedPassword = await bcrypt.hash(testPassword, envConfig.bcrypt.saltRounds);
     
     const users = [
-      { name: 'Test User 1', email: 'test1@example.com', password: hashedPassword, points: 25000 },
-      { name: 'Test User 2', email: 'test2@example.com', password: hashedPassword, points: 15000 },
+      { name: 'Test User 1', email: 'test1@example.com', password: hashedPassword, points: 50000 },
+      { name: 'Test User 2', email: 'test2@example.com', password: hashedPassword, points: 50000 },
       { name: 'Test User 3', email: 'test3@example.com', password: hashedPassword, points: 0 },
     ];
 
@@ -90,6 +90,8 @@ export class TestSeeder {
     const orders = [
       { id: 1, userId: 1, items: [{ productId: 1, quantity: 2, price: 3000 }], totalAmount: 6000, discountAmount: 600, finalAmount: 5400, couponId: 1, couponUsed: true, status: 'PENDING' },
       { id: 2, userId: 2, items: [{ productId: 2, quantity: 3, price: 4000 }], totalAmount: 12000, discountAmount: 0, finalAmount: 12000, couponId: null, couponUsed: false, status: 'PENDING' },
+      { id: 3, userId: 3, items: [{ productId: 3, quantity: 1, price: 4500 }], totalAmount: 4500, discountAmount: 0, finalAmount: 4500, couponId: null, couponUsed: false, status: 'PENDING' },
+      { id: 4, userId: 2, items: [{ productId: 4, quantity: 2, price: 3500 }], totalAmount: 7000, discountAmount: 0, finalAmount: 7000, couponId: null, couponUsed: false, status: 'PENDING' },
     ];
 
     for (const orderData of orders) {
@@ -99,17 +101,17 @@ export class TestSeeder {
       await this.orderRepository.save(order);
     }
 
-    // 결제 데이터
-    const payments = [
-      { id: 1, orderId: 1, userId: 1, totalAmount: 6000, discountAmount: 600, finalAmount: 5400, couponUsed: true, status: 'SUCCESS', paidAt: new Date() },
-    ];
+    // 결제 데이터는 테스트에서 필요할 때만 생성하도록 제거
+    // const payments = [
+    //   { id: 1, orderId: 1, userId: 1, totalAmount: 6000, discountAmount: 600, finalAmount: 5400, couponUsed: true, status: 'SUCCESS', paidAt: new Date() },
+    // ];
 
-    for (const paymentData of payments) {
-      const payment = this.paymentRepository.create(paymentData);
-      // ID를 명시적으로 설정
-      (payment as any).id = paymentData.id;
-      await this.paymentRepository.save(payment);
-    }
+    // for (const paymentData of payments) {
+    //   const payment = this.paymentRepository.create(paymentData);
+    //   // ID를 명시적으로 설정
+    //   (payment as any).id = paymentData.id;
+    //   await this.paymentRepository.save(payment);
+    // }
   }
 
   async clearTestData(): Promise<void> {
@@ -119,5 +121,19 @@ export class TestSeeder {
     await this.couponRepository.clear();
     await this.productRepository.clear();
     await this.userRepository.clear();
+  }
+
+  async clearPaymentData(): Promise<void> {
+    // 결제 데이터만 정리
+    await this.paymentRepository.clear();
+  }
+
+  async resetOrderStatus(): Promise<void> {
+    // 주문 상태를 PENDING으로 초기화
+    await this.orderRepository
+      .createQueryBuilder()
+      .update()
+      .set({ status: 'PENDING' })
+      .execute();
   }
 } 
