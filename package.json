@@ -21,6 +21,7 @@
     "test:it": "jest --config ./test/it/it.jest.json",
     "test:api": "jest --config ./test/it/api/api.jest.json",
     "test:integration": "jest --config ./test/it/integration.jest.json",
+    "test:kafka": "jest --config ./test/it/integration.jest.json --testNamePattern='Kafka Payment Integration Tests'",
     "test:unit": "jest --config ./test/jest-unit.json",
     "test:unit:watch": "jest --config ./test/jest-unit.json --watch",
     "test:unit:coverage": "jest --config ./test/jest-unit.json --coverage"
@@ -38,6 +39,7 @@
     "class-validator": "^0.14.2",
     "ioredis": "^5.3.2",
     "jsonwebtoken": "^9.0.2",
+    "kafkajs": "^2.2.4",
     "mysql2": "^3.9.2",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
@@ -49,6 +51,7 @@
     "@nestjs/cli": "^10.0.0",
     "@nestjs/schematics": "^10.0.0",
     "@nestjs/testing": "^10.0.0",
+    "@testcontainers/kafka": "^10.28.0",
     "@testcontainers/mysql": "^10.7.2",
     "@testcontainers/redis": "^11.5.1",
     "@types/bcrypt": "^6.0.0",

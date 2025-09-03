@@ -55,6 +55,8 @@ import { RedisServiceInterface, REDIS_SERVICE } from './application/interfaces/s
 import { RedisDistributedLockServiceInterface, REDIS_DISTRIBUTED_LOCK_SERVICE } from './application/interfaces/services/redis-distributed-lock-service.interface';
 import { EventBus } from './common/events/event-bus';
 import { DataPlatformService } from './infrastructure/services/data-platform.service';
+import { KafkaProducerService } from './infrastructure/services/kafka-producer.service';
+import { KafkaConsumerService } from './infrastructure/services/kafka-consumer.service';
 
 import { OrderCreatedHandler } from './infrastructure/event-handlers/order-created.handler';
 import { OrderFailedHandler } from './infrastructure/event-handlers/order-failed.handler';
@@ -189,9 +191,14 @@ import { PaymentCompletedEvent } from './domain/events/payment-completed.event';
     EventBus,
     DataPlatformService,
     
+    // 카프카 서비스들
+    KafkaProducerService,
+    KafkaConsumerService,
+    
     // 이벤트 핸들러들
     OrderCreatedHandler,
     OrderFailedHandler,
+    PaymentCompletedHandler,
     PaymentFailedHandler,
     
     // 트랜잭션 인터셉터

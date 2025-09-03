@@ -54,6 +54,9 @@ export class PaymentsService implements PaymentsServiceInterface {
       if (error.message.includes('이미 처리된 결제입니다')) {
         throw new BadRequestException(error.message);
       }
+      if (error.message.includes('UNIQUE constraint failed: payments.orderId')) {
+        throw new BadRequestException('이미 처리된 주문입니다.');
+      }
       throw new InternalServerErrorException('서버 오류가 발생했습니다.');
     }
   }
