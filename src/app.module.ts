@@ -31,7 +31,9 @@ import { GetProductsUseCase } from './application/use-cases/products/get-product
 import { GetTopSellersUseCase } from './application/use-cases/products/get-top-sellers.use-case';
 import { CreateOrderUseCase } from './application/use-cases/orders/create-order.use-case';
 import { IssueCouponUseCase } from './application/use-cases/coupons/issue-coupon.use-case';
+import { IssueCouponAsyncUseCase } from './application/use-cases/coupons/issue-coupon-async.use-case';
 import { GetUserCouponsUseCase } from './application/use-cases/coupons/get-user-coupons.use-case';
+import { GetCouponIssueStatusUseCase } from './application/use-cases/coupons/get-coupon-issue-status.use-case';
 import { ProcessPaymentUseCase } from './application/use-cases/payments/process-payment.use-case';
 import { RegisterUseCase } from './application/use-cases/auth/register.use-case';
 import { LoginUseCase } from './application/use-cases/auth/login.use-case';
@@ -57,6 +59,8 @@ import { EventBus } from './common/events/event-bus';
 import { DataPlatformService } from './infrastructure/services/data-platform.service';
 import { KafkaProducerService } from './infrastructure/services/kafka-producer.service';
 import { KafkaConsumerService } from './infrastructure/services/kafka-consumer.service';
+import { KafkaCouponProducerService } from './infrastructure/services/kafka-coupon-producer.service';
+import { KafkaCouponConsumerService } from './infrastructure/services/kafka-coupon-consumer.service';
 
 import { OrderCreatedHandler } from './infrastructure/event-handlers/order-created.handler';
 import { OrderFailedHandler } from './infrastructure/event-handlers/order-failed.handler';
@@ -107,7 +111,9 @@ import { PaymentCompletedEvent } from './domain/events/payment-completed.event';
     GetTopSellersUseCase,
     CreateOrderUseCase,
     IssueCouponUseCase,
+    IssueCouponAsyncUseCase,
     GetUserCouponsUseCase,
+    GetCouponIssueStatusUseCase,
     ProcessPaymentUseCase,
     RegisterUseCase,
     LoginUseCase,
@@ -194,6 +200,8 @@ import { PaymentCompletedEvent } from './domain/events/payment-completed.event';
     // 카프카 서비스들
     KafkaProducerService,
     KafkaConsumerService,
+    KafkaCouponProducerService,
+    KafkaCouponConsumerService,
     
     // 이벤트 핸들러들
     OrderCreatedHandler,
