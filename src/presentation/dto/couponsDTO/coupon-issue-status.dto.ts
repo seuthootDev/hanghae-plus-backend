@@ -22,4 +22,3 @@ export class CouponIssueStatusDto {
   @ApiProperty({ description: '처리 완료 시간', example: '2024-01-01T00:00:00.000Z', required: false })
   processedAt?: Date;
 }
-

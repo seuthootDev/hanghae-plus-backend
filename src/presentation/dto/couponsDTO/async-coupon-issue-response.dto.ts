@@ -10,4 +10,3 @@ export class AsyncCouponIssueResponseDto {
   @ApiProperty({ description: '처리 상태', enum: ['PENDING', 'PROCESSING'], example: 'PENDING' })
   status: 'PENDING' | 'PROCESSING';
 }
-
