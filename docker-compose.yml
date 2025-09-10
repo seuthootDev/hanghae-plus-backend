@@ -37,6 +37,22 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    container_name: hanghae-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - hanghae-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   kafka:
     image: confluentinc/cp-kafka:7.4.0
     container_name: hanghae-kafka
@@ -93,8 +109,12 @@ services:
       - NODE_OPTIONS=--dns-result-order=ipv4first
       - KAFKA_BROKERS=kafka:9092
       - KAFKA_CLIENT_ID=hanghae-app
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
     depends_on:
       mysql:
+        condition: service_healthy
+      redis:
         condition: service_healthy
       kafka:
         condition: service_healthy
@@ -103,6 +123,7 @@ services:
 
 volumes:
   mysql_data:
+  redis_data:
 
 networks:
   hanghae-network:
