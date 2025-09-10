@@ -21,28 +21,82 @@ services:
       timeout: 20s
       retries: 10
 
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: hanghae-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - hanghae-network
+    healthcheck:
+      test: ["CMD", "echo", "ruok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: hanghae-kafka
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    ports:
+      - "9092:9092"
+      - "9101:9101"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_JMX_PORT: 9101
+      KAFKA_JMX_HOSTNAME: localhost
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_DELETE_TOPIC_ENABLE: 'true'
+      KAFKA_LOG_RETENTION_HOURS: 24
+      KAFKA_LOG_RETENTION_BYTES: 1073741824
+    networks:
+      - hanghae-network
+    healthcheck:
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   app:
     build: .
     container_name: hanghae-app
     ports:
       - "${APP_PORT:-3000}:3000"
     environment:
-      - DB_HOST=${DB_HOST:-mysql}
-      - DB_PORT=${DB_PORT:-3306}
-      - DB_DATABASE=${DB_DATABASE:-hanghae_db}
-      - DB_USERNAME=${DB_USERNAME:-hanghae_user}
-      - DB_PASSWORD=${DB_PASSWORD:-hanghae1234}
-      - DB_LOGGING_ENABLED=${DB_LOGGING_ENABLED:-true}
-      - NODE_ENV=${NODE_ENV:-development}
-      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key-change-this-in-production}
-      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-24h}
-      - JWT_REFRESH_EXPIRES_IN=${JWT_REFRESH_EXPIRES_IN:-7d}
-      - BCRYPT_SALT_ROUNDS=${BCRYPT_SALT_ROUNDS:-10}
-      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@example.com}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
-      - ADMIN_NAME=${ADMIN_NAME:-admin}
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=hanghae_db
+      - DB_USERNAME=hanghae_user
+      - DB_PASSWORD=hanghae1234
+      - DB_LOGGING_ENABLED=true
+      - NODE_ENV=development
+      - JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+      - JWT_EXPIRES_IN=24h
+      - JWT_REFRESH_EXPIRES_IN=7d
+      - BCRYPT_SALT_ROUNDS=10
+      - ADMIN_EMAIL=admin@example.com
+      - ADMIN_PASSWORD=admin123
+      - ADMIN_NAME=admin
+      - NODE_OPTIONS=--dns-result-order=ipv4first
+      - KAFKA_BROKERS=kafka:9092
+      - KAFKA_CLIENT_ID=hanghae-app
     depends_on:
       mysql:
+        condition: service_healthy
+      kafka:
         condition: service_healthy
     networks:
       - hanghae-network
