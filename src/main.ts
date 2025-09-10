@@ -9,6 +9,9 @@ import { OptimisticLockInterceptor } from './common/interceptors/optimistic-lock
 import { PessimisticLockInterceptor } from './common/interceptors/pessimistic-lock.interceptor';
 import * as crypto from 'crypto';
 
+// 글로벌에 crypto 붙여주기
+(global as any).crypto = crypto;
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
