@@ -59,6 +59,13 @@ async function bootstrap() {
       const dataSource = app.get(DataSource);
       const seeder = new DatabaseSeeder(dataSource);
       await seeder.seed();
+      
+      // 쿠폰 재고 초기화
+      const couponsService = app.get('COUPONS_SERVICE');
+      if (couponsService && couponsService.initializeCouponStock) {
+        await couponsService.initializeCouponStock();
+        console.log('🎫 쿠폰 재고 초기화 완료');
+      }
     } catch (error) {
       console.log('⚠️ 시딩 중 오류 발생:', error.message);
     }
