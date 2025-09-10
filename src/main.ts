@@ -7,6 +7,7 @@ import { DataSource } from 'typeorm';
 import { TransactionInterceptor } from './common/interceptors/transaction.interceptor';
 import { OptimisticLockInterceptor } from './common/interceptors/optimistic-lock.interceptor';
 import { PessimisticLockInterceptor } from './common/interceptors/pessimistic-lock.interceptor';
+import * as crypto from 'crypto';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

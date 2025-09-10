@@ -9,8 +9,8 @@ export class KafkaProducerService implements OnModuleInit, OnModuleDestroy {
 
   constructor() {
     this.kafka = new Kafka({
-      clientId: 'hanghae-plus-backend',
-      brokers: ['localhost:9092'],
+      clientId: process.env.KAFKA_CLIENT_ID || 'hanghae-plus-backend',
+      brokers: [process.env.KAFKA_BROKERS || 'localhost:9092'],
     });
     this.producer = this.kafka.producer();
   }
