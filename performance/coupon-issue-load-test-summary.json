@@ -1,0 +1,351 @@
+{
+  "options": {
+    "summaryTrendStats": [
+      "avg",
+      "min",
+      "med",
+      "max",
+      "p(90)",
+      "p(95)"
+    ],
+    "summaryTimeUnit": "",
+    "noColor": false
+  },
+  "state": {
+    "isStdOutTTY": true,
+    "isStdErrTTY": true,
+    "testRunDurationMs": 540086.9334
+  },
+  "metrics": {
+    "http_req_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 32.22516018298027,
+        "min": 1.0817,
+        "med": 12.456949999999999,
+        "max": 870.1096,
+        "p(90)": 76.7081200000001,
+        "p(95)": 128.95219
+      },
+      "thresholds": {
+        "p(95)<1000": {
+          "ok": true
+        }
+      }
+    },
+    "http_req_failed": {
+      "thresholds": {
+        "rate<0.1": {
+          "ok": false
+        }
+      },
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 0.9983251489705932,
+        "passes": 175244,
+        "fails": 294
+      }
+    },
+    "http_req_waiting": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "max": 870.1096,
+        "p(90)": 76.61776,
+        "p(95)": 128.84261999999987,
+        "avg": 32.124952570383705,
+        "min": 1.0817,
+        "med": 12.3492
+      }
+    },
+    "http_req_tls_handshaking": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "med": 0,
+        "max": 0,
+        "p(90)": 0,
+        "p(95)": 0,
+        "avg": 0,
+        "min": 0
+      }
+    },
+    "coupon_stock_exhausted": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 175244,
+        "rate": 324.4736896276854
+      }
+    },
+    "iteration_duration": {
+      "values": {
+        "med": 331.1059,
+        "max": 1332.4557,
+        "p(90)": 492.05647000000005,
+        "p(95)": 518.25023,
+        "avg": 332.8662725216192,
+        "min": 103.5408
+      },
+      "type": "trend",
+      "contains": "time"
+    },
+    "checks": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 0.8293143455116248,
+        "passes": 874920,
+        "fails": 180072
+      }
+    },
+    "iterations": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 175538,
+        "rate": 325.01804643733675
+      }
+    },
+    "coupon_issue_errors": {
+      "values": {
+        "count": 0,
+        "rate": 0
+      },
+      "thresholds": {
+        "count<100": {
+          "ok": true
+        }
+      },
+      "type": "counter",
+      "contains": "default"
+    },
+    "vus_max": {
+      "type": "gauge",
+      "contains": "default",
+      "values": {
+        "value": 200,
+        "min": 200,
+        "max": 200
+      }
+    },
+    "http_reqs": {
+      "contains": "default",
+      "values": {
+        "count": 175538,
+        "rate": 325.01804643733675
+      },
+      "type": "counter"
+    },
+    "http_req_sending": {
+      "contains": "time",
+      "values": {
+        "med": 0,
+        "max": 7.3118,
+        "p(90)": 0,
+        "p(95)": 0,
+        "avg": 0.0030264729004546007,
+        "min": 0
+      },
+      "type": "trend"
+    },
+    "vus": {
+      "values": {
+        "max": 200,
+        "value": 1,
+        "min": 1
+      },
+      "type": "gauge",
+      "contains": "default"
+    },
+    "http_req_duration{expected_response:true}": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 25.848438435374156,
+        "min": 17.531,
+        "med": 24.1754,
+        "max": 63.6651,
+        "p(90)": 32.49525,
+        "p(95)": 38.587309999999974
+      }
+    },
+    "http_req_connecting": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 0.0007345304150668231,
+        "min": 0,
+        "med": 0,
+        "max": 1.6383,
+        "p(90)": 0,
+        "p(95)": 0
+      }
+    },
+    "http_req_receiving": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 0.09718113969624831,
+        "min": 0,
+        "med": 0,
+        "max": 6.9244,
+        "p(90)": 0.5475,
+        "p(95)": 0.5678
+      }
+    },
+    "data_received": {
+      "type": "counter",
+      "contains": "data",
+      "values": {
+        "count": 66650305,
+        "rate": 123406.62378261492
+      }
+    },
+    "data_sent": {
+      "values": {
+        "count": 32278539,
+        "rate": 59765.450715123705
+      },
+      "type": "counter",
+      "contains": "data"
+    },
+    "coupon_issue_response_time": {
+      "contains": "default",
+      "values": {
+        "avg": 32.22516018298027,
+        "min": 1.0817,
+        "med": 12.456949999999999,
+        "max": 870.1096,
+        "p(90)": 76.7081200000001,
+        "p(95)": 128.95219
+      },
+      "thresholds": {
+        "p(90)<500": {
+          "ok": true
+        }
+      },
+      "type": "trend"
+    },
+    "coupon_issue_success": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "passes": 294,
+        "fails": 0,
+        "rate": 1
+      },
+      "thresholds": {
+        "rate>0.01": {
+          "ok": true
+        }
+      }
+    },
+    "http_req_blocked": {
+      "contains": "time",
+      "values": {
+        "max": 4.8146,
+        "p(90)": 0,
+        "p(95)": 0,
+        "avg": 0.001254538618418803,
+        "min": 0,
+        "med": 0
+      },
+      "type": "trend"
+    }
+  },
+  "root_group": {
+    "checks": [
+      {
+        "name": "쿠폰 발급 요청 성공",
+        "path": "::쿠폰 발급 요청 성공",
+        "id": "bc887d97730907d0c237520a85f94872",
+        "passes": 294,
+        "fails": 175244
+      },
+      {
+        "passes": 175244,
+        "fails": 294,
+        "name": "쿠폰 소진 응답",
+        "path": "::쿠폰 소진 응답",
+        "id": "d836eb2d0b9c1a52967d444ca9547937"
+      },
+      {
+        "path": "::서버 응답 정상",
+        "id": "00535b86452593815bac41ec72ea88f8",
+        "passes": 175538,
+        "fails": 0,
+        "name": "서버 응답 정상"
+      },
+      {
+        "name": "응답 시간 < 1초",
+        "path": "::응답 시간 < 1초",
+        "id": "ffef9121c3877bd9607bc9b3663be1af",
+        "passes": 175538,
+        "fails": 0
+      },
+      {
+        "passes": 175274,
+        "fails": 264,
+        "name": "응답 시간 < 500ms",
+        "path": "::응답 시간 < 500ms",
+        "id": "fc3ffd55cba5a827a185d9f9343ed1e5"
+      },
+      {
+        "name": "응답 시간 < 200ms",
+        "path": "::응답 시간 < 200ms",
+        "id": "c14740dc30284b69c097f4ea59b18b59",
+        "passes": 171268,
+        "fails": 4270
+      },
+      {
+        "name": "쿠폰 ID 존재",
+        "path": "::쿠폰 ID 존재",
+        "id": "5ffb4a62ba09fd92e8812c3f1d317e65",
+        "passes": 294,
+        "fails": 0
+      },
+      {
+        "fails": 0,
+        "name": "사용자 ID 일치",
+        "path": "::사용자 ID 일치",
+        "id": "43e59cdeb925d651a92294e77814c3c6",
+        "passes": 294
+      },
+      {
+        "name": "쿠폰 타입 일치",
+        "path": "::쿠폰 타입 일치",
+        "id": "b739202c86dfa6490fa48d3210aa970d",
+        "passes": 294,
+        "fails": 0
+      },
+      {
+        "name": "할인율 존재",
+        "path": "::할인율 존재",
+        "id": "49ea4463d9b7c7996ef6f58e064bc805",
+        "passes": 294,
+        "fails": 0
+      },
+      {
+        "id": "9976b8555d6b353e66a68201866e0048",
+        "passes": 294,
+        "fails": 0,
+        "name": "만료일 존재",
+        "path": "::만료일 존재"
+      },
+      {
+        "id": "9e2069c169b5c19f2a3d289e49c63397",
+        "passes": 294,
+        "fails": 0,
+        "name": "사용 여부 false",
+        "path": "::사용 여부 false"
+      }
+    ],
+    "name": "",
+    "path": "",
+    "id": "d41d8cd98f00b204e9800998ecf8427e",
+    "groups": []
+  }
+}

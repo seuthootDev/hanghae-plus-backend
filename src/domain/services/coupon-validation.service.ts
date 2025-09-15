@@ -1,5 +1,7 @@
 import { Coupon } from '../entities/coupon.entity';
 
+export const COUPON_VALIDATION_SERVICE = 'COUPON_VALIDATION_SERVICE';
+
 export class CouponValidationService {
   
   // 쿠폰 타입별 발급 제한 수량

@@ -3,6 +3,8 @@ import { Product } from '../entities/product.entity';
 import { User } from '../entities/user.entity';
 import { Coupon } from '../entities/coupon.entity';
 
+export const ORDER_VALIDATION_SERVICE = 'ORDER_VALIDATION_SERVICE';
+
 export class OrderValidationService {
   
   /**

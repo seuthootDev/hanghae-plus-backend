@@ -1,0 +1,24 @@
+{
+  "name": "kafka-examples",
+  "version": "1.0.0",
+  "description": "카프카 기본 기능 연습을 위한 예제들",
+  "main": "index.js",
+  "scripts": {
+    "start:producer": "node producer-example.js",
+    "start:consumer": "node consumer-example.js",
+    "start:topics": "node topic-management.js",
+    "start:stream": "node stream-processing.js",
+    "install-deps": "npm install kafkajs"
+  },
+  "dependencies": {
+    "kafkajs": "^2.2.4"
+  },
+  "keywords": [
+    "kafka",
+    "streaming",
+    "messaging",
+    "example"
+  ],
+  "author": "Hanghae Plus Team",
+  "license": "MIT"
+}
