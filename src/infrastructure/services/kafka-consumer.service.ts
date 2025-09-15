@@ -12,8 +12,8 @@ export class KafkaConsumerService implements OnModuleInit, OnModuleDestroy {
     private readonly dataPlatformService: DataPlatformService
   ) {
     this.kafka = new Kafka({
-      clientId: 'hanghae-plus-backend-consumer',
-      brokers: ['localhost:9092'],
+      clientId: process.env.KAFKA_CLIENT_ID || 'hanghae-plus-backend-consumer',
+      brokers: [process.env.KAFKA_BROKERS || 'localhost:9092'],
     });
     this.consumer = this.kafka.consumer({ 
       groupId: 'data-platform-group'

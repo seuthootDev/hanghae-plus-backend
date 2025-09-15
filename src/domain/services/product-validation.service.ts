@@ -1,5 +1,7 @@
 import { Product } from '../entities/product.entity';
 
+export const PRODUCT_VALIDATION_SERVICE = 'PRODUCT_VALIDATION_SERVICE';
+
 export class ProductValidationService {
   
   /**

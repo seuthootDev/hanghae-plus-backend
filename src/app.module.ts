@@ -29,6 +29,7 @@ import { ChargePointsUseCase } from './application/use-cases/users/charge-points
 import { GetUserPointsUseCase } from './application/use-cases/users/get-user-points.use-case';
 import { GetProductsUseCase } from './application/use-cases/products/get-products.use-case';
 import { GetTopSellersUseCase } from './application/use-cases/products/get-top-sellers.use-case';
+import { GetProductDetailUseCase } from './application/use-cases/products/get-product-detail.use-case';
 import { CreateOrderUseCase } from './application/use-cases/orders/create-order.use-case';
 import { IssueCouponUseCase } from './application/use-cases/coupons/issue-coupon.use-case';
 import { IssueCouponAsyncUseCase } from './application/use-cases/coupons/issue-coupon-async.use-case';
@@ -56,6 +57,7 @@ import { RedisDistributedLockService } from './infrastructure/services/redis-dis
 import { RedisServiceInterface, REDIS_SERVICE } from './application/interfaces/services/redis-service.interface';
 import { RedisDistributedLockServiceInterface, REDIS_DISTRIBUTED_LOCK_SERVICE } from './application/interfaces/services/redis-distributed-lock-service.interface';
 import { EventBus } from './common/events/event-bus';
+import { EVENT_BUS } from './common/events/event-bus.interface';
 import { DataPlatformService } from './infrastructure/services/data-platform.service';
 import { KafkaProducerService } from './infrastructure/services/kafka-producer.service';
 import { KafkaConsumerService } from './infrastructure/services/kafka-consumer.service';
@@ -73,12 +75,12 @@ import { CouponEntity } from './infrastructure/repositories/typeorm/coupon.entit
 import { PaymentEntity } from './infrastructure/repositories/typeorm/payment.entity';
 import { ProductSalesAggregationEntity } from './infrastructure/repositories/typeorm/product-sales-aggregation.entity';
 import { RankingLogEntity } from './infrastructure/repositories/typeorm/ranking-log.entity';
-import { OrderValidationService } from './domain/services/order-validation.service';
-import { UserValidationService } from './domain/services/user-validation.service';
-import { PaymentValidationService } from './domain/services/payment-validation.service';
-import { CouponValidationService } from './domain/services/coupon-validation.service';
-import { ProductValidationService } from './domain/services/product-validation.service';
-import { AuthValidationService } from './domain/services/auth-validation.service';
+import { OrderValidationService, ORDER_VALIDATION_SERVICE } from './domain/services/order-validation.service';
+import { UserValidationService, USER_VALIDATION_SERVICE } from './domain/services/user-validation.service';
+import { PaymentValidationService, PAYMENT_VALIDATION_SERVICE } from './domain/services/payment-validation.service';
+import { CouponValidationService, COUPON_VALIDATION_SERVICE } from './domain/services/coupon-validation.service';
+import { ProductValidationService, PRODUCT_VALIDATION_SERVICE } from './domain/services/product-validation.service';
+import { AuthValidationService, AUTH_VALIDATION_SERVICE } from './domain/services/auth-validation.service';
 import { PaymentCompletedEvent } from './domain/events/payment-completed.event';
 
 @Module({
@@ -109,6 +111,7 @@ import { PaymentCompletedEvent } from './domain/events/payment-completed.event';
     GetUserPointsUseCase,
     GetProductsUseCase,
     GetTopSellersUseCase,
+    GetProductDetailUseCase,
     CreateOrderUseCase,
     IssueCouponUseCase,
     IssueCouponAsyncUseCase,
@@ -187,14 +190,42 @@ import { PaymentCompletedEvent } from './domain/events/payment-completed.event';
     
     // 도메인 서비스들
     OrderValidationService,
+    {
+      provide: ORDER_VALIDATION_SERVICE,
+      useClass: OrderValidationService,
+    },
     UserValidationService,
+    {
+      provide: USER_VALIDATION_SERVICE,
+      useClass: UserValidationService,
+    },
     PaymentValidationService,
+    {
+      provide: PAYMENT_VALIDATION_SERVICE,
+      useClass: PaymentValidationService,
+    },
     CouponValidationService,
+    {
+      provide: COUPON_VALIDATION_SERVICE,
+      useClass: CouponValidationService,
+    },
     ProductValidationService,
+    {
+      provide: PRODUCT_VALIDATION_SERVICE,
+      useClass: ProductValidationService,
+    },
     AuthValidationService,
+    {
+      provide: AUTH_VALIDATION_SERVICE,
+      useClass: AuthValidationService,
+    },
     
     // 이벤트 시스템
     EventBus,
+    {
+      provide: EVENT_BUS,
+      useClass: EventBus,
+    },
     DataPlatformService,
     
     // 카프카 서비스들

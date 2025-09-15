@@ -16,8 +16,8 @@ export class KafkaCouponConsumerService {
     private readonly kafkaCouponProducerService: KafkaCouponProducerService
   ) {
     const kafka = new Kafka({
-      clientId: 'coupon-issue-consumer',
-      brokers: [process.env.KAFKA_BROKER || 'localhost:9092'],
+      clientId: process.env.KAFKA_CLIENT_ID || 'coupon-issue-consumer',
+      brokers: [process.env.KAFKA_BROKERS || 'localhost:9092'],
     });
     
     this.consumer = kafka.consumer({ groupId: 'coupon-issue-group' });
