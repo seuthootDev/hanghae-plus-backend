@@ -27,7 +27,9 @@ import { GetTopSellersUseCase } from '../src/application/use-cases/products/get-
 import { GetProductDetailUseCase } from '../src/application/use-cases/products/get-product-detail.use-case';
 import { CreateOrderUseCase } from '../src/application/use-cases/orders/create-order.use-case';
 import { IssueCouponUseCase } from '../src/application/use-cases/coupons/issue-coupon.use-case';
+import { IssueCouponAsyncUseCase } from '../src/application/use-cases/coupons/issue-coupon-async.use-case';
 import { GetUserCouponsUseCase } from '../src/application/use-cases/coupons/get-user-coupons.use-case';
+import { GetCouponIssueStatusUseCase } from '../src/application/use-cases/coupons/get-coupon-issue-status.use-case';
 import { ProcessPaymentUseCase } from '../src/application/use-cases/payments/process-payment.use-case';
 import { RegisterUseCase } from '../src/application/use-cases/auth/register.use-case';
 import { LoginUseCase } from '../src/application/use-cases/auth/login.use-case';
@@ -64,6 +66,8 @@ import { PessimisticLockInterceptor } from '../src/common/interceptors/pessimist
 import { TransactionInterceptor } from '../src/common/interceptors/transaction.interceptor';
 import { IEventBus } from '../src/common/events/event-bus.interface';
 import { EventBusMock } from './helpers/event-bus-mock.helper';
+import { KafkaCouponProducerService } from '../src/infrastructure/services/kafka-coupon-producer.service';
+import { KafkaCouponConsumerService } from '../src/infrastructure/services/kafka-coupon-consumer.service';
 
 @Module({
   imports: [
@@ -101,7 +105,9 @@ import { EventBusMock } from './helpers/event-bus-mock.helper';
     GetProductDetailUseCase,
     CreateOrderUseCase,
     IssueCouponUseCase,
+    IssueCouponAsyncUseCase,
     GetUserCouponsUseCase,
+    GetCouponIssueStatusUseCase,
     ProcessPaymentUseCase,
     RegisterUseCase,
     LoginUseCase,
@@ -215,6 +221,24 @@ import { EventBusMock } from './helpers/event-bus-mock.helper';
     
     // TestSeeder 추가
     TestSeeder,
+    
+    // 카프카 서비스들 (테스트용 Mock)
+    {
+      provide: KafkaCouponProducerService,
+      useValue: {
+        sendCouponIssueRequest: jest.fn().mockResolvedValue(undefined),
+        sendCouponIssueResponse: jest.fn().mockResolvedValue(undefined),
+        onModuleInit: jest.fn(),
+        onModuleDestroy: jest.fn(),
+      },
+    },
+    {
+      provide: KafkaCouponConsumerService,
+      useValue: {
+        onModuleInit: jest.fn(),
+        onModuleDestroy: jest.fn(),
+      },
+    },
     
     // 이벤트 시스템 (테스트용 Mock)
     {

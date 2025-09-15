@@ -3,7 +3,11 @@ import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/
 import { IssueCouponDto } from '../dto/couponsDTO/issue-coupon.dto';
 import { CouponResponseDto } from '../dto/couponsDTO/coupon-response.dto';
 import { IssueCouponUseCase } from '../../application/use-cases/coupons/issue-coupon.use-case';
+import { IssueCouponAsyncUseCase } from '../../application/use-cases/coupons/issue-coupon-async.use-case';
 import { GetUserCouponsUseCase } from '../../application/use-cases/coupons/get-user-coupons.use-case';
+import { GetCouponIssueStatusUseCase } from '../../application/use-cases/coupons/get-coupon-issue-status.use-case';
+import { AsyncCouponIssueResponseDto } from '../dto/couponsDTO/async-coupon-issue-response.dto';
+import { CouponIssueStatusDto } from '../dto/couponsDTO/coupon-issue-status.dto';
 import { CouponsServiceInterface, COUPONS_SERVICE } from '../../application/interfaces/services/coupon-service.interface';
 import { Inject } from '@nestjs/common';
 
@@ -13,13 +17,15 @@ export class CouponsController {
 
   constructor(
     private readonly issueCouponUseCase: IssueCouponUseCase,
+    private readonly issueCouponAsyncUseCase: IssueCouponAsyncUseCase,
     private readonly getUserCouponsUseCase: GetUserCouponsUseCase,
+    private readonly getCouponIssueStatusUseCase: GetCouponIssueStatusUseCase,
     @Inject(COUPONS_SERVICE)
     private readonly couponsService: CouponsServiceInterface
   ) {}
 
   @Post('issue')
-  @ApiOperation({ summary: '쿠폰 발급' })
+  @ApiOperation({ summary: '쿠폰 발급 (동기식)' })
   @ApiResponse({ 
     status: 201, 
     description: '쿠폰 발급 성공',
@@ -28,6 +34,29 @@ export class CouponsController {
   @ApiResponse({ status: 400, description: '쿠폰 소진' })
   async issueCoupon(@Body() issueCouponDto: IssueCouponDto): Promise<CouponResponseDto> {
     return this.issueCouponUseCase.execute(issueCouponDto);
+  }
+
+  @Post('issue-async')
+  @ApiOperation({ summary: '쿠폰 발급 (비동기식 - 카프카 기반)' })
+  @ApiResponse({ 
+    status: 202, 
+    description: '쿠폰 발급 요청 접수',
+    type: AsyncCouponIssueResponseDto 
+  })
+  async issueCouponAsync(@Body() issueCouponDto: IssueCouponDto): Promise<AsyncCouponIssueResponseDto> {
+    return this.issueCouponAsyncUseCase.execute(issueCouponDto);
+  }
+
+  @Get('issue-status/:requestId')
+  @ApiOperation({ summary: '쿠폰 발급 상태 조회' })
+  @ApiParam({ name: 'requestId', description: '요청 ID' })
+  @ApiResponse({ 
+    status: 200, 
+    description: '쿠폰 발급 상태 조회 성공',
+    type: CouponIssueStatusDto
+  })
+  async getCouponIssueStatus(@Param('requestId') requestId: string): Promise<CouponIssueStatusDto | null> {
+    return this.getCouponIssueStatusUseCase.execute(requestId);
   }
 
   @Get('user/:userId')

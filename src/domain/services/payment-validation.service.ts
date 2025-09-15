@@ -2,6 +2,8 @@ import { Order } from '../entities/order.entity';
 import { User } from '../entities/user.entity';
 import { Payment } from '../entities/payment.entity';
 
+export const PAYMENT_VALIDATION_SERVICE = 'PAYMENT_VALIDATION_SERVICE';
+
 export class PaymentValidationService {
   
   /**

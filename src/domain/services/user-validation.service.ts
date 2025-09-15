@@ -1,5 +1,7 @@
 import { User } from '../entities/user.entity';
 
+export const USER_VALIDATION_SERVICE = 'USER_VALIDATION_SERVICE';
+
 export class UserValidationService {
   
   /**
